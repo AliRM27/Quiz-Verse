@@ -1,42 +1,42 @@
-import { View, Text, StyleSheet } from "react-native";
-import React from "react";
+import { View, Text, StyleSheet, } from "react-native";
+import React, {useState} from "react";
 import {BackgroundGradient} from "@/components/ui/gradients/background";
-import {ButtonGradient} from "@/components/ui/gradients/buttons";
+//import {ButtonGradient} from "@/components/ui/gradients/buttons";
 import {defaultStyles} from "@/constants/Styles";
-import {Colors, GradientColors} from "@/constants/Colors";
+import {Colors} from "@/constants/Colors";
 import GoogleLogo from "@/assets/svgs/GoogleLogo.svg"
 import AppleLogo from "@/assets/svgs/AppleLogo.svg"
-// import {MotiView} from "moti"
+import {AuthButton} from "@/components/ui/AuthButton";
+import StackedAnimatedCards from "@/components/animatinos/StackedAnimatedCards";
+import {router} from "expo-router";
+import {Auth} from "@/constants/Dimensions";
 
-const Index = () => {
+export default function Index () {
+    const [showAnimation, setShowAnimation] = useState(true)
   return (
-    <BackgroundGradient style={[defaultStyles.page]} color={GradientColors.purple}>
-        <View style={{gap: 20}}>
-            <Text style={styles.title}>Sign Up</Text>
+    <BackgroundGradient style={[defaultStyles.page, {gap: Auth.gap.screen}]}>
+        <View style={{gap: Auth.gap.txt}}>
+            <Text style={defaultStyles.title}>Welcome to QuizVerse</Text>
             <Text style={styles.txt}>Choose your favorite way to sign in and you’ll be in before you know it.</Text>
         </View>
-        <View style={{marginTop: 100, marginBottom: 200}}>
-            <View style={{width: 130, height: 130, backgroundColor: "white", borderRadius: 20}}/>
+        <Text style={{alignSelf:'center', fontSize: 20, color: Colors.dark.text}}>Complete your favorite Quizzes.</Text>
+        <View style={!showAnimation ? {paddingVertical: Auth.height.animation} : {}}>
+            {showAnimation && <StackedAnimatedCards/>}
         </View>
-        <View style={{gap: 30}}>
-            <ButtonGradient style={{width: 300, borderRadius: 20, gap: 20}} color={GradientColors.grey}>
-                <GoogleLogo />
-                <Text style={{fontSize: 15}}>Continue with Google</Text>
-            </ButtonGradient>
-            {/*<View style={{ padding: 12, backgroundColor: Colors.dark.bg_light,width: 300, borderRadius: 20, gap: 20, flexDirection: 'row', alignItems: 'center', justifyContent: "center"}}>*/}
-            {/*    <GoogleLogo />*/}
-            {/*    <Text style={{fontSize: 15, color: Colors.dark.text_muted}}>Continue with Google</Text>*/}
-            {/*</View>*/}
-            {/*<View style={{ padding: 12, backgroundColor: Colors.dark.bg_light,width: 300, borderRadius: 20, gap: 20, flexDirection: 'row', alignItems: 'center', justifyContent: "center"}}>*/}
-            {/*    <AppleLogo />*/}
-            {/*    <Text style={{fontSize: 15, color: Colors.dark.text_muted}}>Continue with Apple</Text>*/}
-            {/*</View>*/}
-            <ButtonGradient style={{width: 300, borderRadius: 20, gap: 20}} color={GradientColors.grey}>
-                <AppleLogo />
-                <Text style={{fontSize: 15}}>Continue with Apple</Text>
-            </ButtonGradient>
-
-            <Text style={{fontSize: 17, textAlign: "center", color: Colors.dark.text_muted}}>
+        <View style={{ gap: Auth.gap.button }}>
+            <AuthButton title={"Continue with Google"} Logo={GoogleLogo} onPress={() => {
+                router.replace("/(auth)/createUsername")
+                setTimeout(()=>{
+                    setShowAnimation(p => !p)
+                }, 2000)
+            }}/>
+            <AuthButton title={"Continue with Apple"} Logo={AppleLogo} onPress={() => {
+                router.replace("/(auth)/createUsername")
+                setTimeout(()=>{
+                    setShowAnimation(p => !p)
+                }, 2000)
+            }}/>
+            <Text style={{fontSize: 17, textAlign: "center", color: Colors.dark.text}}>
                 Play as Guest
             </Text>
         </View>
@@ -44,17 +44,9 @@ const Index = () => {
   );
 };
 
-export default Index;
-
-
 const styles = StyleSheet.create({
-    title: {
-        color: Colors.dark.text,
-        fontSize: 38,
-        fontWeight: "bold",
-    },
     txt: {
         color: Colors.dark.text_muted,
-        fontSize: 18
+        fontSize: 15
     }
 })

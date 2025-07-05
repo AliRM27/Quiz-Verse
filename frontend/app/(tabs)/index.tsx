@@ -1,5 +1,4 @@
-import { View, Text } from "react-native";
-import { Platform, StyleSheet } from "react-native";
+import {  Text, StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { BackgroundGradient } from "@/components/ui/gradients/background";
 

@@ -1,9 +1,10 @@
 import { StyleSheet } from "react-native";
+import {Colors} from "@/constants/Colors";
 
 export const defaultStyles = StyleSheet.create({
   page: {
     alignItems: 'center',
-    paddingTop: 70,
+    paddingVertical: 70,
     paddingHorizontal: 30,
   },
   container: {
@@ -12,4 +13,9 @@ export const defaultStyles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
   },
+  title: {
+    color: Colors.dark.text,
+    fontSize: 34,
+    fontWeight: "bold",
+  }
 });

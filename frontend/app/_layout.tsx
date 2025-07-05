@@ -23,9 +23,9 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-
         <StatusBar style="auto" />
         <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)/createUsername"/>
           <Stack.Screen name="index" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="(auth)/index" options={{animation: 'none'}}/>
