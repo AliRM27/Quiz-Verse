@@ -8,10 +8,41 @@ export const defaultStyles = StyleSheet.create({
     paddingHorizontal: 30,
   },
   container: {
-    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  containerRow:{
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    width: "100%",
+  },
+  containerBackground: {
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
+    backgroundColor: Colors.dark.bg,
+    borderRadius: 15
+  },
+  containerRowBackground:{
+    padding: 20,
+    flexDirection: "row",
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
+    backgroundColor: Colors.dark.bg,
+    borderRadius: 20,
+  },
+  containerRowBackgroundCenter:{
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+    flexDirection: "row",
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
+    backgroundColor: Colors.dark.bg,
+    borderRadius: 20
   },
   title: {
     color: Colors.dark.text,

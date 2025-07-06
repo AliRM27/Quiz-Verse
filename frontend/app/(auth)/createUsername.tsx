@@ -4,13 +4,14 @@ import {BackgroundGradient} from "@/components/ui/gradients/background";
 import NextButton from "@/components/ui/NextButton";
 import {Colors} from "@/constants/Colors";
 import {Auth} from "@/constants/Dimensions";
+import {router} from "expo-router";
 
 export default function createUsername(){
     return (
         <BackgroundGradient style={[defaultStyles.page, {justifyContent: 'space-between'}]}>
             <Text style={[defaultStyles.title, {textAlign:'center'}] }>Now let’s create your Username</Text>
             <TextInput style={styles.input} placeholder={"Type your username"} placeholderTextColor={Colors.dark.text_muted}/>
-            <NextButton onPress={()=>{}} />
+            <NextButton onPress={()=>router.replace('/(tabs)')} />
         </BackgroundGradient>
     )
 }
