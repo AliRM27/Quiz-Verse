@@ -1,10 +1,13 @@
-import {Colors} from "@/constants/Colors";
+import { Colors } from "@/constants/Colors";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import {GradientProps} from "@/types";
+import { GradientProps } from "@/types";
 
-
-export const BackgroundGradient = ({ children, style = {}, color }: GradientProps) => (
+export const BackgroundGradient = ({
+  children,
+  style = {},
+  color,
+}: GradientProps) => (
   <LinearGradient
     colors={color ? color : Colors.dark.bg_gradient}
     style={[{ flex: 1 }, style]}
