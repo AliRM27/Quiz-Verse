@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
 
-const BR = 15;
+export const BR = 25;
 
 export const defaultStyles = StyleSheet.create({
   page: {
@@ -17,23 +17,22 @@ export const defaultStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     flexDirection: "row",
-    gap: 10,
   },
   containerBackground: {
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
     borderWidth: 1,
-    borderColor: Colors.dark.border,
-    backgroundColor: Colors.dark.bg,
+    borderColor: Colors.dark.bg_light,
+    backgroundColor: Colors.dark.bg_dark,
     borderRadius: BR,
   },
   containerRowBackground: {
     padding: 20,
     flexDirection: "row",
     borderWidth: 1,
-    borderColor: Colors.dark.border,
-    backgroundColor: Colors.dark.bg,
+    borderColor: Colors.dark.bg_light,
+    backgroundColor: Colors.dark.bg_dark,
     borderRadius: BR,
   },
   containerRowBackgroundCenter: {
@@ -42,8 +41,8 @@ export const defaultStyles = StyleSheet.create({
     padding: 20,
     flexDirection: "row",
     borderWidth: 1,
-    borderColor: Colors.dark.border,
-    backgroundColor: Colors.dark.bg,
+    borderColor: Colors.dark.bg_light,
+    backgroundColor: Colors.dark.bg_dark,
     borderRadius: BR,
   },
   title: {

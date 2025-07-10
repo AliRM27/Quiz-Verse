@@ -14,9 +14,9 @@ export default function TabLayout() {
         headerShown: false,
         tabBarShowLabel: true,
         tabBarStyle: {
-          backgroundColor: Colors.dark.bg,
+          backgroundColor: Colors.dark.bg_dark,
           borderTopColor: Colors.dark.border_muted,
-          borderTopWidth: 0.5,
+          borderTopWidth: 0,
         },
       }}
     >
