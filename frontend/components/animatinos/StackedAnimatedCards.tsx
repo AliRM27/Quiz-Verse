@@ -1,8 +1,8 @@
 import React from "react";
 import { Dimensions, View, StyleSheet, Text } from "react-native";
 import { MotiView } from "moti";
-import Rdr2Logo from "@/assets/svgs/rdr2Logo.svg";
-import Dbh from "@/assets/svgs/dbhLogo3.svg";
+import Rdr2Logo from "@/assets/svgs/quizzes/rdr2Logo.svg";
+import Dbh from "@/assets/svgs/quizzes/dbhLogo.svg";
 import { Colors } from "@/constants/Colors";
 
 const windowWidth = Dimensions.get("window").width;

@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
 
-export const BR = 25;
+export const BR = 5;
 
 export const defaultStyles = StyleSheet.create({
   page: {
@@ -23,7 +23,7 @@ export const defaultStyles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
     borderWidth: 1,
-    borderColor: Colors.dark.bg_light,
+    borderColor: Colors.dark.border_muted,
     backgroundColor: Colors.dark.bg_dark,
     borderRadius: BR,
   },
