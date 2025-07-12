@@ -1,7 +1,7 @@
 import { StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
 
-export const BR = 5;
+export const BR = 10;
 
 export const defaultStyles = StyleSheet.create({
   page: {
@@ -31,7 +31,7 @@ export const defaultStyles = StyleSheet.create({
     padding: 20,
     flexDirection: "row",
     borderWidth: 1,
-    borderColor: Colors.dark.bg_light,
+    borderColor: Colors.dark.border_muted,
     backgroundColor: Colors.dark.bg_dark,
     borderRadius: BR,
   },
@@ -41,7 +41,7 @@ export const defaultStyles = StyleSheet.create({
     padding: 20,
     flexDirection: "row",
     borderWidth: 1,
-    borderColor: Colors.dark.bg_light,
+    borderColor: Colors.dark.border_muted,
     backgroundColor: Colors.dark.bg_dark,
     borderRadius: BR,
   },

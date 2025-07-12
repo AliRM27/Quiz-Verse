@@ -1,19 +1,13 @@
-import { Text, StyleSheet, View } from "react-native";
-import { useState } from "react";
+import { Text, StyleSheet, View, ActivityIndicator } from "react-native";
 import { Colors } from "@/constants/Colors";
 import ProfilePic from "@/assets/svgs/profilePic.svg";
 import Trophy from "@/assets/svgs/currencyTropht.svg";
 import Dimond from "@/assets/svgs/currencyDiamond.svg";
 import { defaultStyles } from "@/constants/Styles";
-import { AnimatedCircularProgress } from "react-native-circular-progress";
-import CircularProgress from "@/components/ui/CircularProgress";
 import { layout } from "@/constants/Dimensions";
-import { Line } from "react-native-svg";
-import { LineDashed } from "@/components/ui/Line";
-import AnimatedCarousel from "@/components/animatinos/CardsAnimation";
+import HomePageCards from "@/components/HomePageCards";
 import { WIDTH, HEIGHT, myHeight, myWidth } from "@/constants/Dimensions";
 import WeeklyEvent from "@/assets/svgs/weeklyEvent.svg";
-import DailyQuiz from "@/assets/svgs/dailyQuiz.svg";
 
 export default function HomeScreen() {
   return (
@@ -48,7 +42,7 @@ export default function HomeScreen() {
           <ProfilePic width={50} height={50} />
           <Text style={styles.txt}>AliEllie</Text>
         </View>
-        <View
+        {/* <View
           style={[
             defaultStyles.containerRow,
             {
@@ -82,7 +76,7 @@ export default function HomeScreen() {
             <Dimond width={25} height={25} style={{ zIndex: 1 }} />
             <Text style={[styles.currency]}>37</Text>
           </View>
-        </View>
+        </View> */}
       </View>
       <View
         style={[
@@ -101,7 +95,7 @@ export default function HomeScreen() {
           gap: 20,
         }}
       >
-        <AnimatedCarousel />
+        <HomePageCards />
       </View>
     </View>
   );
@@ -111,12 +105,13 @@ const styles = StyleSheet.create({
   txt: {
     color: Colors.dark.text,
     fontSize: 18,
-    fontFamily: "Inter",
+    fontFamily: "Inter-Regular SemiBold",
+    fontWeight: 600,
   },
   txt_muted: {
     color: Colors.dark.text_muted,
     fontSize: 15,
-    fontFamily: "Inter",
+    fontFamily: "Inter-Regular",
   },
   currency: {
     textAlign: "right",

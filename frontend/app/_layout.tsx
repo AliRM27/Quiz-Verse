@@ -13,7 +13,10 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    SpaceMono: require("@/assets/fonts/SpaceMono-Regular.ttf"),
+    "LibertinusMono-Regular": require("@/assets/fonts/LibertinusMono-Regular.ttf"),
+    "Inter-Regular": require("@/assets/fonts/Inter-Regular.ttf"),
+    "Inter-Italic": require("@/assets/fonts/Inter-Italic.ttf"),
   });
 
   if (!loaded) {
@@ -23,14 +26,14 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <StatusBar style="auto" />
-        <Stack screenOptions={{ headerShown: false}}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="(auth)/createUsername"/>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(auth)/index" options={{animation: 'none'}}/>
-          <Stack.Screen name="+not-found" />
-        </Stack>
+      <StatusBar style="light" />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(auth)/createUsername" />
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)/index" options={{ animation: "none" }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
     </ThemeProvider>
   );
 }
