@@ -13,13 +13,8 @@ export default function HomeScreen() {
   return (
     <View
       style={{
-        backgroundColor: Colors.dark.bg_dark,
         alignItems: "center",
-        paddingTop: layout.paddingTop,
         gap: HEIGHT * (40 / myHeight),
-        height: "100%",
-        borderWidth: 0,
-        borderColor: Colors.dark.border_muted,
       }}
     >
       <View

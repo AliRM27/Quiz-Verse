@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import React from "react";
+import { Pressable, Text } from "react-native";
 import { Colors } from "@/constants/Colors";
 import {
   Home,
@@ -13,12 +13,17 @@ import {
   ShopFocused,
   EventsFocused,
 } from "@/assets/svgs/tabBarIcons/index";
-import { HEIGHT, myHeight } from "@/constants/Dimensions";
+import { HEIGHT, layout, myHeight } from "@/constants/Dimensions";
+import * as Haptics from "expo-haptics";
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        sceneStyle: {
+          backgroundColor: Colors.dark.bg_dark,
+          paddingTop: layout.paddingTop,
+        },
         headerShown: false,
         tabBarShowLabel: false,
         tabBarIconStyle: {
@@ -29,6 +34,21 @@ export default function TabLayout() {
           backgroundColor: Colors.dark.bg_dark,
           borderTopWidth: 0,
         },
+        animation: "shift",
+        tabBarButton: (props: any) => (
+          <Pressable
+            {...props}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              props.onPress?.();
+            }}
+            style={{
+              alignItems: "center",
+            }}
+          >
+            {props.children}
+          </Pressable>
+        ),
       }}
     >
       <Tabs.Screen

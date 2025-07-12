@@ -1,5 +1,11 @@
 import { useRef, useState } from "react";
-import { Animated, View, Text, StyleSheet } from "react-native";
+import {
+  Animated,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import DbhLogo from "@/assets/svgs/quizzes/dbhLogo.svg";
 import Rdr2Logo from "@/assets/svgs/quizzes/rdr2Logo.svg";
 import TlouLogo from "@/assets/svgs/quizzes/tlouLogo.svg";
@@ -9,6 +15,7 @@ import { BR } from "@/constants/Styles";
 import { defaultStyles } from "@/constants/Styles";
 import CircularProgress from "@/components/ui/CircularProgress";
 import { LineDashed } from "@/components/ui/Line";
+import * as Haptics from "expo-haptics";
 
 const ITEM_WIDTH = HEIGHT * (150 / myHeight);
 const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
@@ -19,8 +26,8 @@ const cards = [
     svg: <DbhLogo width="100%" height="100%" />,
     title: "Detroit Become Human",
     company: "Quantic Dream",
-    progress: 0.35,
-    rewards: 100,
+    progress: 0.95,
+    rewards: 190,
     total: 200,
   },
   {
@@ -94,6 +101,7 @@ export default function HomePageCards() {
           { useNativeDriver: true }
         )}
         onMomentumScrollEnd={(event) => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           const index = Math.round(
             event.nativeEvent.contentOffset.x / ITEM_WIDTH
           );
@@ -128,7 +136,8 @@ export default function HomePageCards() {
                 },
               ]}
             >
-              <View
+              <TouchableOpacity
+                activeOpacity={0.8}
                 style={[
                   styles.logoContainer,
                   index === currentIndex
@@ -137,7 +146,7 @@ export default function HomePageCards() {
                 ]}
               >
                 {item.svg}
-              </View>
+              </TouchableOpacity>
             </Animated.View>
           );
         }}
@@ -145,7 +154,14 @@ export default function HomePageCards() {
       <Text
         style={[
           styles.txt,
-          { fontSize: 25, marginVertical: 10, letterSpacing: -1 },
+          {
+            fontSize: 25,
+            marginVertical: 10,
+            letterSpacing: -1,
+            textShadowColor: "white",
+            textShadowOffset: { width: 0, height: 0 },
+            textShadowRadius: 4,
+          },
         ]}
       >
         {cards[currentIndex].title}
@@ -172,7 +188,7 @@ export default function HomePageCards() {
           {
             width: "100%",
             justifyContent: "space-evenly",
-            height: HEIGHT * (110 / myHeight),
+            height: HEIGHT * (115 / myHeight),
           },
         ]}
       >
@@ -191,11 +207,13 @@ export default function HomePageCards() {
         >
           <Text style={[styles.txt, { fontSize: 16 }]}>Progress</Text>
           <LineDashed />
-          <CircularProgress
-            progress={cards[currentIndex].progress * 100}
-            size={HEIGHT * (50 / myHeight)}
-            strokeWidth={3}
-          />
+          <View>
+            <CircularProgress
+              progress={cards[currentIndex].progress * 100}
+              size={HEIGHT * (50 / myHeight)}
+              strokeWidth={3}
+            />
+          </View>
         </View>
         <Animated.View
           style={[
@@ -226,7 +244,7 @@ export default function HomePageCards() {
           <View
             style={{
               width: "80%",
-              backgroundColor: Colors.dark.bg_light,
+              backgroundColor: Colors.dark.border,
               borderRadius: 6,
               marginTop: HEIGHT * (10 / myHeight),
             }}

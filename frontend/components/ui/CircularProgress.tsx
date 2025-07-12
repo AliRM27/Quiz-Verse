@@ -1,4 +1,5 @@
 // components/CircularProgress.tsx
+import { Colors } from "@/constants/Colors";
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Svg, { Circle } from "react-native-svg";
@@ -13,7 +14,7 @@ const CircularProgress = ({ size = 50, strokeWidth = 5, progress = 32 }) => {
       <Svg width={size} height={size}>
         {/* Background Circle */}
         <Circle
-          stroke="#444"
+          stroke={Colors.dark.border}
           fill="none"
           cx={size / 2}
           cy={size / 2}
