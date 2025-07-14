@@ -140,6 +140,7 @@ export default function HomePageCards() {
             >
               <TouchableOpacity
                 activeOpacity={0.8}
+                disabled={index !== currentIndex}
                 style={[
                   styles.logoContainer,
                   index === currentIndex
@@ -268,7 +269,11 @@ export default function HomePageCards() {
           </Text>
         </Animated.View>
       </View>
-      <QuizModal isVisible={isModalVisible} setIsVisible={setIsModalVisible} />
+      <QuizModal
+        isVisible={isModalVisible}
+        setIsVisible={setIsModalVisible}
+        card={{}}
+      />
     </View>
   );
 }

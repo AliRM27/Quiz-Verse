@@ -34,7 +34,7 @@ export default function TabLayout() {
         },
         headerShown: false,
         tabBarShowLabel: false,
-        animation: "shift",
+        animation: "fade",
         tabBarButton: (props: any) => (
           <Pressable
             {...props}
@@ -52,6 +52,22 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
+        name={"shop"}
+        options={{
+          tabBarIcon({ focused }) {
+            return focused ? <ShopFocused /> : <Shop />;
+          },
+        }}
+      />
+      <Tabs.Screen
+        name={"events"}
+        options={{
+          tabBarIcon({ focused }) {
+            return focused ? <EventsFocused /> : <Events />;
+          },
+        }}
+      />
+      <Tabs.Screen
         name={"index"}
         options={{
           tabBarIcon({ focused }) {
@@ -65,22 +81,6 @@ export default function TabLayout() {
           title: "Search",
           tabBarIcon({ focused }) {
             return focused ? <SearchFocused /> : <Search />;
-          },
-        }}
-      />
-      <Tabs.Screen
-        name={"events"}
-        options={{
-          tabBarIcon({ focused }) {
-            return focused ? <EventsFocused /> : <Events />;
-          },
-        }}
-      />
-      <Tabs.Screen
-        name={"shop"}
-        options={{
-          tabBarIcon({ focused }) {
-            return focused ? <ShopFocused /> : <Shop />;
           },
         }}
       />

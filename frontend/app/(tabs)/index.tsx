@@ -21,7 +21,7 @@ export default function HomeScreen() {
         style={[
           defaultStyles.containerRow,
           {
-            width: "100%",
+            width: "90%",
           },
         ]}
       >
