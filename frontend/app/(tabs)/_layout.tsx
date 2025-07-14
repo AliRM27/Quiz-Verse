@@ -24,8 +24,6 @@ export default function TabLayout() {
           backgroundColor: Colors.dark.bg_dark,
           paddingTop: layout.paddingTop,
         },
-        headerShown: false,
-        tabBarShowLabel: false,
         tabBarIconStyle: {
           height: HEIGHT * (60 / myHeight),
         },
@@ -34,6 +32,8 @@ export default function TabLayout() {
           backgroundColor: Colors.dark.bg_dark,
           borderTopWidth: 0,
         },
+        headerShown: false,
+        tabBarShowLabel: false,
         animation: "shift",
         tabBarButton: (props: any) => (
           <Pressable

@@ -16,6 +16,7 @@ import { defaultStyles } from "@/constants/Styles";
 import CircularProgress from "@/components/ui/CircularProgress";
 import { LineDashed } from "@/components/ui/Line";
 import * as Haptics from "expo-haptics";
+import QuizModal from "./animatinos/QuizModal";
 
 const ITEM_WIDTH = HEIGHT * (150 / myHeight);
 const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
@@ -80,6 +81,7 @@ const cards = [
 export default function HomePageCards() {
   const scrollX = useRef(new Animated.Value(0)).current;
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   return (
     <View style={[defaultStyles.container]}>
@@ -144,6 +146,9 @@ export default function HomePageCards() {
                     ? { borderWidth: 0.6 }
                     : { borderWidth: 0 },
                 ]}
+                onPress={() => {
+                  setIsModalVisible((p) => !p);
+                }}
               >
                 {item.svg}
               </TouchableOpacity>
@@ -263,6 +268,7 @@ export default function HomePageCards() {
           </Text>
         </Animated.View>
       </View>
+      <QuizModal isVisible={isModalVisible} setIsVisible={setIsModalVisible} />
     </View>
   );
 }

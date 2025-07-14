@@ -22,9 +22,6 @@ export default function HomeScreen() {
           defaultStyles.containerRow,
           {
             width: "100%",
-            borderWidth: 0,
-            borderColor: Colors.dark.border_muted,
-            paddingHorizontal: layout.paddingHorizontal,
           },
         ]}
       >
@@ -87,7 +84,6 @@ export default function HomeScreen() {
           width: "100%",
           borderWidth: 0,
           borderColor: Colors.dark.border_muted,
-          gap: 20,
         }}
       >
         <HomePageCards />
