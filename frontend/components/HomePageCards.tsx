@@ -6,9 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import DbhLogo from "@/assets/svgs/quizzes/dbhLogo.svg";
-import Rdr2Logo from "@/assets/svgs/quizzes/rdr2Logo.svg";
-import TlouLogo from "@/assets/svgs/quizzes/tlouLogo.svg";
 import { Colors } from "@/constants/Colors";
 import { WIDTH, HEIGHT, myHeight, myWidth } from "@/constants/Dimensions";
 import { defaultStyles } from "@/constants/Styles";
@@ -16,66 +13,10 @@ import CircularProgress from "@/components/ui/CircularProgress";
 import { LineDashed } from "@/components/ui/Line";
 import * as Haptics from "expo-haptics";
 import QuizModal from "./animatinos/QuizModal";
+import { cards } from "@/utils/mockData";
 
 const ITEM_WIDTH = HEIGHT * (150 / myHeight);
 const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
-
-const cards = [
-  {
-    id: "1",
-    svg: <DbhLogo width="100%" height="100%" />,
-    title: "Detroit Become Human",
-    company: "Quantic Dream",
-    progress: 0.95,
-    rewards: 190,
-    total: 200,
-  },
-  {
-    id: "2",
-    svg: <Rdr2Logo width="100%" height="100%" />,
-    title: "Red Dead Redemption II",
-    company: "Rockstar Games",
-    progress: 0.7,
-    rewards: 200,
-    total: 300,
-  },
-  {
-    id: "3",
-    svg: <TlouLogo width="100%" height="100%" />,
-    title: "The Last Of Us",
-    company: "Naughty Dog",
-    progress: 0.87,
-    rewards: 150,
-    total: 250,
-  },
-  {
-    id: "4",
-    svg: <DbhLogo width="100%" height="100%" />,
-    title: "Detroit Become Human",
-    company: "Quantic Dream",
-    progress: 0.35,
-    rewards: 100,
-    total: 200,
-  },
-  {
-    id: "5",
-    svg: <Rdr2Logo width="100%" height="100%" />,
-    title: "Red Dead Redemption II",
-    company: "Rockstar Games",
-    progress: 0.7,
-    rewards: 200,
-    total: 300,
-  },
-  {
-    id: "6",
-    svg: <TlouLogo width="100%" height="100%" />,
-    title: "The Last Of Us",
-    company: "Naughty Dog",
-    progress: 0.87,
-    rewards: 150,
-    total: 250,
-  },
-];
 
 export default function HomePageCards() {
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -231,7 +172,7 @@ export default function HomePageCards() {
             />
           </View>
         </View>
-        <Animated.View
+        <View
           style={[
             defaultStyles.containerBackground,
             {
@@ -277,12 +218,12 @@ export default function HomePageCards() {
           <Text style={[styles.txt_muted, { fontSize: 12 }]}>
             {cards[currentIndex].rewards} / {cards[currentIndex].total}
           </Text>
-        </Animated.View>
+        </View>
       </View>
       <QuizModal
         isVisible={isModalVisible}
         setIsVisible={setIsModalVisible}
-        card={{}}
+        card={cards[currentIndex]}
       />
     </View>
   );
