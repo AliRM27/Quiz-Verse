@@ -11,7 +11,6 @@ import Rdr2Logo from "@/assets/svgs/quizzes/rdr2Logo.svg";
 import TlouLogo from "@/assets/svgs/quizzes/tlouLogo.svg";
 import { Colors } from "@/constants/Colors";
 import { WIDTH, HEIGHT, myHeight, myWidth } from "@/constants/Dimensions";
-import { BR } from "@/constants/Styles";
 import { defaultStyles } from "@/constants/Styles";
 import CircularProgress from "@/components/ui/CircularProgress";
 import { LineDashed } from "@/components/ui/Line";
@@ -80,12 +79,14 @@ const cards = [
 
 export default function HomePageCards() {
   const scrollX = useRef(new Animated.Value(0)).current;
+  const flatListRef = useRef<Animated.FlatList<any>>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   return (
     <View style={[defaultStyles.container]}>
       <Animated.FlatList
+        ref={flatListRef}
         data={cards}
         keyExtractor={(item) => item.id}
         horizontal
@@ -98,6 +99,11 @@ export default function HomePageCards() {
         decelerationRate="fast"
         bounces={false}
         scrollEventThrottle={16}
+        getItemLayout={(data, index) => ({
+          length: ITEM_WIDTH,
+          offset: ITEM_WIDTH * index,
+          index,
+        })}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
           { useNativeDriver: true }
@@ -140,7 +146,6 @@ export default function HomePageCards() {
             >
               <TouchableOpacity
                 activeOpacity={0.8}
-                disabled={index !== currentIndex}
                 style={[
                   styles.logoContainer,
                   index === currentIndex
@@ -148,7 +153,12 @@ export default function HomePageCards() {
                     : { borderWidth: 0 },
                 ]}
                 onPress={() => {
-                  setIsModalVisible((p) => !p);
+                  index === currentIndex
+                    ? setIsModalVisible((p) => !p)
+                    : flatListRef.current?.scrollToIndex({
+                        index,
+                        animated: true,
+                      });
                 }}
               >
                 {item.svg}
