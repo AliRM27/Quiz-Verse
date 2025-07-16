@@ -8,14 +8,16 @@ import {
   PanResponder,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from "react-native";
 import React, { useState, useRef } from "react";
-import { Colors } from "@/constants/Colors";
+import { Colors, GradientColors } from "@/constants/Colors";
 import { HEIGHT, myHeight, myWidth, WIDTH } from "@/constants/Dimensions";
 import { QuizModalProps } from "@/types";
 import { defaultStyles } from "@/constants/Styles";
 import { LineDashed } from "../ui/Line";
 import CircularProgress from "../ui/CircularProgress";
+import GradientComponent from "../ui/gradients/GlowingView";
 
 const QuizModal: React.FC<QuizModalProps> = ({
   isVisible,
@@ -77,10 +79,12 @@ const QuizModal: React.FC<QuizModalProps> = ({
           <ScrollView
             horizontal={false}
             style={{ width: "100%" }}
-            contentContainerStyle={{ alignItems: "center", gap: 40 }}
+            contentContainerStyle={{ alignItems: "center", gap: 35 }}
             showsVerticalScrollIndicator={false}
           >
-            <View style={styles.logoContainer}>{card.svg}</View>
+            <GradientComponent>
+              <View style={styles.logoContainer}>{card.svg}</View>
+            </GradientComponent>
             <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
               <Text style={[styles.txt, { fontSize: 24 }]}>{card.title}</Text>
               <Text
@@ -98,6 +102,21 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 is a trademark of {card.company}.
               </Text>
             </View>
+            {/* <TouchableOpacity
+              activeOpacity={0.7}
+              style={{
+                width: "50%",
+                alignItems: "center",
+                justifyContent: "center",
+                borderWidth: 1,
+                borderColor: Colors.dark.border_muted,
+
+                height: 50,
+                borderRadius: 50,
+              }}
+            >
+              <Text style={styles.txt}>Start</Text>
+            </TouchableOpacity> */}
             <View
               style={[
                 defaultStyles.containerRow,
@@ -181,6 +200,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 </Text>
               </View>
             </View>
+
             <View
               style={[
                 defaultStyles.containerRow,
@@ -189,6 +209,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                   flexWrap: "wrap",
                   justifyContent: "space-around",
                   gap: 15,
+                  marginBottom: 50,
                 },
               ]}
             >
@@ -263,21 +284,6 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 </TouchableOpacity>
               ))}
             </View>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                width: "50%",
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: 1,
-                borderColor: Colors.dark.border_muted,
-                marginBottom: 50,
-                height: 50,
-                borderRadius: 50,
-              }}
-            >
-              <Text style={styles.txt}>Start</Text>
-            </TouchableOpacity>
           </ScrollView>
         </Animated.View>
       </View>
@@ -317,8 +323,6 @@ const styles = StyleSheet.create({
     width: HEIGHT * (170 / myHeight),
     height: HEIGHT * (170 / myHeight),
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: Colors.dark.border_muted,
     overflow: "hidden",
   },
   txt: {
