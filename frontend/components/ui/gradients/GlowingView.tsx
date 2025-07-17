@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { Colors } from "@/constants/Colors";
 
-const RotatingGradient = ({ children }: any) => {
+const RotatingGradient = ({ children, isOn = true }: any) => {
   const [angle, setAngle] = useState(0); // in degrees
 
   useEffect(() => {
@@ -28,7 +29,11 @@ const RotatingGradient = ({ children }: any) => {
 
   return (
     <LinearGradient
-      colors={["#6e6e6eff", "#1c1c1cff"]}
+      colors={
+        isOn
+          ? ["#6e6e6eff", "#1c1c1cff"]
+          : [Colors.dark.bg_dark, Colors.dark.bg_dark]
+      }
       start={start}
       end={end}
       style={{

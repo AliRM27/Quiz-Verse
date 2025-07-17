@@ -7,7 +7,7 @@ import { defaultStyles } from "@/constants/Styles";
 import { layout } from "@/constants/Dimensions";
 import HomePageCards from "@/components/HomePageCards";
 import { WIDTH, HEIGHT, myHeight, myWidth } from "@/constants/Dimensions";
-import WeeklyEvent from "@/assets/svgs/weeklyEvent.svg";
+import Carousel from "@/components/animatinos/Carousel";
 
 export default function HomeScreen() {
   return (
@@ -70,15 +70,7 @@ export default function HomeScreen() {
           </View>
         </View> */}
       </View>
-      <View
-        style={[
-          { width: "50%", height: "12%" },
-          defaultStyles.containerBackground,
-        ]}
-      >
-        <WeeklyEvent />
-        <Text style={styles.txt_muted}>17h 34m</Text>
-      </View>
+      <Carousel />
       <View
         style={{
           width: "100%",

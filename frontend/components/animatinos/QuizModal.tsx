@@ -17,7 +17,7 @@ import { QuizModalProps } from "@/types";
 import { defaultStyles } from "@/constants/Styles";
 import { LineDashed } from "../ui/Line";
 import CircularProgress from "../ui/CircularProgress";
-import GradientComponent from "../ui/gradients/GlowingView";
+import RotatingGradient from "../ui/gradients/GlowingView";
 
 const QuizModal: React.FC<QuizModalProps> = ({
   isVisible,
@@ -42,6 +42,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
             useNativeDriver: true,
           }).start(() => {
             setIsVisible(false);
+            setSelectedLevelIndex(0);
             setTimeout(() => {
               translateY.setValue(0); // reset AFTER modal is closed
             }, 300); // slight delay to avoid visible snap
@@ -62,7 +63,9 @@ const QuizModal: React.FC<QuizModalProps> = ({
       animationType="slide" // or "fade", "none"
       transparent={true}
       visible={isVisible}
-      onRequestClose={() => setIsVisible(false)} // for Android back button
+      onRequestClose={() => {
+        setIsVisible(false);
+      }} // for Android back button
     >
       <View style={styles.modalBackground}>
         <Animated.View
@@ -82,9 +85,9 @@ const QuizModal: React.FC<QuizModalProps> = ({
             contentContainerStyle={{ alignItems: "center", gap: 35 }}
             showsVerticalScrollIndicator={false}
           >
-            <GradientComponent>
+            <RotatingGradient>
               <View style={styles.logoContainer}>{card.svg}</View>
-            </GradientComponent>
+            </RotatingGradient>
             <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
               <Text style={[styles.txt, { fontSize: 24 }]}>{card.title}</Text>
               <Text
@@ -299,16 +302,16 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   modalContainer: {
-    gap: 20,
+    gap: HEIGHT * (20 / myHeight),
     backgroundColor: Colors.dark.bg,
     borderRadius: 50,
     alignItems: "center",
     elevation: 5,
-    height: "90%",
+    height: "85%",
   },
   dragArea: {
     width: "80%",
-    height: 60, // Much taller touch area
+    height: HEIGHT * (60 / myHeight), // Much taller touch area
     alignItems: "center",
     justifyContent: "center",
   },

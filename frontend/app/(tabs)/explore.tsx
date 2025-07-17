@@ -23,6 +23,8 @@ export default function Explore() {
           width={25}
           height={25}
           style={{ position: "absolute", top: 12, left: 13 }}
+          color={"white"}
+          stroke={"black"}
         />
       </View>
     </View>

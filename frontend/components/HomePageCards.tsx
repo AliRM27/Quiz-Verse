@@ -14,6 +14,7 @@ import { LineDashed } from "@/components/ui/Line";
 import * as Haptics from "expo-haptics";
 import QuizModal from "./animatinos/QuizModal";
 import { cards } from "@/utils/mockData";
+import RotatingGradient from "./ui/gradients/GlowingView";
 
 const ITEM_WIDTH = HEIGHT * (150 / myHeight);
 const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
@@ -25,13 +26,12 @@ export default function HomePageCards() {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   return (
-    <View style={[defaultStyles.container]}>
+    <View style={[defaultStyles.container, {}]}>
       <Animated.FlatList
         ref={flatListRef}
         data={cards}
         keyExtractor={(item) => item.id}
         horizontal
-        style={{}}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: ITEM_SPACING,
@@ -87,12 +87,7 @@ export default function HomePageCards() {
             >
               <TouchableOpacity
                 activeOpacity={0.8}
-                style={[
-                  styles.logoContainer,
-                  index === currentIndex
-                    ? { borderWidth: 0.6 }
-                    : { borderWidth: 0 },
-                ]}
+                style={{ borderRadius: 10, overflow: "hidden" }}
                 onPress={() => {
                   index === currentIndex
                     ? setIsModalVisible((p) => !p)
@@ -102,7 +97,9 @@ export default function HomePageCards() {
                       });
                 }}
               >
-                {item.svg}
+                <RotatingGradient isOn={index === currentIndex}>
+                  <View style={[styles.logoContainer]}>{item.svg}</View>
+                </RotatingGradient>
               </TouchableOpacity>
             </Animated.View>
           );
@@ -115,9 +112,6 @@ export default function HomePageCards() {
             fontSize: 25,
             marginVertical: 10,
             letterSpacing: -1,
-            textShadowColor: "white",
-            textShadowOffset: { width: 0, height: 0 },
-            textShadowRadius: 4,
           },
         ]}
       >
@@ -130,7 +124,7 @@ export default function HomePageCards() {
             textAlign: "center",
             fontSize: 10,
             width: "70%",
-            height: `${HEIGHT * (25 / myHeight)}%`,
+            height: "20%",
           },
         ]}
       >
@@ -235,7 +229,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logoContainer: {
-    borderColor: Colors.dark.text,
     width: HEIGHT * (150 / myHeight),
     height: HEIGHT * (150 / myHeight),
     overflow: "hidden",
