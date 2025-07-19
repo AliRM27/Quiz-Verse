@@ -20,21 +20,21 @@ const width = WIDTH * (230 / myWidth);
 const height = HEIGHT * (100 / myHeight);
 const CARDS = [
   {
-    svg: <DailyQuiz height={40} width={100} />,
+    svg: <DailyQuiz height={50} width={160} />,
     time: "17h 30m",
   },
   {
-    svg: <WeeklyEvent height={40} />,
+    svg: <WeeklyEvent height={50} width={200} />,
     time: "2h 56m",
   },
   {
-    svg: <Championship height={40} />,
+    svg: <Championship height={50} />,
     time: "12h 13m",
   },
 ];
 
 export default function Carousel() {
-  const scrollRef = useRef(null);
+  const scrollRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const autoScrollTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -125,8 +125,8 @@ const styles = StyleSheet.create({
     bottom: 10,
   },
   dot: {
-    width: 7,
-    height: 7,
+    width: 4,
+    height: 4,
     borderRadius: 5,
     borderWidth: 1,
     borderColor: Colors.dark.border,

@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     alignItems: "center",
     elevation: 5,
-    height: "85%",
+    height: "90%",
   },
   dragArea: {
     width: "80%",

@@ -57,7 +57,6 @@ info: "hsl(217 100% 70%)",
 
 export const Colors = {
   dark: {
-    bg_gradient: ["#4A00E0", "#8E2DE2"],
     bg_dark: "hsl(336 0% 1%)",
     bg: "hsl(300 0% 4%)",
     bg_light: "hsl(0 0% 9%)",
