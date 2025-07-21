@@ -8,8 +8,8 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -25,18 +25,22 @@ export default function RootLayout() {
     return null;
   }
 
+  const queryClient = new QueryClient();
+
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        <StatusBar style="light" />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="(auth)/createUsername" />
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(auth)/index" options={{ animation: "none" }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-      </GestureHandlerRootView>
+      <QueryClientProvider client={queryClient}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <StatusBar style="light" />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="(auth)/createUsername" />
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(auth)/index" options={{ animation: "none" }} />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+        </GestureHandlerRootView>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

@@ -5,6 +5,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { WIDTH, HEIGHT, myHeight, myWidth } from "@/constants/Dimensions";
@@ -15,6 +16,9 @@ import * as Haptics from "expo-haptics";
 import QuizModal from "./animatinos/QuizModal";
 import { cards } from "@/utils/mockData";
 import RotatingGradient from "./ui/gradients/GlowingView";
+import { useQuery } from "@tanstack/react-query";
+import { fetchQuizzes } from "@/services/api";
+import { QuizLogo } from "./ui/QuizLogo";
 
 const ITEM_WIDTH = HEIGHT * (150 / myHeight);
 const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
@@ -25,12 +29,32 @@ export default function HomePageCards() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["quizzes"],
+    queryFn: fetchQuizzes,
+  });
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1 }}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1 }}>
+        <Text style={{ color: Colors.dark.text }}>Error</Text>
+      </View>
+    );
+  }
   return (
     <View style={[defaultStyles.container, {}]}>
       <Animated.FlatList
         ref={flatListRef}
-        data={cards}
-        keyExtractor={(item) => item.id}
+        data={data}
+        keyExtractor={(item) => item._id}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
@@ -38,9 +62,9 @@ export default function HomePageCards() {
         }}
         snapToInterval={ITEM_WIDTH}
         decelerationRate="fast"
-        bounces={false}
+        bounces={true}
         scrollEventThrottle={16}
-        getItemLayout={(data, index) => ({
+        getItemLayout={(_, index) => ({
           length: ITEM_WIDTH,
           offset: ITEM_WIDTH * index,
           index,
@@ -49,14 +73,14 @@ export default function HomePageCards() {
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
           { useNativeDriver: true }
         )}
-        onMomentumScrollEnd={(event) => {
+        onMomentumScrollEnd={(event: any) => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           const index = Math.round(
             event.nativeEvent.contentOffset.x / ITEM_WIDTH
           );
           setCurrentIndex(index);
         }}
-        renderItem={({ item, index }) => {
+        renderItem={({ item, index }: any) => {
           const inputRange = [
             (index - 1) * ITEM_WIDTH,
             index * ITEM_WIDTH,
@@ -98,7 +122,9 @@ export default function HomePageCards() {
                 }}
               >
                 <RotatingGradient isOn={index === currentIndex}>
-                  <View style={[styles.logoContainer]}>{item.svg}</View>
+                  <View style={[styles.logoContainer]}>
+                    <QuizLogo name={item.logoFile} />
+                  </View>
                 </RotatingGradient>
               </TouchableOpacity>
             </Animated.View>
@@ -115,7 +141,7 @@ export default function HomePageCards() {
           },
         ]}
       >
-        {cards[currentIndex].title}
+        {data[currentIndex].title}
       </Text>
       <Text
         style={[
@@ -129,9 +155,9 @@ export default function HomePageCards() {
         ]}
       >
         This is a fan-made quiz, not officially connected to{" "}
-        {cards[currentIndex].company} or the creators of “
-        {cards[currentIndex].title}”. The game title is a trademark of{" "}
-        {cards[currentIndex].company}.
+        {data[currentIndex].company} or the creators of “
+        {data[currentIndex].title}”. The game title is a trademark of{" "}
+        {data[currentIndex].company}.
       </Text>
       <View
         style={[
@@ -160,7 +186,7 @@ export default function HomePageCards() {
           <LineDashed />
           <View>
             <CircularProgress
-              progress={cards[currentIndex].progress * 100}
+              progress={0.4 * 100}
               size={HEIGHT * (50 / myHeight)}
               strokeWidth={3}
             />
@@ -202,7 +228,7 @@ export default function HomePageCards() {
           >
             <View
               style={{
-                width: `${(cards[currentIndex].rewards / cards[currentIndex].total) * 100}%`,
+                width: `${(data[currentIndex].rewards / data[currentIndex].total) * 100}%`,
                 height: 4,
                 backgroundColor: "#FFB11F",
                 borderRadius: 6,
@@ -210,14 +236,14 @@ export default function HomePageCards() {
             />
           </View>
           <Text style={[styles.txt_muted, { fontSize: 12 }]}>
-            {cards[currentIndex].rewards} / {cards[currentIndex].total}
+            {data[currentIndex].rewards} / {data[currentIndex].total}
           </Text>
         </View>
       </View>
       <QuizModal
         isVisible={isModalVisible}
         setIsVisible={setIsModalVisible}
-        card={cards[currentIndex]}
+        card={data[currentIndex]}
       />
     </View>
   );

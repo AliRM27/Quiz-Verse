@@ -18,6 +18,7 @@ import { defaultStyles } from "@/constants/Styles";
 import { LineDashed } from "../ui/Line";
 import CircularProgress from "../ui/CircularProgress";
 import RotatingGradient from "../ui/gradients/GlowingView";
+import { QuizLogo } from "../ui/QuizLogo";
 
 const QuizModal: React.FC<QuizModalProps> = ({
   isVisible,
@@ -86,7 +87,9 @@ const QuizModal: React.FC<QuizModalProps> = ({
             showsVerticalScrollIndicator={false}
           >
             <RotatingGradient>
-              <View style={styles.logoContainer}>{card.svg}</View>
+              <View style={styles.logoContainer}>
+                <QuizLogo name={card.logoFile} />
+              </View>
             </RotatingGradient>
             <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
               <Text style={[styles.txt, { fontSize: 24 }]}>{card.title}</Text>
@@ -216,7 +219,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 },
               ]}
             >
-              {card.levels.map((lvl, index) => (
+              {/* {card.levels.map((lvl, index) => (
                 <TouchableOpacity
                   activeOpacity={0.7}
                   key={index}
@@ -285,7 +288,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     </Text>
                   </View>
                 </TouchableOpacity>
-              ))}
+              ))} */}
             </View>
           </ScrollView>
         </Animated.View>

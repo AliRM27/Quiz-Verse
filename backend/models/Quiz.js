@@ -6,6 +6,10 @@ const quizSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  logoFile: {
+    type: String,
+    required: true,
+  },
   description: {
     type: String,
     trim: true,
@@ -15,8 +19,12 @@ const quizSchema = new mongoose.Schema({
     ref: "Category",
     required: true,
   },
-  prize: {
+  rewardSum: {
     type: Number,
+    required: true,
+  },
+  company: {
+    type: String,
     required: true,
   },
   sections: [
@@ -30,6 +38,10 @@ const quizSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: ["Easy", "Medium", "Hard"],
+      },
+      reward: {
+        type: Number,
+        required: true,
       },
       questions: [
         {

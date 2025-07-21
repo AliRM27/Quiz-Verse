@@ -18,7 +18,7 @@ import { HEIGHT, myHeight, WIDTH, myWidth } from "@/constants/Dimensions";
 
 const width = WIDTH * (230 / myWidth);
 const height = HEIGHT * (100 / myHeight);
-const CARDS = [
+const MODES = [
   {
     svg: <DailyQuiz height={50} width={160} />,
     time: "17h 30m",
@@ -40,7 +40,7 @@ export default function Carousel() {
 
   // Function to scroll to the next card
   const scrollToNext = () => {
-    const nextIndex = (currentIndex + 1) % CARDS.length;
+    const nextIndex = (currentIndex + 1) % MODES.length;
     scrollRef.current?.scrollTo({ x: nextIndex * width, animated: true });
     setCurrentIndex(nextIndex);
   };
@@ -87,7 +87,7 @@ export default function Carousel() {
         onMomentumScrollEnd={handleScrollEnd}
         style={{ width }}
       >
-        {CARDS.map((card, index) => (
+        {MODES.map((card, index) => (
           <TouchableOpacity activeOpacity={0.7} key={index} style={styles.card}>
             {card.svg}
             <Text style={{ color: Colors.dark.text_muted }}>{card.time}</Text>
@@ -96,7 +96,7 @@ export default function Carousel() {
       </ScrollView>
 
       <View style={styles.dotsContainer}>
-        {CARDS.map((_, index) => (
+        {MODES.map((_, index) => (
           <View
             key={index}
             style={[styles.dot, currentIndex === index && styles.activeDot]}

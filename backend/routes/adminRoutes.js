@@ -17,8 +17,8 @@ router.get("/dashboard", (req, res) => {
 
 router.get("/users", getAllUsers);
 router.post("/users/promote", toPromoteUserToAdmin);
-router.post("quizzes/create", createQuiz);
-router.put("quizzes/update/:id", updateQuiz);
+router.post("/quizzes/create", createQuiz);
+router.put("/quizzes/update/:id", updateQuiz);
 router.delete("quizzes/delete/:id", deleteQuiz);
 
 export default router;

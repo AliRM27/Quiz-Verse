@@ -14,7 +14,7 @@ export interface GradientProps {
 
 interface CardType {
   id: string;
-  svg: React.ReactNode;
+  logoFile: string;
   title: string;
   company: string;
   progress: number;
