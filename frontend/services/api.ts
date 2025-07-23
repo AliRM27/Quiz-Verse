@@ -11,7 +11,7 @@ export const api = axios.create({
 
 export const fetchQuizzes = async () => {
   try {
-    const res = await api.get("quizzes");
+    const res = await api.get("api/quizzes");
     return res.data;
   } catch (err) {
     console.log(err);

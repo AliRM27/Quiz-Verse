@@ -15,7 +15,19 @@ const userSchema = new mongoose.Schema({
   progress: [
     {
       quizId: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" },
-      score: { type: Number, default: 0 },
+      questionsTotal: { type: Number, default: 0 },
+      rewardsTotal: { type: Number, default: 0 },
+      sections: [
+        {
+          difficulty: {
+            type: String,
+            required: true,
+            enum: ["Easy", "Medium", "Hard"],
+          },
+          questions: { type: Number, default: 0 },
+          rewards: { type: Number, default: 0 },
+        },
+      ],
     },
   ],
   role: {

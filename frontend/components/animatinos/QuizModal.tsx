@@ -130,6 +130,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                   width: "100%",
                   justifyContent: "space-evenly",
                   height: HEIGHT * (115 / myHeight),
+                  flexWrap: "wrap",
                 },
               ]}
             >
@@ -147,7 +148,11 @@ const QuizModal: React.FC<QuizModalProps> = ({
                   },
                 ]}
               >
-                <Text style={[styles.txt, { fontSize: 16 }]}>Progress</Text>
+                <Text
+                  style={[styles.txt, { fontSize: WIDTH * (15 / myWidth) }]}
+                >
+                  Progress
+                </Text>
                 <LineDashed />
                 <View>
                   <CircularProgress
@@ -177,7 +182,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     {
                       width: "100%",
                       textAlign: "center",
-                      fontSize: 16,
+                      fontSize: WIDTH * (15 / myWidth),
                     },
                   ]}
                 >
@@ -194,7 +199,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 >
                   <View
                     style={{
-                      width: `${(card.rewards / card.total) * 100}%`,
+                      width: `${(card.rewardsTotal / card.total) * 100}%`,
                       height: 4,
                       backgroundColor: "#FFB11F",
                       borderRadius: 6,
@@ -202,7 +207,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                   />
                 </View>
                 <Text style={[styles.txt_muted, { fontSize: 12 }]}>
-                  {card.rewards} / {card.total}
+                  {card.rewardsTotal} / {card.rewardsTotal}
                 </Text>
               </View>
             </View>
@@ -219,17 +224,18 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 },
               ]}
             >
-              {/* {card.levels.map((lvl, index) => (
+              {card.sections.map((lvl, index) => (
                 <TouchableOpacity
                   activeOpacity={0.7}
                   key={index}
                   style={[
                     defaultStyles.containerBackground,
                     {
-                      paddingVertical: 12,
+                      paddingVertical: WIDTH * (12 / myWidth),
                       backgroundColor: Colors.dark.bg,
                       width: "40%",
-                      gap: 10,
+                      gap: WIDTH * (10 / myWidth),
+                      height: HEIGHT * (190 / myHeight),
                     },
                     selectedLevelIndex === index && {
                       borderColor: Colors.dark.text,
@@ -239,9 +245,11 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     setSelectedLevelIndex(index);
                   }}
                 >
-                  <Text style={[styles.txt, { fontSize: 20 }]}>
-                    {lvl.name[0].toUpperCase() +
-                      lvl.name.slice(1).toLowerCase()}
+                  <Text
+                    style={[styles.txt, { fontSize: WIDTH * (19 / myWidth) }]}
+                  >
+                    {lvl.difficulty[0].toUpperCase() +
+                      lvl.difficulty.slice(1).toLowerCase()}
                   </Text>
                   <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
                     <Text style={[styles.txt_muted]}>Progress</Text>
@@ -254,7 +262,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     >
                       <View
                         style={{
-                          width: `${(lvl.completedQuestions / lvl.questions) * 100}%`,
+                          width: `${(lvl.completedQuestions / lvl.questions.length) * 100}%`,
                           backgroundColor: Colors.dark.text,
                           height: 3,
                           borderRadius: 6,
@@ -262,7 +270,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                       />
                     </View>
                     <Text style={[styles.txt_muted, { fontSize: 10 }]}>
-                      {lvl.completedQuestions} / {lvl.questions}
+                      {2} / {lvl.questions.length}
                     </Text>
                   </View>
                   <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
@@ -284,11 +292,11 @@ const QuizModal: React.FC<QuizModalProps> = ({
                       />
                     </View>
                     <Text style={[styles.txt_muted, { fontSize: 10 }]}>
-                      {lvl.rewards} / {lvl.total}
+                      {10} / {lvl.rewards}
                     </Text>
                   </View>
                 </TouchableOpacity>
-              ))} */}
+              ))}
             </View>
           </ScrollView>
         </Animated.View>

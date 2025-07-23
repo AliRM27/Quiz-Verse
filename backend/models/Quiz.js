@@ -19,7 +19,7 @@ const quizSchema = new mongoose.Schema({
     ref: "Category",
     required: true,
   },
-  rewardSum: {
+  rewardsTotal: {
     type: Number,
     required: true,
   },
@@ -37,9 +37,9 @@ const quizSchema = new mongoose.Schema({
       difficulty: {
         type: String,
         required: true,
-        enum: ["Easy", "Medium", "Hard"],
+        enum: ["Easy", "Medium", "Hard", "Extreme"],
       },
-      reward: {
+      rewards: {
         type: Number,
         required: true,
       },
@@ -49,6 +49,10 @@ const quizSchema = new mongoose.Schema({
             type: String,
             required: true,
             trim: true,
+          },
+          reward: {
+            type: Number,
+            required: true,
           },
           image: { type: String, trim: true }, // Optional image URL for the question
           video: { type: String, trim: true }, // Optional video URL for the question

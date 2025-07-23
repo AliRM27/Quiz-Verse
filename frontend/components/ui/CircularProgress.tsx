@@ -1,5 +1,6 @@
 // components/CircularProgress.tsx
 import { Colors } from "@/constants/Colors";
+import { myWidth, WIDTH } from "@/constants/Dimensions";
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Svg, { Circle } from "react-native-svg";
@@ -11,7 +12,7 @@ const CircularProgress = ({ size = 50, strokeWidth = 5, progress = 32 }) => {
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      <Svg width={size} height={size}>
+      <Svg width={size + 1} height={size + 1}>
         {/* Background Circle */}
         <Circle
           stroke={Colors.dark.border}
@@ -55,7 +56,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: "#ccc",
-    fontSize: 13,
+    fontSize: WIDTH < 700 ? WIDTH * (13 / myWidth) : 18,
     fontWeight: "bold",
   },
 });

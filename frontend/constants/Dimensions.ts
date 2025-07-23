@@ -3,8 +3,8 @@ import { Dimensions } from "react-native";
 export const myHeight = 844;
 export const myWidth = 390;
 
-export const HEIGHT = Dimensions.get("window").height;
-export const WIDTH = Dimensions.get("window").width;
+export const HEIGHT = Dimensions.get("screen").height;
+export const WIDTH = Dimensions.get("screen").width;
 
 export const layout = {
   paddingTop: HEIGHT * (70 / myHeight),

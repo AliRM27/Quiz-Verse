@@ -32,6 +32,7 @@ export default function HomePageCards() {
   const { data, error, isLoading } = useQuery({
     queryKey: ["quizzes"],
     queryFn: fetchQuizzes,
+    refetchInterval: 3000,
   });
 
   if (isLoading) {
@@ -182,15 +183,15 @@ export default function HomePageCards() {
             },
           ]}
         >
-          <Text style={[styles.txt, { fontSize: 16 }]}>Progress</Text>
+          <Text style={[styles.txt, { fontSize: WIDTH * (14 / myWidth) }]}>
+            Progress
+          </Text>
           <LineDashed />
-          <View>
-            <CircularProgress
-              progress={0.4 * 100}
-              size={HEIGHT * (50 / myHeight)}
-              strokeWidth={3}
-            />
-          </View>
+          <CircularProgress
+            progress={0.4 * 100}
+            size={HEIGHT * (50 / myHeight)}
+            strokeWidth={3}
+          />
         </View>
         <View
           style={[
@@ -228,7 +229,7 @@ export default function HomePageCards() {
           >
             <View
               style={{
-                width: `${(data[currentIndex].rewards / data[currentIndex].total) * 100}%`,
+                width: `${(data[currentIndex].rewardsTotal / data[currentIndex].total) * 100}%`,
                 height: 4,
                 backgroundColor: "#FFB11F",
                 borderRadius: 6,
@@ -236,7 +237,7 @@ export default function HomePageCards() {
             />
           </View>
           <Text style={[styles.txt_muted, { fontSize: 12 }]}>
-            {data[currentIndex].rewards} / {data[currentIndex].total}
+            {20} / {data[currentIndex].rewardsTotal}
           </Text>
         </View>
       </View>

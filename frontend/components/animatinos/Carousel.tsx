@@ -20,15 +20,25 @@ const width = WIDTH * (230 / myWidth);
 const height = HEIGHT * (100 / myHeight);
 const MODES = [
   {
-    svg: <DailyQuiz height={50} width={160} />,
+    svg: (
+      <DailyQuiz
+        height={HEIGHT * (50 / myHeight)}
+        width={WIDTH * (160 / myWidth)}
+      />
+    ),
     time: "17h 30m",
   },
   {
-    svg: <WeeklyEvent height={50} width={200} />,
+    svg: (
+      <WeeklyEvent
+        height={HEIGHT * (50 / myHeight)}
+        width={WIDTH * (200 / myWidth)}
+      />
+    ),
     time: "2h 56m",
   },
   {
-    svg: <Championship height={50} />,
+    svg: <Championship height={HEIGHT * (50 / myHeight)} />,
     time: "12h 13m",
   },
 ];
@@ -76,7 +86,7 @@ export default function Carousel() {
     <View
       style={[
         defaultStyles.containerBackground,
-        { height, width, padding: 10 },
+        { height, width, padding: WIDTH * (10 / myWidth) },
       ]}
     >
       <ScrollView
@@ -120,17 +130,17 @@ const styles = StyleSheet.create({
   dotsContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 10,
+    marginTop: WIDTH * (10 / myWidth),
     position: "absolute",
-    bottom: 10,
+    bottom: WIDTH * (10 / myWidth),
   },
   dot: {
-    width: 4,
-    height: 4,
+    width: WIDTH * (4 / myWidth),
+    height: WIDTH * (4 / myWidth),
     borderRadius: 5,
     borderWidth: 1,
     borderColor: Colors.dark.border,
-    marginHorizontal: 5,
+    marginHorizontal: WIDTH * (5 / myWidth),
   },
   activeDot: {
     backgroundColor: Colors.dark.border,

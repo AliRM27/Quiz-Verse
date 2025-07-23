@@ -18,11 +18,12 @@ interface CardType {
   title: string;
   company: string;
   progress: number;
-  rewards: number;
+  rewardsTotal: number;
   total: number;
-  levels: {
-    name: string;
-    questions: number;
+  sections: {
+    title: string;
+    difficulty: string;
+    questions: {}[];
     completedQuestions: number;
     rewards: number;
     total: number;
