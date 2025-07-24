@@ -1,17 +1,26 @@
-import { View, Text, StyleSheet } from "react-native";
-import React, { useState } from "react";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import React, { useEffect, useState } from "react";
 import { BackgroundGradient } from "@/components/ui/gradients/background";
-//import {ButtonGradient} from "@/components/ui/gradients/buttons";
 import { defaultStyles } from "@/constants/Styles";
 import { Colors } from "@/constants/Colors";
-import GoogleLogo from "@/assets/svgs/GoogleLogo.svg";
-import AppleLogo from "@/assets/svgs/AppleLogo.svg";
-import { AuthButton } from "@/components/ui/AuthButton";
 import { router } from "expo-router";
 import { Auth } from "@/constants/Dimensions";
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
+import { configureGoogleSignIn } from "@/utils/auth";
+import { useUser } from "../../context/userContext";
+import { googleAuth } from "@/services/api";
 
 export default function Index() {
-  const [showAnimation, setShowAnimation] = useState(true);
+  const { setUserData } = useUser();
+
+  useEffect(() => {
+    configureGoogleSignIn();
+  }, []);
+
   return (
     <BackgroundGradient style={[defaultStyles.page, { gap: Auth.gap.screen }]}>
       <View style={{ gap: Auth.gap.txt }}>
@@ -26,32 +35,30 @@ export default function Index() {
       >
         Complete your favorite Quizzes.
       </Text>
-      <View style={{ gap: Auth.gap.button }}>
-        <AuthButton
-          title={"Continue with Google"}
-          Logo={GoogleLogo}
-          onPress={() => {
-            router.replace("/(auth)/createUsername");
-            setTimeout(() => {
-              setShowAnimation((p) => !p);
-            }, 2000);
+      <View style={{ gap: Auth.gap.button, width: "100%" }}>
+        <GoogleSigninButton
+          style={{
+            width: "100%",
+            height: 50,
+            borderWidth: 1,
+          }}
+          size={GoogleSigninButton.Size.Wide}
+          color={GoogleSigninButton.Color.Light}
+          onPress={async () => {
+            try {
+              await GoogleSignin.hasPlayServices();
+              const userInfo = await GoogleSignin.signIn();
+              const tokens = await GoogleSignin.getTokens();
+
+              const res = await googleAuth(tokens.idToken);
+
+              setUserData(res?.data.user, res?.data.token);
+              router.replace("/(auth)/createUsername");
+            } catch (error) {
+              console.log("Login error:", error);
+            }
           }}
         />
-        <AuthButton
-          title={"Continue with Apple"}
-          Logo={AppleLogo}
-          onPress={() => {
-            router.replace("/(auth)/createUsername");
-            setTimeout(() => {
-              setShowAnimation((p) => !p);
-            }, 2000);
-          }}
-        />
-        <Text
-          style={{ fontSize: 17, textAlign: "center", color: Colors.dark.text }}
-        >
-          Play as Guest
-        </Text>
       </View>
     </BackgroundGradient>
   );

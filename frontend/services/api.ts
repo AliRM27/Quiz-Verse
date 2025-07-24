@@ -18,6 +18,28 @@ export const fetchQuizzes = async () => {
   }
 };
 
+export const fetchUser = async (savedToken: string) => {
+  try {
+    const res = await api.get("api/users/me", {
+      headers: {
+        Authorization: `Bearer ${savedToken}`,
+      },
+    });
+    return res;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const googleAuth = async (idToken: string) => {
+  try {
+    const res = await api.post("api/auth/google", { idToken });
+    return res;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 export const fetchLogo = async ({ name }: any) => {
   try {
     const res = await api.get("logos/" + name);

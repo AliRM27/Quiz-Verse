@@ -10,6 +10,7 @@ import "react-native-reanimated";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { UserProvider } from "@/context/userContext";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -31,14 +32,19 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <QueryClientProvider client={queryClient}>
         <GestureHandlerRootView style={{ flex: 1 }}>
-          <StatusBar style="light" />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="(auth)/createUsername" />
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)/index" options={{ animation: "none" }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
+          <UserProvider>
+            <StatusBar style="light" />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="(auth)/createUsername" />
+              <Stack.Screen name="index" />
+              <Stack.Screen
+                name="(auth)/index"
+                options={{ animation: "none" }}
+              />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </UserProvider>
         </GestureHandlerRootView>
       </QueryClientProvider>
     </ThemeProvider>

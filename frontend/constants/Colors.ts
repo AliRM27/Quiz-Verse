@@ -1,7 +1,7 @@
 /*
 
 //black
-
+bg_gradient: ["#000000ff", "#3d3d3dff"],
 bg_dark: "hsl(336 0% 1%)",
 bg: "hsl(300 0% 4%)",
 bg_light: "hsl(0 0% 9%)",
@@ -57,6 +57,7 @@ info: "hsl(217 100% 70%)",
 
 export const Colors = {
   dark: {
+    bg_gradient: ["#000000ff", "#3d3d3dff"],
     bg_dark: "hsl(336 0% 1%)",
     bg: "hsl(300 0% 4%)",
     bg_light: "hsl(0 0% 9%)",

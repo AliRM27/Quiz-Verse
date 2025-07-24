@@ -2,7 +2,7 @@ import User from "../models/User.js";
 
 export const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -15,7 +15,7 @@ export const getProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.user._id, req.body, {
+    const user = await User.findByIdAndUpdate(req.userId, req.body, {
       new: true,
     });
     if (!user) {
@@ -29,7 +29,7 @@ export const updateProfile = async (req, res) => {
 };
 export const deleteProfile = async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.user._id);
+    const user = await User.findByIdAndDelete(req.userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

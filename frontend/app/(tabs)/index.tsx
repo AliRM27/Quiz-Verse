@@ -8,8 +8,11 @@ import { layout } from "@/constants/Dimensions";
 import HomePageCards from "@/components/HomePageCards";
 import { WIDTH, HEIGHT, myHeight, myWidth } from "@/constants/Dimensions";
 import Carousel from "@/components/animatinos/Carousel";
+import { useUser } from "@/context/userContext";
 
 export default function HomeScreen() {
+  const { user, loading } = useUser();
+
   return (
     <View
       style={{
@@ -32,7 +35,7 @@ export default function HomeScreen() {
           ]}
         >
           <ProfilePic width={50} height={50} />
-          <Text style={styles.txt}>AliEllie</Text>
+          <Text style={styles.txt}>{user?.name}</Text>
         </View>
         {/* <View
           style={[
