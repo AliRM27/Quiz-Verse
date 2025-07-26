@@ -33,5 +33,5 @@ interface CardType {
 export interface QuizModalProps {
   isVisible: boolean;
   setIsVisible: (visible: boolean) => void;
-  card: CardType;
+  quiz: CardType;
 }

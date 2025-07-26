@@ -14,11 +14,11 @@ import CircularProgress from "@/components/ui/CircularProgress";
 import { LineDashed } from "@/components/ui/Line";
 import * as Haptics from "expo-haptics";
 import QuizModal from "./animatinos/QuizModal";
-import { cards } from "@/utils/mockData";
 import RotatingGradient from "./ui/gradients/GlowingView";
 import { useQuery } from "@tanstack/react-query";
-import { fetchQuizzes } from "@/services/api";
+import { fetchUnlockedQuizzes } from "@/services/api";
 import { QuizLogo } from "./ui/QuizLogo";
+import { useUser } from "@/context/userContext";
 
 const ITEM_WIDTH = HEIGHT * (150 / myHeight);
 const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
@@ -28,11 +28,11 @@ export default function HomePageCards() {
   const flatListRef = useRef<Animated.FlatList<any>>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const { user } = useUser();
 
   const { data, error, isLoading } = useQuery({
-    queryKey: ["quizzes"],
-    queryFn: fetchQuizzes,
-    refetchInterval: 3000,
+    queryKey: ["quizzes", user?._id],
+    queryFn: ({ queryKey }) => fetchUnlockedQuizzes(queryKey[1]),
   });
 
   if (isLoading) {
@@ -42,6 +42,9 @@ export default function HomePageCards() {
       </View>
     );
   }
+
+  // console.log(data[0]);
+  const quiz = data[currentIndex]?.quizId;
 
   if (error) {
     return (
@@ -124,7 +127,7 @@ export default function HomePageCards() {
               >
                 <RotatingGradient isOn={index === currentIndex}>
                   <View style={[styles.logoContainer]}>
-                    <QuizLogo name={item.logoFile} />
+                    <QuizLogo name={item.quizId.logoFile} />
                   </View>
                 </RotatingGradient>
               </TouchableOpacity>
@@ -155,10 +158,9 @@ export default function HomePageCards() {
           },
         ]}
       >
-        This is a fan-made quiz, not officially connected to{" "}
-        {data[currentIndex].company} or the creators of “
-        {data[currentIndex].title}”. The game title is a trademark of{" "}
-        {data[currentIndex].company}.
+        This is a fan-made quiz, not officially connected to {quiz.company} or
+        the creators of “{quiz.title}”. The game title is a trademark of{" "}
+        {quiz.company}.
       </Text>
       <View
         style={[
@@ -229,7 +231,7 @@ export default function HomePageCards() {
           >
             <View
               style={{
-                width: `${(data[currentIndex].rewardsTotal / data[currentIndex].total) * 100}%`,
+                width: `${(quiz.rewardsTotal / quiz.total) * 100}%`,
                 height: 4,
                 backgroundColor: "#FFB11F",
                 borderRadius: 6,
@@ -237,14 +239,14 @@ export default function HomePageCards() {
             />
           </View>
           <Text style={[styles.txt_muted, { fontSize: 12 }]}>
-            {20} / {data[currentIndex].rewardsTotal}
+            {20} / {quiz.rewardsTotal}
           </Text>
         </View>
       </View>
       <QuizModal
         isVisible={isModalVisible}
         setIsVisible={setIsModalVisible}
-        card={data[currentIndex]}
+        quiz={quiz}
       />
     </View>
   );

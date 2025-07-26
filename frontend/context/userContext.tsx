@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
-import { fetchUser } from "@/services/api"; // Adjust the import path as necessary
+import { fetchUser, deleteUser } from "@/services/api"; // Adjust the import path as necessary
 import { router } from "expo-router";
 
 type User = {
@@ -21,6 +21,7 @@ type UserContextType = {
   setUserData: (user: User, token: string) => void;
   logout: () => void;
   loading: boolean;
+  deleteAccount: () => void;
 };
 
 const UserContext = createContext<UserContextType>({
@@ -29,6 +30,7 @@ const UserContext = createContext<UserContextType>({
   setUserData: () => {},
   logout: () => {},
   loading: true,
+  deleteAccount: () => {},
 });
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
@@ -69,8 +71,21 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     router.replace("/(auth)"); // Back to login
   };
 
+  const deleteAccount = async () => {
+    if (user?._id) {
+      try {
+        await deleteUser(user._id);
+        await logout();
+      } catch (error) {
+        console.error("Failed to delete account:", error);
+      }
+    }
+  };
+
   return (
-    <UserContext.Provider value={{ user, token, setUserData, logout, loading }}>
+    <UserContext.Provider
+      value={{ user, token, setUserData, logout, loading, deleteAccount }}
+    >
       {children}
     </UserContext.Provider>
   );

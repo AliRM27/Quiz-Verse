@@ -20,7 +20,7 @@ export const googleSignIn = async (req, res) => {
     const payload = ticket.getPayload();
     const googleId = payload.sub;
     const email = payload.email;
-    const name = payload.name;
+    const name = payload.given_name || payload.name;
     const profileImage = payload.picture;
 
     // Check if user already exists
@@ -45,6 +45,25 @@ export const googleSignIn = async (req, res) => {
     res.status(200).json({ token, user });
   } catch (error) {
     console.error("Google Sign-In Error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  const { userId } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({ message: "User ID is required" });
+  }
+
+  try {
+    const user = await User.findByIdAndDelete(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Delete User Error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

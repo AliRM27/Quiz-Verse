@@ -23,7 +23,7 @@ import { QuizLogo } from "../ui/QuizLogo";
 const QuizModal: React.FC<QuizModalProps> = ({
   isVisible,
   setIsVisible,
-  card,
+  quiz,
 }) => {
   const translateY = useRef(new Animated.Value(0)).current;
   const panResponder = useRef(
@@ -88,11 +88,11 @@ const QuizModal: React.FC<QuizModalProps> = ({
           >
             <RotatingGradient>
               <View style={styles.logoContainer}>
-                <QuizLogo name={card.logoFile} />
+                <QuizLogo name={quiz.logoFile} />
               </View>
             </RotatingGradient>
             <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
-              <Text style={[styles.txt, { fontSize: 24 }]}>{card.title}</Text>
+              <Text style={[styles.txt, { fontSize: 24 }]}>{quiz.title}</Text>
               <Text
                 style={[
                   styles.txt_muted,
@@ -104,8 +104,8 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 ]}
               >
                 This is a fan-made quiz, not officially connected to{" "}
-                {card.company} or the creators of “{card.title}”. The game title
-                is a trademark of {card.company}.
+                {quiz.company} or the creators of “{quiz.title}”. The game title
+                is a trademark of {quiz.company}.
               </Text>
             </View>
             {/* <TouchableOpacity
@@ -156,7 +156,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 <LineDashed />
                 <View>
                   <CircularProgress
-                    progress={card.progress * 100}
+                    progress={quiz.progress * 100}
                     size={HEIGHT * (50 / myHeight)}
                     strokeWidth={3}
                   />
@@ -199,7 +199,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 >
                   <View
                     style={{
-                      width: `${(card.rewardsTotal / card.total) * 100}%`,
+                      width: `${(quiz.rewardsTotal / quiz.total) * 100}%`,
                       height: 4,
                       backgroundColor: "#FFB11F",
                       borderRadius: 6,
@@ -207,7 +207,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                   />
                 </View>
                 <Text style={[styles.txt_muted, { fontSize: 12 }]}>
-                  {card.rewardsTotal} / {card.rewardsTotal}
+                  {quiz.rewardsTotal} / {quiz.rewardsTotal}
                 </Text>
               </View>
             </View>
@@ -224,7 +224,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 },
               ]}
             >
-              {card.sections.map((lvl, index) => (
+              {quiz.sections.map((lvl, index) => (
                 <TouchableOpacity
                   activeOpacity={0.7}
                   key={index}

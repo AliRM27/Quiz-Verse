@@ -31,6 +31,15 @@ export const fetchUser = async (savedToken: string) => {
   }
 };
 
+export const fetchUnlockedQuizzes = async (userId: string | undefined) => {
+  try {
+    const res = await api.get("api/quizzes/unlocked/" + userId);
+    return res.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 export const googleAuth = async (idToken: string) => {
   try {
     const res = await api.post("api/auth/google", { idToken });
@@ -44,6 +53,17 @@ export const fetchLogo = async ({ name }: any) => {
   try {
     const res = await api.get("logos/" + name);
     return res.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const deleteUser = async (userId: string) => {
+  try {
+    const res = await api.delete("api/auth", {
+      data: { userId },
+    });
+    return res;
   } catch (err) {
     console.log(err);
   }
