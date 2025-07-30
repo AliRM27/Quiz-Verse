@@ -12,14 +12,16 @@ export interface GradientProps {
   color?: any;
 }
 
-interface CardType {
-  id: string;
+export interface QuizType {
+  _id: string;
+  quizId: QuizType;
   logoFile: string;
   title: string;
   company: string;
   progress: number;
   rewardsTotal: number;
   total: number;
+  questionsTotal: number;
   sections: {
     title: string;
     difficulty: string;
@@ -33,5 +35,6 @@ interface CardType {
 export interface QuizModalProps {
   isVisible: boolean;
   setIsVisible: (visible: boolean) => void;
-  quiz: CardType;
+  quiz: QuizType;
+  currentProgress?: any;
 }

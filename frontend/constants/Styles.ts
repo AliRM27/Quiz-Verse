@@ -3,6 +3,9 @@ import { Colors } from "@/constants/Colors";
 
 export const BR = 10;
 
+export const REGULAR_FONT = "Inter-Regular";
+export const ITALIC_FONT = "Inter-Italic";
+
 export const defaultStyles = StyleSheet.create({
   page: {
     alignItems: "center",

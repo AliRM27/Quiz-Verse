@@ -8,7 +8,7 @@ import {
 const router = express.Router();
 
 router.get("/me", getProfile);
-router.put("/me", updateProfile);
+router.patch("/me", updateProfile);
 router.delete("/", deleteProfile);
 
 export default router;

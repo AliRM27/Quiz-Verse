@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
 import { fetchUser, deleteUser } from "@/services/api"; // Adjust the import path as necessary
 import { router } from "expo-router";
+import { QuizType } from "@/types";
 
 type User = {
   _id: string;
@@ -9,10 +10,12 @@ type User = {
   name: string;
   email: string;
   profileImage: string;
-  completedQuizzes: [];
-  progress: [];
+  completedQuizzes: any[];
+  progress: any[];
   role: string;
   stars: number;
+  level: number;
+  lastPlayed: QuizType[];
 };
 
 type UserContextType = {
@@ -53,6 +56,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
       setLoading(false);
+      console.log("User loaded:", user);
     };
 
     loadUser();

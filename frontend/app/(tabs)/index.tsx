@@ -1,4 +1,4 @@
-import { Text, StyleSheet, View, ActivityIndicator } from "react-native";
+import { Text, StyleSheet, View, Image } from "react-native";
 import { Colors } from "@/constants/Colors";
 import ProfilePic from "@/assets/svgs/profilePic.svg";
 import Trophy from "@/assets/svgs/currencyTropht.svg";
@@ -34,7 +34,12 @@ export default function HomeScreen() {
             { gap: HEIGHT * (10 / myHeight) },
           ]}
         >
-          <ProfilePic width={50} height={50} />
+          <Image
+            src={user?.profileImage}
+            width={50}
+            height={50}
+            style={{ borderRadius: 50 }}
+          />
           <Text style={styles.txt}>{user?.name}</Text>
         </View>
         {/* <View

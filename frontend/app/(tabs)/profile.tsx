@@ -1,51 +1,234 @@
-import { TouchableOpacity, View, Text, Image } from "react-native";
+import { TouchableOpacity, View, Text, Image, StyleSheet } from "react-native";
 import { useUser } from "@/context/userContext";
 import { Colors } from "@/constants/Colors";
+import SettingsIcon from "@/assets/svgs/settings.svg";
+import EditIcon from "@/assets/svgs/edit.svg";
+import { defaultStyles, REGULAR_FONT, ITALIC_FONT } from "@/constants/Styles";
+import { QuizLogo } from "@/components/ui/QuizLogo";
+import Info from "@/components/ui/Info";
+import { myWidth, WIDTH } from "@/constants/Dimensions";
+import QuizModal from "@/components/animatinos/QuizModal";
+import { useState } from "react";
 
 export default function Profile() {
   const { logout, user, deleteAccount } = useUser();
+  const [currQuiz, setCurrQuiz] = useState(user?.lastPlayed[0]?.quizId);
+  const [visible, setVisible] = useState(false);
+
   return (
     <View style={{ alignItems: "center", gap: 30 }}>
-      <Text
-        style={{ fontSize: 24, fontWeight: "bold", color: Colors.dark.text }}
+      <View
+        style={[
+          defaultStyles.containerRow,
+          {
+            width: "100%",
+            justifyContent: "space-between",
+            paddingHorizontal: 20,
+          },
+        ]}
       >
-        Profile
-      </Text>
-      <Image
-        src={user?.profileImage}
-        width={100}
-        height={100}
-        style={{ borderRadius: 15 }}
-      />
-      <View>
-        <Text style={{ color: Colors.dark.text, marginVertical: 10 }}>
-          Name: {user?.name}
-        </Text>
-        <Text style={{ color: Colors.dark.text, marginVertical: 10 }}>
-          Email: {user?.email}
-        </Text>
-        <Text style={{ color: Colors.dark.text, marginVertical: 10 }}>
-          CompletedQuizzes: {user?.completedQuizzes.length}
-        </Text>
-        <Text style={{ color: Colors.dark.text, marginVertical: 10 }}>
-          Progress:{" "}
-          {user?.progress.length
-            ? user.progress.map((quiz, index) => <View></View>)
-            : "No progress yet"}
-        </Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <Image
+            src={user?.profileImage}
+            width={60}
+            height={60}
+            style={{ borderRadius: 50 }}
+          />
+          <Text
+            style={[
+              styles.txt,
+              {
+                fontSize: 18,
+              },
+            ]}
+          >
+            {user?.name}
+          </Text>
+          <Text
+            style={{
+              color: Colors.dark.text,
+              borderWidth: 1,
+              borderColor: Colors.dark.border,
+              paddingHorizontal: 5,
+              borderRadius: 15,
+              backgroundColor: Colors.dark.bg,
+              fontSize: 14,
+              fontFamily: REGULAR_FONT,
+              width: 30,
+              textAlign: "center",
+            }}
+          >
+            {user?.level}
+          </Text>
+        </View>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <TouchableOpacity style={styles.iconBackground}>
+            <EditIcon width={24} height={24} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconBackground}>
+            <SettingsIcon width={24} height={24} />
+          </TouchableOpacity>
+        </View>
       </View>
-      <TouchableOpacity
-        style={{ borderWidth: 1, borderColor: Colors.dark.border, padding: 10 }}
-        onPress={logout}
-      >
-        <Text style={{ color: Colors.dark.text }}>Log Out</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={{ borderWidth: 1, borderColor: Colors.dark.border, padding: 10 }}
-        onPress={deleteAccount}
-      >
-        <Text style={{ color: Colors.dark.text }}>Delte Account</Text>
-      </TouchableOpacity>
+      <View style={{ width: "100%", gap: 20 }}>
+        <Text style={[styles.txt, { fontSize: 18, marginLeft: 10 }]}>
+          Last Played
+        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            width: "100%",
+            borderWidth: 1,
+            borderColor: Colors.dark.border_muted,
+            borderRadius: 10,
+            height: 300,
+          }}
+        >
+          {user?.lastPlayed.map((quiz, index) => {
+            const quizId = quiz.quizId;
+            const currentProgress = user?.progress.find(
+              (quizObj) => quizObj.quizId._id === quizId._id
+            );
+            return (
+              <View
+                key={index}
+                style={[
+                  {
+                    width: "50%",
+                    height: "100%",
+                    paddingTop: 10,
+                    paddingHorizontal: 20,
+                    alignItems: "center",
+                    gap: 5,
+                  },
+                  index === 0 && {
+                    borderRightWidth: 1,
+                    borderColor: Colors.dark.border,
+                  },
+                ]}
+              >
+                <View
+                  style={{
+                    width: "100%",
+                    height: "62%",
+                    alignItems: "center",
+                    borderBottomWidth: 1,
+                    borderColor: Colors.dark.border,
+                    gap: 5,
+                  }}
+                >
+                  <TouchableOpacity
+                    onPress={() => {
+                      setCurrQuiz(quizId);
+                      setVisible((p) => !p);
+                    }}
+                    style={{
+                      borderWidth: 1,
+                      borderColor: Colors.dark.border,
+                      borderRadius: 10,
+                      overflow: "hidden",
+                      height: WIDTH * (100 / myWidth),
+                      width: WIDTH * (100 / myWidth),
+                    }}
+                  >
+                    <QuizLogo name={quizId.logoFile} />
+                  </TouchableOpacity>
+                  <Text
+                    style={[
+                      styles.txt_muted,
+                      { fontSize: 5, textAlign: "center", width: "75%" },
+                    ]}
+                  >
+                    <Info company={quizId.company} title={quizId.title} />
+                  </Text>
+                  <Text style={[styles.txt, { fontSize: 18 }]}>
+                    {quizId.title}
+                  </Text>
+                </View>
+                <View style={{ width: "80%", gap: 7 }}>
+                  <View style={{ gap: 3 }}>
+                    <Text style={[styles.txt, { fontSize: 12 }]}>Progress</Text>
+                    <View
+                      style={{
+                        width: "100%",
+                        backgroundColor: Colors.dark.border,
+                        borderRadius: 6,
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: `${(currentProgress.questionsCompleted / quizId.questionsTotal) * 100}%`,
+                          backgroundColor: Colors.dark.text,
+                          borderRadius: 6,
+                          height: 3,
+                        }}
+                      />
+                    </View>
+                    <Text style={[styles.txt, { fontSize: 10 }]}>
+                      {(currentProgress.questionsCompleted /
+                        quizId.questionsTotal) *
+                        100}
+                      %
+                    </Text>
+                  </View>
+                  <View style={{ gap: 3 }}>
+                    <Text style={[styles.txt, { fontSize: 12 }]}>Rewards</Text>
+                    <View
+                      style={{
+                        width: "100%",
+                        backgroundColor: Colors.dark.border,
+                        borderRadius: 6,
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: `${(currentProgress.rewardsTotal / quizId.rewardsTotal) * 100}%`,
+                          backgroundColor: Colors.dark.secondary,
+                          borderRadius: 6,
+                          height: 3,
+                        }}
+                      />
+                    </View>
+                    <Text style={[styles.txt, { fontSize: 10 }]}>
+                      {(currentProgress.rewardsTotal / quizId.rewardsTotal) *
+                        100}
+                      %
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            );
+          })}
+          {currQuiz && (
+            <QuizModal
+              quiz={currQuiz}
+              isVisible={visible}
+              setIsVisible={setVisible}
+              currentProgress={user?.progress.find(
+                (quizObj) => quizObj.quizId._id === currQuiz._id
+              )}
+            />
+          )}
+        </View>
+      </View>
+      {/* <QuizModal quiz={curQuiz} /> */}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  iconBackground: {
+    padding: 14,
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
+    borderRadius: 15,
+  },
+  txt: {
+    color: Colors.dark.text,
+    fontFamily: REGULAR_FONT,
+  },
+  txt_muted: {
+    color: Colors.dark.text_muted,
+    fontFamily: REGULAR_FONT,
+  },
+});

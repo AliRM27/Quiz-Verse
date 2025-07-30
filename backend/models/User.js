@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String },
   profileImage: { type: String },
   stars: { type: Number, default: 0 }, // In-game currency
+  level: { type: Number, default: 0 },
   unlockedQuizzes: [
     { quizId: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" } },
   ],
@@ -15,15 +16,16 @@ const userSchema = new mongoose.Schema({
       completedAt: { type: Date, default: Date.now },
     },
   ],
-  lastPlayed: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Quiz",
-  },
+  lastPlayed: [
+    { quizId: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" } },
+  ],
   progress: [
     {
       quizId: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" },
-      questionsTotal: { type: Number, default: 0 }, // Optional aggregate
+      questionsCompleted: { type: Number, default: 0 }, // Optional aggregate
       rewardsTotal: { type: Number, default: 0 }, // Total trophies earned in all sections
+      completed: { type: Boolean, default: false }, // Finished at least once
+      perfected: { type: Boolean, default: false }, // Got all trophies
       sections: [
         {
           difficulty: {
@@ -33,9 +35,6 @@ const userSchema = new mongoose.Schema({
           },
           questions: { type: Number, default: 0 }, // Questions attempted/completed
           rewards: { type: Number, default: 0 }, // Trophies earned
-          maxRewards: { type: Number }, // Max possible trophies
-          completed: { type: Boolean, default: false }, // Finished at least once
-          perfected: { type: Boolean, default: false }, // Got all trophies
         },
       ],
     },

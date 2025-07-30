@@ -14,16 +14,18 @@ import React, { useState, useRef } from "react";
 import { Colors, GradientColors } from "@/constants/Colors";
 import { HEIGHT, myHeight, myWidth, WIDTH } from "@/constants/Dimensions";
 import { QuizModalProps } from "@/types";
-import { defaultStyles } from "@/constants/Styles";
+import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
 import { LineDashed } from "../ui/Line";
 import CircularProgress from "../ui/CircularProgress";
 import RotatingGradient from "../ui/gradients/GlowingView";
 import { QuizLogo } from "../ui/QuizLogo";
+import Info from "../ui/Info";
 
 const QuizModal: React.FC<QuizModalProps> = ({
   isVisible,
   setIsVisible,
   quiz,
+  currentProgress,
 }) => {
   const translateY = useRef(new Animated.Value(0)).current;
   const panResponder = useRef(
@@ -103,9 +105,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                   },
                 ]}
               >
-                This is a fan-made quiz, not officially connected to{" "}
-                {quiz.company} or the creators of “{quiz.title}”. The game title
-                is a trademark of {quiz.company}.
+                <Info company={quiz.company} title={quiz.title} />
               </Text>
             </View>
             {/* <TouchableOpacity
@@ -156,7 +156,11 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 <LineDashed />
                 <View>
                   <CircularProgress
-                    progress={quiz.progress * 100}
+                    progress={
+                      (currentProgress.questionsCompleted /
+                        quiz.questionsTotal) *
+                      100
+                    }
                     size={HEIGHT * (50 / myHeight)}
                     strokeWidth={3}
                   />
@@ -199,7 +203,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 >
                   <View
                     style={{
-                      width: `${(quiz.rewardsTotal / quiz.total) * 100}%`,
+                      width: `${(currentProgress.rewardsTotal / quiz.rewardsTotal) * 100}%`,
                       height: 4,
                       backgroundColor: "#FFB11F",
                       borderRadius: 6,
@@ -207,7 +211,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                   />
                 </View>
                 <Text style={[styles.txt_muted, { fontSize: 12 }]}>
-                  {quiz.rewardsTotal} / {quiz.rewardsTotal}
+                  {currentProgress.rewardsTotal} / {quiz.rewardsTotal}
                 </Text>
               </View>
             </View>
@@ -342,12 +346,12 @@ const styles = StyleSheet.create({
   txt: {
     color: Colors.dark.text,
     fontSize: 18,
-    fontFamily: "Inter-Regular ",
+    fontFamily: REGULAR_FONT + " ",
     fontWeight: 600,
   },
   txt_muted: {
     color: Colors.dark.text_muted,
     fontSize: 12,
-    fontFamily: "Inter-Regular",
+    fontFamily: REGULAR_FONT,
   },
 });

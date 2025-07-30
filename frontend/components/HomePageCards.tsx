@@ -19,6 +19,8 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchUnlockedQuizzes } from "@/services/api";
 import { QuizLogo } from "./ui/QuizLogo";
 import { useUser } from "@/context/userContext";
+import { REGULAR_FONT } from "@/constants/Styles";
+import Info from "./ui/Info";
 
 const ITEM_WIDTH = HEIGHT * (150 / myHeight);
 const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
@@ -43,8 +45,10 @@ export default function HomePageCards() {
     );
   }
 
-  // console.log(data[0]);
   const quiz = data[currentIndex]?.quizId;
+  const currentProgress = user?.progress.find(
+    (quizObj) => quizObj.quizId._id === quiz._id
+  );
 
   if (error) {
     return (
@@ -145,7 +149,7 @@ export default function HomePageCards() {
           },
         ]}
       >
-        {data[currentIndex].title}
+        {quiz.title}
       </Text>
       <Text
         style={[
@@ -158,9 +162,7 @@ export default function HomePageCards() {
           },
         ]}
       >
-        This is a fan-made quiz, not officially connected to {quiz.company} or
-        the creators of “{quiz.title}”. The game title is a trademark of{" "}
-        {quiz.company}.
+        <Info company={quiz.company} title={quiz.title} />
       </Text>
       <View
         style={[
@@ -190,7 +192,9 @@ export default function HomePageCards() {
           </Text>
           <LineDashed />
           <CircularProgress
-            progress={0.4 * 100}
+            progress={
+              (currentProgress.questionsCompleted / quiz.questionsTotal) * 100
+            }
             size={HEIGHT * (50 / myHeight)}
             strokeWidth={3}
           />
@@ -231,7 +235,7 @@ export default function HomePageCards() {
           >
             <View
               style={{
-                width: `${(quiz.rewardsTotal / quiz.total) * 100}%`,
+                width: `${(currentProgress.rewardsTotal / quiz.rewardsTotal) * 100}%`,
                 height: 4,
                 backgroundColor: "#FFB11F",
                 borderRadius: 6,
@@ -239,7 +243,7 @@ export default function HomePageCards() {
             />
           </View>
           <Text style={[styles.txt_muted, { fontSize: 12 }]}>
-            {20} / {quiz.rewardsTotal}
+            {currentProgress.rewardsTotal} / {quiz.rewardsTotal}
           </Text>
         </View>
       </View>
@@ -247,6 +251,7 @@ export default function HomePageCards() {
         isVisible={isModalVisible}
         setIsVisible={setIsModalVisible}
         quiz={quiz}
+        currentProgress={currentProgress}
       />
     </View>
   );
@@ -266,12 +271,12 @@ const styles = StyleSheet.create({
   txt: {
     color: Colors.dark.text,
     fontSize: 18,
-    fontFamily: "Inter-Regular ",
+    fontFamily: REGULAR_FONT + " ",
     fontWeight: 600,
   },
   txt_muted: {
     color: Colors.dark.text_muted,
     fontSize: 15,
-    fontFamily: "Inter-Regular",
+    fontFamily: REGULAR_FONT,
   },
 });
