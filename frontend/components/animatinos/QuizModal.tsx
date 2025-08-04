@@ -10,7 +10,7 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Colors, GradientColors } from "@/constants/Colors";
 import { HEIGHT, myHeight, myWidth, WIDTH } from "@/constants/Dimensions";
 import { QuizModalProps } from "@/types";
@@ -46,9 +46,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
           }).start(() => {
             setIsVisible(false);
             setSelectedLevelIndex(0);
-            setTimeout(() => {
-              translateY.setValue(0); // reset AFTER modal is closed
-            }, 300); // slight delay to avoid visible snap
+            translateY.setValue(0); // Reset position immediately
           });
         } else {
           Animated.spring(translateY, {
@@ -60,6 +58,17 @@ const QuizModal: React.FC<QuizModalProps> = ({
     })
   ).current;
   const [selectedLevelIndex, setSelectedLevelIndex] = useState(0);
+
+  useEffect(() => {
+    if (isVisible) {
+      translateY.setValue(500); // Start below screen
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isVisible]);
 
   return (
     <Modal
@@ -157,7 +166,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 <View>
                   <CircularProgress
                     progress={
-                      (currentProgress.questionsCompleted /
+                      (currentProgress?.questionsCompleted /
                         quiz.questionsTotal) *
                       100
                     }
@@ -203,7 +212,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 >
                   <View
                     style={{
-                      width: `${(currentProgress.rewardsTotal / quiz.rewardsTotal) * 100}%`,
+                      width: `${(currentProgress?.rewardsTotal / quiz.rewardsTotal) * 100}%`,
                       height: 4,
                       backgroundColor: "#FFB11F",
                       borderRadius: 6,
@@ -211,7 +220,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                   />
                 </View>
                 <Text style={[styles.txt_muted, { fontSize: 12 }]}>
-                  {currentProgress.rewardsTotal} / {quiz.rewardsTotal}
+                  {currentProgress?.rewardsTotal} / {quiz.rewardsTotal}
                 </Text>
               </View>
             </View>

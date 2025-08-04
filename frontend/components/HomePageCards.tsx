@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   View,
@@ -21,6 +21,7 @@ import { QuizLogo } from "./ui/QuizLogo";
 import { useUser } from "@/context/userContext";
 import { REGULAR_FONT } from "@/constants/Styles";
 import Info from "./ui/Info";
+import { svgCache } from "@/utils/svgCache";
 
 const ITEM_WIDTH = HEIGHT * (150 / myHeight);
 const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
@@ -30,25 +31,48 @@ export default function HomePageCards() {
   const flatListRef = useRef<Animated.FlatList<any>>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const { user } = useUser();
+  const { user, loading } = useUser();
+  const scrollToCard = useCallback((index: number) => {
+    flatListRef.current?.scrollToIndex({
+      index,
+      animated: true,
+    });
+  }, []);
 
+  // Wait for user state to load before running query
   const { data, error, isLoading } = useQuery({
     queryKey: ["quizzes", user?._id],
     queryFn: ({ queryKey }) => fetchUnlockedQuizzes(queryKey[1]),
+    enabled: !!user?._id && !loading,
+    staleTime: 1000 * 60 * 2, // 2 minutes of caching
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
+  const quiz = data?.[currentIndex]?.quizId;
+  const currentProgress = useMemo(() => {
+    if (!user?.progress || !quiz?._id) return undefined;
+    return user.progress.find((quizObj) => quizObj.quizId._id === quiz._id);
+  }, [user, quiz]);
 
-  if (isLoading) {
+  if (loading || isLoading) {
     return (
-      <View style={{ flex: 1 }}>
-        <ActivityIndicator />
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator
+          size="large"
+          color={Colors.dark.primary || Colors.dark.text}
+        />
+        <Text style={{ marginTop: 16, color: Colors.dark.text }}>
+          Loading...
+        </Text>
       </View>
     );
   }
 
-  const quiz = data[currentIndex]?.quizId;
-  const currentProgress = user?.progress.find(
-    (quizObj) => quizObj.quizId._id === quiz._id
-  );
+  if (!user) {
+    return null;
+  }
+
+  // If user or quiz is missing, show nothing (should not happen if loading is handled)
 
   if (error) {
     return (
@@ -57,6 +81,7 @@ export default function HomePageCards() {
       </View>
     );
   }
+
   return (
     <View style={[defaultStyles.container, {}]}>
       <Animated.FlatList
@@ -64,6 +89,13 @@ export default function HomePageCards() {
         data={data}
         keyExtractor={(item) => item._id}
         horizontal
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        ListEmptyComponent={() => (
+          <Text style={{ color: Colors.dark.text_muted, marginTop: 20 }}>
+            No quizzes unlocked yet.
+          </Text>
+        )}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
           paddingHorizontal: ITEM_SPACING,
@@ -123,10 +155,7 @@ export default function HomePageCards() {
                 onPress={() => {
                   index === currentIndex
                     ? setIsModalVisible((p) => !p)
-                    : flatListRef.current?.scrollToIndex({
-                        index,
-                        animated: true,
-                      });
+                    : scrollToCard(index);
                 }}
               >
                 <RotatingGradient isOn={index === currentIndex}>
@@ -193,7 +222,10 @@ export default function HomePageCards() {
           <LineDashed />
           <CircularProgress
             progress={
-              (currentProgress.questionsCompleted / quiz.questionsTotal) * 100
+              quiz.questionsTotal > 0
+                ? (currentProgress?.questionsCompleted / quiz.questionsTotal) *
+                  100
+                : 0
             }
             size={HEIGHT * (50 / myHeight)}
             strokeWidth={3}
@@ -235,7 +267,11 @@ export default function HomePageCards() {
           >
             <View
               style={{
-                width: `${(currentProgress.rewardsTotal / quiz.rewardsTotal) * 100}%`,
+                width: `${
+                  quiz.rewardsTotal > 0
+                    ? (currentProgress?.rewardsTotal / quiz.rewardsTotal) * 100
+                    : 0
+                }%`,
                 height: 4,
                 backgroundColor: "#FFB11F",
                 borderRadius: 6,
@@ -243,7 +279,7 @@ export default function HomePageCards() {
             />
           </View>
           <Text style={[styles.txt_muted, { fontSize: 12 }]}>
-            {currentProgress.rewardsTotal} / {quiz.rewardsTotal}
+            {currentProgress?.rewardsTotal} / {quiz.rewardsTotal}
           </Text>
         </View>
       </View>

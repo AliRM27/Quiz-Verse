@@ -24,7 +24,11 @@ export const googleSignIn = async (req, res) => {
     const profileImage = payload.picture;
 
     // Check if user already exists
-    let user = await User.findOne({ googleId });
+    let user = await User.findOne({ googleId })
+      .populate(
+        "unlockedQuizzes.quizId completedQuizzes.quizId lastPlayed.quizId progress.quizId"
+      )
+      .lean();
 
     if (!user) {
       // Create a new user if not found

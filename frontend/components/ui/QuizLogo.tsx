@@ -3,20 +3,17 @@ import { useEffect, useState } from "react";
 import { SvgXml } from "react-native-svg";
 import { View, ActivityIndicator } from "react-native";
 import { Colors } from "@/constants/Colors";
-
-// In-memory cache (lives as long as app is running)
-const svgCache: { [key: string]: string } = {};
+import { svgCache } from "@/utils/svgCache";
 
 export const QuizLogo = ({ name }: { name: string }) => {
-  const [svgXmlData, setSvgXmlData] = useState<string | null>(null);
+  const [svgXmlData, setSvgXmlData] = useState<string | null>(
+    svgCache[name] ?? null
+  );
 
   useEffect(() => {
-    const fetchSvg = async () => {
-      if (svgCache[name]) {
-        setSvgXmlData(svgCache[name]);
-        return;
-      }
+    if (svgCache[name]) return; // Already cached
 
+    const fetchSvg = async () => {
       try {
         const response = await fetch(
           `http://192.168.68.104:5555/logos/${name}`

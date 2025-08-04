@@ -15,11 +15,33 @@ import { useUser } from "../../context/userContext";
 import { googleAuth } from "@/services/api";
 
 export default function Index() {
-  const { setUserData } = useUser();
+  const { setUserData, loading, isAuthenticated } = useUser();
+  const [errorMsg, setErrorMsg] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
 
   useEffect(() => {
     configureGoogleSignIn();
-  }, []);
+    // If already authenticated, redirect to tabs
+    if (isAuthenticated && !loading) {
+      router.replace("/(tabs)");
+    }
+  }, [isAuthenticated, loading]);
+
+  if (loading || signingIn) {
+    return (
+      <View
+        style={[
+          defaultStyles.page,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 16, color: Colors.dark.text }}>
+          Loading...
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <BackgroundGradient style={[defaultStyles.page, { gap: Auth.gap.screen }]}>
@@ -45,20 +67,38 @@ export default function Index() {
           size={GoogleSigninButton.Size.Wide}
           color={GoogleSigninButton.Color.Light}
           onPress={async () => {
+            setSigningIn(true);
+            setErrorMsg("");
             try {
               await GoogleSignin.hasPlayServices();
               const userInfo = await GoogleSignin.signIn();
               const tokens = await GoogleSignin.getTokens();
-
               const res = await googleAuth(tokens.idToken);
-
-              setUserData(res?.data.user, res?.data.token);
+              await setUserData(res?.data.user, res?.data.token);
               router.replace("/(auth)/createUsername");
-            } catch (error) {
+            } catch (error: any) {
+              let msg = "Login error. Please try again.";
+              if (error?.code === statusCodes.SIGN_IN_CANCELLED) {
+                msg = "Sign in cancelled.";
+              } else if (error?.code === statusCodes.IN_PROGRESS) {
+                msg = "Sign in already in progress.";
+              } else if (
+                error?.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE
+              ) {
+                msg = "Google Play Services not available.";
+              }
+              setErrorMsg(msg);
               console.log("Login error:", error);
+            } finally {
+              setSigningIn(false);
             }
           }}
         />
+        {errorMsg ? (
+          <Text style={{ color: "red", marginTop: 10, textAlign: "center" }}>
+            {errorMsg}
+          </Text>
+        ) : null}
       </View>
     </BackgroundGradient>
   );

@@ -1,4 +1,11 @@
-import { TouchableOpacity, View, Text, Image, StyleSheet } from "react-native";
+import {
+  TouchableOpacity,
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Button,
+} from "react-native";
 import { useUser } from "@/context/userContext";
 import { Colors } from "@/constants/Colors";
 import SettingsIcon from "@/assets/svgs/settings.svg";
@@ -211,7 +218,7 @@ export default function Profile() {
           )}
         </View>
       </View>
-      {/* <QuizModal quiz={curQuiz} /> */}
+      <Button title="Log out" onPress={() => logout()} />
     </View>
   );
 }

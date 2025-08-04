@@ -11,6 +11,9 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider } from "@/context/userContext";
+import { useEffect } from "react";
+import { fetchUnlockedQuizzes } from "@/services/api";
+import { useUser } from "@/context/userContext";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -20,14 +23,23 @@ export default function RootLayout() {
     "Inter-Regular": require("@/assets/fonts/Inter-Regular.ttf"),
     "Inter-Italic": require("@/assets/fonts/Inter-Italic.ttf"),
   });
+  const { user, isAuthenticated } = useUser();
+
+  const queryClient = new QueryClient();
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      queryClient.prefetchQuery({
+        queryKey: ["quizzes", user._id],
+        queryFn: () => fetchUnlockedQuizzes(user._id),
+      });
+    }
+  }, [user]);
 
   if (!loaded) {
     // Async font loading only occurs in development.
     return null;
   }
-
-  const queryClient = new QueryClient();
-
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <QueryClientProvider client={queryClient}>

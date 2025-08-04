@@ -1,8 +1,16 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import * as SecureStore from "expo-secure-store";
 import { fetchUser, deleteUser } from "@/services/api"; // Adjust the import path as necessary
 import { router } from "expo-router";
 import { QuizType } from "@/types";
+import { Text } from "react-native";
 
 type User = {
   _id: string;
@@ -21,19 +29,23 @@ type User = {
 type UserContextType = {
   user: User | null;
   token: string | null;
-  setUserData: (user: User, token: string) => void;
-  logout: () => void;
+  setUserData: (user: User, token: string) => Promise<void>;
+  logout: () => Promise<void>;
   loading: boolean;
-  deleteAccount: () => void;
+  deleteAccount: () => Promise<void>;
+  isAuthenticated: boolean;
+  refreshUser: () => Promise<void>;
 };
 
 const UserContext = createContext<UserContextType>({
   user: null,
   token: null,
-  setUserData: () => {},
-  logout: () => {},
+  setUserData: async () => {},
+  logout: async () => {},
   loading: true,
-  deleteAccount: () => {},
+  deleteAccount: async () => {},
+  isAuthenticated: false,
+  refreshUser: async () => {},
 });
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
@@ -41,41 +53,51 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const storedToken = await SecureStore.getItemAsync("token");
-      if (storedToken) {
-        setLoading(true);
-        try {
-          const res = await fetchUser(storedToken);
-          setUser(res?.data);
-          setToken(storedToken);
-          router.replace("/(tabs)"); // 👈 Auto-redirect to home
-        } catch {
-          await SecureStore.deleteItemAsync("token");
-        }
-      }
-      setLoading(false);
-      console.log("User loaded:", user);
-    };
+  const isAuthenticated = !!user && !!token;
 
-    loadUser();
+  // Fetch user from API using token
+  const refreshUser = useCallback(async () => {
+    setLoading(true);
+    const storedToken = await SecureStore.getItemAsync("token");
+    if (storedToken) {
+      try {
+        const res = await fetchUser(storedToken);
+        setUser(res?.data);
+        setToken(storedToken);
+      } catch (err) {
+        setUser(null);
+        setToken(null);
+        await SecureStore.deleteItemAsync("token");
+      }
+    } else {
+      setUser(null);
+      setToken(null);
+    }
+    setLoading(false);
   }, []);
 
-  const setUserData = async (user: User, token: string) => {
+  useEffect(() => {
+    refreshUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Set user and token after login
+  const setUserData = useCallback(async (user: User, token: string) => {
     setUser(user);
     setToken(token);
     await SecureStore.setItemAsync("token", token);
-  };
+  }, []);
 
-  const logout = async () => {
+  // Logout logic
+  const logout = useCallback(async () => {
     setUser(null);
     setToken(null);
     await SecureStore.deleteItemAsync("token");
-    router.replace("/(auth)"); // Back to login
-  };
+    router.replace("/(auth)");
+  }, []);
 
-  const deleteAccount = async () => {
+  // Delete account logic
+  const deleteAccount = useCallback(async () => {
     if (user?._id) {
       try {
         await deleteUser(user._id);
@@ -84,14 +106,40 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         console.error("Failed to delete account:", error);
       }
     }
-  };
+  }, [user, logout]);
+
+  // Memoize context value for performance
+  const contextValue = useMemo(
+    () => ({
+      user,
+      token,
+      setUserData,
+      logout,
+      loading,
+      deleteAccount,
+      isAuthenticated,
+      refreshUser,
+    }),
+    [
+      user,
+      token,
+      setUserData,
+      logout,
+      loading,
+      deleteAccount,
+      isAuthenticated,
+      refreshUser,
+    ]
+  );
+
+  // Only render children when not loading
+  if (loading) {
+    // You can replace this with a custom splash/loading component
+    return <Text>LOADING</Text>;
+  }
 
   return (
-    <UserContext.Provider
-      value={{ user, token, setUserData, logout, loading, deleteAccount }}
-    >
-      {children}
-    </UserContext.Provider>
+    <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
   );
 };
 
