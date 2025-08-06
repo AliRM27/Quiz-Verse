@@ -25,9 +25,7 @@ export const googleSignIn = async (req, res) => {
 
     // Check if user already exists
     let user = await User.findOne({ googleId })
-      .populate(
-        "unlockedQuizzes.quizId completedQuizzes.quizId lastPlayed.quizId progress.quizId"
-      )
+      .populate("completedQuizzes.quizId lastPlayed.quizId progress.quizId")
       .lean();
 
     if (!user) {

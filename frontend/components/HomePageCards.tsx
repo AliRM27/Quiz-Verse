@@ -82,6 +82,16 @@ export default function HomePageCards() {
     );
   }
 
+  if (!data || data.length === 0) {
+    return (
+      <View style={{ justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ color: Colors.dark.text_muted }}>
+          No quizzes unlocked yet.
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View style={[defaultStyles.container, {}]}>
       <Animated.FlatList

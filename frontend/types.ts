@@ -4,6 +4,7 @@ export interface ButtonProps {
   title?: string;
   Logo?: any;
   onPress: () => void;
+  loading?: boolean;
 }
 
 export interface GradientProps {

@@ -1,5 +1,7 @@
 import axios from "axios";
 import { API_URL } from "./config";
+import * as SecureStore from "expo-secure-store";
+import { router } from "expo-router";
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -8,6 +10,32 @@ export const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+// Request interceptor
+api.interceptors.request.use(
+  async (config) => {
+    const token = await SecureStore.getItemAsync("token");
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Optional: Response interceptor (e.g., handle token expiry)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      router.replace("/(auth)");
+      // Handle invalid/expired token, e.g., redirect to login
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const fetchQuizzes = async () => {
   try {
@@ -26,6 +54,15 @@ export const fetchUser = async (savedToken: string) => {
       },
     });
     return res;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const updateUser = async (updatedData: any) => {
+  try {
+    const res = await api.patch("api/users/me", updatedData);
+    return res.data;
   } catch (err) {
     console.log(err);
   }
