@@ -18,7 +18,7 @@ import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
 import { LineDashed } from "../ui/Line";
 import CircularProgress from "../ui/CircularProgress";
 import RotatingGradient from "../ui/gradients/GlowingView";
-import { QuizLogo } from "../ui/QuizLogo";
+import QuizLogo from "@/components/ui/QuizLogo";
 import Info from "../ui/Info";
 
 const QuizModal: React.FC<QuizModalProps> = ({

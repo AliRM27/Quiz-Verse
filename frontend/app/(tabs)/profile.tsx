@@ -5,22 +5,41 @@ import {
   Image,
   StyleSheet,
   Button,
+  ActivityIndicator,
 } from "react-native";
 import { useUser } from "@/context/userContext";
 import { Colors } from "@/constants/Colors";
 import SettingsIcon from "@/assets/svgs/settings.svg";
 import EditIcon from "@/assets/svgs/edit.svg";
 import { defaultStyles, REGULAR_FONT, ITALIC_FONT } from "@/constants/Styles";
-import { QuizLogo } from "@/components/ui/QuizLogo";
+import QuizLogo from "@/components/ui/QuizLogo";
 import Info from "@/components/ui/Info";
 import { myWidth, WIDTH } from "@/constants/Dimensions";
 import QuizModal from "@/components/animatinos/QuizModal";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export default function Profile() {
-  const { logout, user, deleteAccount } = useUser();
-  const [currQuiz, setCurrQuiz] = useState(user?.lastPlayed[0]?.quizId);
+  const { logout, user, deleteAccount, loading } = useUser();
+  const [currQuiz, setCurrQuiz] = useState(user?.lastPlayed[0].quizId);
   const [visible, setVisible] = useState(false);
+
+  if (!user || loading)
+    return (
+      <View style={{ justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+
+  const progressMap = useMemo(() => {
+    const map = new Map();
+    user.progress.forEach((p) => {
+      map.set(p.quizId._id, p);
+    });
+    return map;
+  }, [user.progress]);
+
+  const quizId = user.lastPlayed[0].quizId;
+  const currentProgress = progressMap.get(quizId._id);
 
   return (
     <View style={{ alignItems: "center", gap: 30 }}>
@@ -93,9 +112,7 @@ export default function Profile() {
         >
           {user?.lastPlayed.map((quiz, index) => {
             const quizId = quiz.quizId;
-            const currentProgress = user?.progress.find(
-              (quizObj) => quizObj.quizId._id === quizId._id
-            );
+            const currentProgress = progressMap.get(quiz.quizId._id);
             return (
               <View
                 key={index}

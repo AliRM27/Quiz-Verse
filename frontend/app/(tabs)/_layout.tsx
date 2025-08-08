@@ -34,7 +34,6 @@ export default function TabLayout() {
         },
         headerShown: false,
         tabBarShowLabel: false,
-        animation: "fade",
         tabBarButton: (props: any) => (
           <Pressable
             {...props}

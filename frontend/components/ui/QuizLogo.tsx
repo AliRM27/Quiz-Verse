@@ -1,41 +1,55 @@
 // QuizLogo.tsx
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { SvgXml } from "react-native-svg";
 import { View, ActivityIndicator } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { svgCache } from "@/utils/svgCache";
+import { API_URL } from "@/services/config";
 
-export const QuizLogo = ({ name }: { name: string }) => {
+// Optional: memoized loader to prevent re-renders
+const Loader = () => (
+  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <ActivityIndicator color={Colors.dark.text} />
+  </View>
+);
+
+const QuizLogo = ({ name }: { name: string }) => {
   const [svgXmlData, setSvgXmlData] = useState<string | null>(
     svgCache[name] ?? null
   );
 
   useEffect(() => {
-    if (svgCache[name]) return; // Already cached
+    let isMounted = true;
 
-    const fetchSvg = async () => {
+    const loadSvg = async () => {
+      if (svgCache[name]) {
+        setSvgXmlData(svgCache[name]);
+        return;
+      }
+
       try {
-        const response = await fetch(
-          `http://192.168.68.104:5555/logos/${name}`
-        );
-        const svgText = await response.text();
-        svgCache[name] = svgText;
-        setSvgXmlData(svgText);
+        const res = await fetch(`${API_URL}logos/${name}`);
+        const svgText = await res.text();
+
+        if (isMounted) {
+          svgCache[name] = svgText;
+          setSvgXmlData(svgText);
+        }
       } catch (err) {
-        console.error("Failed to fetch SVG:", err);
+        console.error(`Error fetching SVG (${name}):`, err);
       }
     };
 
-    fetchSvg();
+    loadSvg();
+
+    return () => {
+      isMounted = false;
+    };
   }, [name]);
 
-  if (!svgXmlData) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator color={Colors.dark.text} />
-      </View>
-    );
-  }
+  if (!svgXmlData) return <Loader />;
 
   return <SvgXml xml={svgXmlData} width="100%" height="100%" />;
 };
+
+export default memo(QuizLogo);

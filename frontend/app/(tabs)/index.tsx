@@ -13,6 +13,14 @@ import { useUser } from "@/context/userContext";
 export default function HomeScreen() {
   const { user, loading } = useUser();
 
+  if (loading || !user) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ color: Colors.dark.text }}>Loading...</Text>
+      </View>
+    );
+  }
+
   return (
     <View
       style={{

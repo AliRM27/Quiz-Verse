@@ -17,11 +17,10 @@ import QuizModal from "./animatinos/QuizModal";
 import RotatingGradient from "./ui/gradients/GlowingView";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUnlockedQuizzes } from "@/services/api";
-import { QuizLogo } from "./ui/QuizLogo";
+import QuizLogo from "@/components/ui/QuizLogo";
 import { useUser } from "@/context/userContext";
 import { REGULAR_FONT } from "@/constants/Styles";
 import Info from "./ui/Info";
-import { svgCache } from "@/utils/svgCache";
 
 const ITEM_WIDTH = HEIGHT * (150 / myHeight);
 const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
@@ -44,9 +43,6 @@ export default function HomePageCards() {
     queryKey: ["quizzes", user?._id],
     queryFn: ({ queryKey }) => fetchUnlockedQuizzes(queryKey[1]),
     enabled: !!user?._id && !loading,
-    staleTime: 1000 * 60 * 2, // 2 minutes of caching
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
   });
   const quiz = data?.[currentIndex]?.quizId;
   const currentProgress = useMemo(() => {
