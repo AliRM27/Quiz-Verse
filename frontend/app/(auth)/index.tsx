@@ -75,7 +75,9 @@ export default function Index() {
               const tokens = await GoogleSignin.getTokens();
               const res = await googleAuth(tokens.idToken);
               await setUserData(res?.data.user, res?.data.token);
-              router.replace("/(auth)/createUsername");
+              res?.data.user.name === ""
+                ? router.replace("/(auth)/createUsername")
+                : router.replace("/(tabs)");
             } catch (error: any) {
               let msg = "Login error. Please try again.";
               if (error?.code === statusCodes.SIGN_IN_CANCELLED) {

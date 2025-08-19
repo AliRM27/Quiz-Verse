@@ -77,6 +77,15 @@ export const fetchUnlockedQuizzes = async (userId: string | undefined) => {
   }
 };
 
+export const fetchQuiz = async (id: string | string[]) => {
+  try {
+    const res = await api.get(`api/quizzes/${id}`);
+    return res.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 export const googleAuth = async (idToken: string) => {
   try {
     const res = await api.post("api/auth/google", { idToken });

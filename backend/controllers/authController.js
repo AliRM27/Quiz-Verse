@@ -20,7 +20,7 @@ export const googleSignIn = async (req, res) => {
     const payload = ticket.getPayload();
     const googleId = payload.sub;
     const email = payload.email;
-    const name = payload.given_name || payload.name;
+    const name = "";
     const profileImage = payload.picture;
 
     // Check if user already exists

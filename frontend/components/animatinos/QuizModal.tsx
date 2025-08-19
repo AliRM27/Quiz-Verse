@@ -20,6 +20,7 @@ import CircularProgress from "../ui/CircularProgress";
 import RotatingGradient from "../ui/gradients/GlowingView";
 import QuizLogo from "@/components/ui/QuizLogo";
 import Info from "../ui/Info";
+import { router } from "expo-router";
 
 const QuizModal: React.FC<QuizModalProps> = ({
   isVisible,
@@ -28,6 +29,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
   currentProgress,
 }) => {
   const translateY = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) =>
@@ -60,15 +62,21 @@ const QuizModal: React.FC<QuizModalProps> = ({
   const [selectedLevelIndex, setSelectedLevelIndex] = useState(0);
 
   useEffect(() => {
-    if (isVisible) {
-      translateY.setValue(500); // Start below screen
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 250,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [isVisible]);
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 0.5,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [opacity]);
 
   return (
     <Modal
@@ -97,11 +105,23 @@ const QuizModal: React.FC<QuizModalProps> = ({
             contentContainerStyle={{ alignItems: "center", gap: 35 }}
             showsVerticalScrollIndicator={false}
           >
-            <RotatingGradient>
-              <View style={styles.logoContainer}>
-                <QuizLogo name={quiz.logoFile} />
-              </View>
-            </RotatingGradient>
+            <Animated.View style={{ opacity }}>
+              <RotatingGradient>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.logoContainer}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/quizLevel/[id]",
+                      params: { id: quiz._id },
+                    })
+                  }
+                >
+                  <QuizLogo name={quiz.logoFile} />
+                </TouchableOpacity>
+              </RotatingGradient>
+            </Animated.View>
+
             <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
               <Text style={[styles.txt, { fontSize: 24 }]}>{quiz.title}</Text>
               <Text

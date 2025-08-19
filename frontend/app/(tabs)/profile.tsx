@@ -20,8 +20,16 @@ import { useMemo, useState } from "react";
 
 export default function Profile() {
   const { logout, user, deleteAccount, loading } = useUser();
-  const [currQuiz, setCurrQuiz] = useState(user?.lastPlayed[0].quizId);
+  const [currQuiz, setCurrQuiz] = useState(user?.lastPlayed[0]?.quizId);
   const [visible, setVisible] = useState(false);
+
+  const progressMap = useMemo(() => {
+    const map = new Map();
+    user?.progress.forEach((p) => {
+      map.set(p.quizId._id, p);
+    });
+    return map;
+  }, [user?.progress]);
 
   if (!user || loading)
     return (
@@ -30,16 +38,8 @@ export default function Profile() {
       </View>
     );
 
-  const progressMap = useMemo(() => {
-    const map = new Map();
-    user.progress.forEach((p) => {
-      map.set(p.quizId._id, p);
-    });
-    return map;
-  }, [user.progress]);
-
-  const quizId = user.lastPlayed[0].quizId;
-  const currentProgress = progressMap.get(quizId._id);
+  // const quizId = user.lastPlayed[0].quizId;
+  // const currentProgress = progressMap.get(quizId._id);
 
   return (
     <View style={{ alignItems: "center", gap: 30 }}>

@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
+import { layout } from "./Dimensions";
 
 export const BR = 10;
 
@@ -9,8 +10,8 @@ export const ITALIC_FONT = "Inter-Italic";
 export const defaultStyles = StyleSheet.create({
   page: {
     alignItems: "center",
-    paddingVertical: 70,
-    paddingHorizontal: 30,
+    paddingVertical: layout.paddingTop,
+    paddingHorizontal: layout.paddingHorizontal,
   },
   container: {
     alignItems: "center",
