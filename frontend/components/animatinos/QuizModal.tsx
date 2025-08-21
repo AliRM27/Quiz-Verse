@@ -112,8 +112,11 @@ const QuizModal: React.FC<QuizModalProps> = ({
                   style={styles.logoContainer}
                   onPress={() =>
                     router.push({
-                      pathname: "/quizLevel/[id]",
-                      params: { id: quiz._id },
+                      pathname: "/quizLevel/[id section]",
+                      params: {
+                        id: quiz._id,
+                        section: String(selectedLevelIndex),
+                      },
                     })
                   }
                 >
@@ -137,21 +140,6 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 <Info company={quiz.company} title={quiz.title} />
               </Text>
             </View>
-            {/* <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                width: "50%",
-                alignItems: "center",
-                justifyContent: "center",
-                borderWidth: 1,
-                borderColor: Colors.dark.border_muted,
-
-                height: 50,
-                borderRadius: 50,
-              }}
-            >
-              <Text style={styles.txt}>Start</Text>
-            </TouchableOpacity> */}
             <View
               style={[
                 defaultStyles.containerRow,
@@ -295,7 +283,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     >
                       <View
                         style={{
-                          width: `${(lvl.completedQuestions / lvl.questions.length) * 100}%`,
+                          width: `${(currentProgress.sections[index].questions / lvl.questions.length) * 100}%`,
                           backgroundColor: Colors.dark.text,
                           height: 3,
                           borderRadius: 6,
@@ -303,7 +291,8 @@ const QuizModal: React.FC<QuizModalProps> = ({
                       />
                     </View>
                     <Text style={[styles.txt_muted, { fontSize: 10 }]}>
-                      {2} / {lvl.questions.length}
+                      {currentProgress.sections[index].questions} /{" "}
+                      {lvl.questions.length}
                     </Text>
                   </View>
                   <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
@@ -317,7 +306,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     >
                       <View
                         style={{
-                          width: `${(lvl.rewards / lvl.total) * 100}%`,
+                          width: `${(currentProgress.sections[index].rewards / lvl.rewards) * 100}%`,
                           backgroundColor: "#FFB11F",
                           height: 3,
                           borderRadius: 6,
@@ -325,7 +314,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                       />
                     </View>
                     <Text style={[styles.txt_muted, { fontSize: 10 }]}>
-                      {10} / {lvl.rewards}
+                      {currentProgress.sections[index].rewards} / {lvl.rewards}
                     </Text>
                   </View>
                 </TouchableOpacity>

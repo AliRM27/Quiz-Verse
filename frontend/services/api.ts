@@ -68,6 +68,19 @@ export const updateUser = async (updatedData: any) => {
   }
 };
 
+export const updateUserProgress = async (update: {
+  quizId: string | string[];
+  difficulty: string;
+  updates: { questions: number; rewards: number; answered: number[] };
+}) => {
+  try {
+    const res = await api.patch("api/users/updateProgress", update);
+    return res.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 export const fetchUnlockedQuizzes = async (userId: string | undefined) => {
   try {
     const res = await api.get("api/quizzes/unlocked/" + userId);

@@ -8,7 +8,14 @@ import { API_URL } from "@/services/config";
 
 // Optional: memoized loader to prevent re-renders
 const Loader = () => (
-  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+  <View
+    style={{
+      backgroundColor: Colors.dark.bg_dark,
+      height: "100%",
+      alignItems: "center",
+      justifyContent: "center",
+    }}
+  >
     <ActivityIndicator color={Colors.dark.text} />
   </View>
 );

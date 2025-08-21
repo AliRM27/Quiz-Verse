@@ -1,5 +1,11 @@
 import React from "react";
 
+export const enum QUESTION_TYPES {
+  MC = "Multiple Choice",
+  TF = "True/False",
+  SA = "Short Answer",
+}
+
 export interface ButtonProps {
   title?: string;
   Logo?: any;

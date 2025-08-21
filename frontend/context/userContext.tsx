@@ -133,10 +133,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   // Only render children when not loading
-  if (loading) {
-    // You can replace this with a custom splash/loading component
-    return <Text>LOADING</Text>;
-  }
+  // if (loading) {
+  //   // You can replace this with a custom splash/loading component
+  //   return <Text>LOADING</Text>;
+  // }
 
   return (
     <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>

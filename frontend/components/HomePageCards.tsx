@@ -52,11 +52,14 @@ export default function HomePageCards() {
 
   if (loading || isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator
-          size="large"
-          color={Colors.dark.primary || Colors.dark.text}
-        />
+      <View
+        style={{
+          height: "82%",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ActivityIndicator size="large" color={Colors.dark.text} />
         <Text style={{ marginTop: 16, color: Colors.dark.text }}>
           Loading...
         </Text>

@@ -33,6 +33,7 @@ const userSchema = new mongoose.Schema({
             required: true,
             enum: ["Easy", "Medium", "Hard", "Extreme"], // Updated
           },
+          answered: { type: [Number], default: [] },
           questions: { type: Number, default: 0 }, // Questions attempted/completed
           rewards: { type: Number, default: 0 }, // Trophies earned
         },

@@ -4,11 +4,30 @@ import { myWidth, WIDTH } from "@/constants/Dimensions";
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Svg, { Circle } from "react-native-svg";
+import ArrowRight from "@/assets/svgs/rightArrow.svg";
 
-const CircularProgress = ({ size = 50, strokeWidth = 5, progress = 32 }) => {
+const CircularProgress = ({
+  size = 50,
+  strokeWidth = 5,
+  progress = 32,
+  fontSize,
+  percent = true,
+  total = 100,
+  arrow = false,
+  select = false,
+}: {
+  size: number;
+  strokeWidth: number;
+  progress: number;
+  fontSize?: number;
+  percent?: boolean;
+  total?: number;
+  arrow?: boolean;
+  select?: boolean;
+}) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (progress / 100) * circumference;
+  const offset = circumference - (progress / total) * circumference;
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
@@ -38,7 +57,13 @@ const CircularProgress = ({ size = 50, strokeWidth = 5, progress = 32 }) => {
         />
       </Svg>
       <View style={styles.textContainer}>
-        <Text style={styles.text}>{`${progress}%`}</Text>
+        {arrow && <ArrowRight width={size / 2.5} height={size / 2.5} />}
+        {select && <View></View>}
+        {!select && !arrow && (
+          <Text
+            style={[styles.text, { fontSize }]}
+          >{`${progress}${percent ? "%" : "/" + total}`}</Text>
+        )}
       </View>
     </View>
   );

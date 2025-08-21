@@ -26,6 +26,7 @@ export default function HomeScreen() {
       style={{
         alignItems: "center",
         gap: HEIGHT * (40 / myHeight),
+        height: "100%",
       }}
     >
       <View
@@ -90,8 +91,6 @@ export default function HomeScreen() {
       <View
         style={{
           width: "100%",
-          borderWidth: 0,
-          borderColor: Colors.dark.border_muted,
         }}
       >
         <HomePageCards />

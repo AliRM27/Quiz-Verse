@@ -51,7 +51,7 @@ export default function RootLayout() {
               <Stack.Screen name="(auth)/createUsername" />
               <Stack.Screen name="index" />
               <Stack.Screen
-                name="quizLevel/[id]"
+                name="quizLevel/[id section]"
                 options={{ animation: "none" }}
               />
               <Stack.Screen

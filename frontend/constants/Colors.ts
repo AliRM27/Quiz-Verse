@@ -69,8 +69,10 @@ export const Colors = {
     primary: "hsl(196 68% 64%)",
     secondary: "#FFB11F",
     danger: "hsl(9 26% 64%)",
+    danger_muted: "hsla(9, 16%, 46%, 1.00)",
     warning: "hsl(52 19% 57%)",
     success: "hsl(146 17% 59%)",
+    success_muted: "hsla(147, 13%, 44%, 1.00)",
     info: "hsl(217 28% 65%)",
   },
 };
