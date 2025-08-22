@@ -19,6 +19,7 @@ const Result = ({
       style={{
         backgroundColor: Colors.dark.bg_dark,
         alignItems: "center",
+        justifyContent: "center",
         height: "100%",
         paddingTop: layout.paddingTop,
         paddingHorizontal: 15,

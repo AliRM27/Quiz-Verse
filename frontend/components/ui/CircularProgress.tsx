@@ -1,10 +1,12 @@
-// components/CircularProgress.tsx
 import { Colors } from "@/constants/Colors";
 import { myWidth, WIDTH } from "@/constants/Dimensions";
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { View, Text, StyleSheet, Animated, Easing } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import ArrowRight from "@/assets/svgs/rightArrow.svg";
+import { ITALIC_FONT } from "@/constants/Styles";
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const CircularProgress = ({
   size = 50,
@@ -27,7 +29,24 @@ const CircularProgress = ({
 }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (progress / total) * circumference;
+
+  const animatedValue = useRef(new Animated.Value(0)).current;
+
+  // Animate when progress changes
+  useEffect(() => {
+    Animated.timing(animatedValue, {
+      toValue: progress,
+      duration: 600, // animation speed
+      useNativeDriver: true,
+      easing: Easing.elastic(1.2),
+    }).start();
+  }, [progress]);
+
+  const strokeDashoffset = animatedValue.interpolate({
+    inputRange: [0, total],
+    outputRange: [circumference, 0],
+    extrapolate: "clamp",
+  });
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
@@ -42,7 +61,7 @@ const CircularProgress = ({
           strokeWidth={strokeWidth}
         />
         {/* Progress Circle */}
-        <Circle
+        <AnimatedCircle
           stroke="#ccc"
           fill="none"
           cx={size / 2}
@@ -50,7 +69,7 @@ const CircularProgress = ({
           r={radius}
           strokeWidth={strokeWidth}
           strokeDasharray={`${circumference} ${circumference}`}
-          strokeDashoffset={offset}
+          strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
           rotation="-90"
           origin={`${size / 2}, ${size / 2}`}
@@ -58,7 +77,7 @@ const CircularProgress = ({
       </Svg>
       <View style={styles.textContainer}>
         {arrow && <ArrowRight width={size / 2.5} height={size / 2.5} />}
-        {select && <View></View>}
+        {select && <View />}
         {!select && !arrow && (
           <Text
             style={[styles.text, { fontSize }]}
@@ -83,6 +102,8 @@ const styles = StyleSheet.create({
     color: "#ccc",
     fontSize: WIDTH < 700 ? WIDTH * (13 / myWidth) : 18,
     fontWeight: "bold",
+    textAlign: "center",
+    fontFamily: ITALIC_FONT,
   },
 });
 

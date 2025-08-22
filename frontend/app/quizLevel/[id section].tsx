@@ -5,8 +5,12 @@ import {
   Pressable,
   StyleSheet,
   Button,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { layout } from "@/constants/Dimensions";
 import { Colors } from "@/constants/Colors";
 import { router, useLocalSearchParams } from "expo-router";
@@ -21,6 +25,7 @@ import Heart from "@/assets/svgs/heartQuiz.svg";
 import CircularProgress from "@/components/ui/CircularProgress";
 import Result from "@/components/Result";
 import { updateUserProgress } from "@/services/api";
+import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
 
 export default function Index() {
   const { id, section } = useLocalSearchParams();
@@ -33,7 +38,12 @@ export default function Index() {
     queryKey: ["quizLevel", id],
     queryFn: ({ queryKey }) => fetchQuiz(queryKey[1]),
   });
-  const { user, loading } = useUser();
+  const { user, loading, refreshUser } = useUser();
+  const [newCorrectIndexes, setNewCorrectIndexes] = useState(new Set<number>());
+
+  useEffect(() => {
+    setNewCorrectIndexes(new Set());
+  }, [section, id]);
 
   if (loading || isLoading) {
     return (
@@ -55,6 +65,7 @@ export default function Index() {
   const currQuestion =
     data.sections[Number(section)].questions[currQuestionIndex];
   const currProgress = user?.progress.find((q) => q.quizId._id === data._id);
+  const prevAnswered = currProgress.sections[Number(section)].answered ?? [];
 
   const handleNextButton = async () => {
     if (
@@ -62,35 +73,48 @@ export default function Index() {
       selectedAnswer !== null
     ) {
       const isCorrect = currQuestion.options[selectedAnswer].isCorrect;
-      // Copy the current answered array
-      const updatedAnswered = [
-        ...currProgress.sections[Number(section)].answered,
-      ];
 
-      // Add current question index if correct and not already recorded
-      if (isCorrect && !updatedAnswered.includes(currQuestionIndex)) {
-        updatedAnswered.push(currQuestionIndex);
+      isCorrect && setCorrectAnswers((p) => p + 1); // if you still show this in UI
+
+      // If this question becomes newly-correct in this run, remember it
+      if (isCorrect && !prevAnswered.includes(currQuestionIndex)) {
+        setNewCorrectIndexes((prev) => {
+          if (prev.has(currQuestionIndex)) return prev;
+          const next = new Set(prev);
+          next.add(currQuestionIndex);
+          return next;
+        });
       }
 
-      if (currQuestionIndex === currSection.questions.length - 1) {
-        // Last question
+      const isLast = currQuestionIndex === currSection.questions.length - 1;
+
+      if (isLast) {
         setShowResult(true);
 
+        // Prepare payload: only new indexes from this run
+        const pending = new Set<number>(newCorrectIndexes);
+        if (isCorrect && !prevAnswered.includes(currQuestionIndex)) {
+          pending.add(currQuestionIndex);
+        }
+        const delta = pending.size; // how many NEWly correct this run
+
         try {
-          await updateUserProgress({
-            quizId: id,
-            difficulty: currSection.difficulty,
-            updates: {
-              questions: updatedAnswered.length, // total correct answers
-              rewards: 0, // or your trophy logic
-              answered: updatedAnswered, // store indexes of correct answers
-            },
-          });
+          if (delta > 0) {
+            await updateUserProgress({
+              quizId: id,
+              difficulty: currSection.difficulty,
+              updates: {
+                questions: delta, // <-- increment by delta
+                rewards: 0, // or your trophy logic
+                answered: Array.from(pending), // <-- only NEW indexes
+              },
+            });
+          }
+          setNewCorrectIndexes(new Set()); // clear buffer after sync
         } catch (err) {
           console.log(err);
         }
       } else {
-        // Not last question
         setCurrQuestionIndex((p) => p + 1);
       }
 
@@ -107,258 +131,282 @@ export default function Index() {
     );
 
   return (
-    <View
-      style={{
-        paddingTop: layout.paddingTop,
-        paddingBottom: 50,
-        paddingHorizontal: 15,
-        backgroundColor: Colors.dark.bg_dark,
-        height: "100%",
-        gap: 20,
-      }}
-    >
-      <Pressable onPress={() => router.back()}>
-        <BackArr />
-      </Pressable>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View
         style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
+          paddingTop: layout.paddingTop,
+          paddingBottom: 50,
+          paddingHorizontal: 15,
+          backgroundColor: Colors.dark.bg_dark,
+          height: "100%",
+          gap: 20,
         }}
       >
-        <View>
-          <Text
-            style={[
-              styles.txt,
-              {
-                fontSize: 17,
-                marginTop: 15,
-                fontWeight: 600,
-              },
-            ]}
-          >
-            Question {currQuestionIndex + 1}
-          </Text>
-          <Text
-            style={[
-              styles.txt,
-              {
-                fontSize: 25,
-              },
-            ]}
-          >
-            {data.title}
-          </Text>
-        </View>
+        <Pressable onPress={() => router.back()}>
+          <BackArr />
+        </Pressable>
         <View
           style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
             alignItems: "center",
-            gap: 10,
-            width: "20%",
           }}
         >
-          <View
-            style={{
-              width: 60,
-              height: 60,
-              borderRadius: 10,
-              overflow: "hidden",
-              borderWidth: 1,
-              borderColor: Colors.dark.border,
-            }}
-          >
-            <QuizLogo name={data.logoFile} />
+          <View>
+            <Text
+              style={[
+                styles.txt,
+                {
+                  fontSize: 17,
+                  marginTop: 15,
+                  fontWeight: 600,
+                },
+              ]}
+            >
+              Question {currQuestionIndex + 1}
+            </Text>
+            <Text
+              style={[
+                styles.txt,
+                {
+                  fontSize: 25,
+                },
+              ]}
+            >
+              {data.title}
+            </Text>
           </View>
           <View
             style={{
-              width: "100%",
-              backgroundColor: Colors.dark.border,
-              borderRadius: 6,
+              alignItems: "center",
+              gap: 10,
+              width: "20%",
             }}
           >
             <View
               style={{
-                width: `${currProgress.sections[Number(section)].rewards}%`,
-                height: 2,
-                borderRadius: 6,
-                backgroundColor: Colors.dark.secondary,
+                width: 60,
+                height: 60,
+                borderRadius: 10,
+                overflow: "hidden",
+                borderWidth: 1,
+                borderColor: Colors.dark.border,
               }}
-            />
+            >
+              <QuizLogo name={data.logoFile} />
+            </View>
+            <View
+              style={{
+                width: "100%",
+                backgroundColor: Colors.dark.border,
+                borderRadius: 6,
+              }}
+            >
+              <View
+                style={{
+                  width: `${currProgress.sections[Number(section)].rewards}%`,
+                  height: 2,
+                  borderRadius: 6,
+                  backgroundColor: Colors.dark.secondary,
+                }}
+              />
+            </View>
+            <Text style={[styles.txt]}>{currSection.difficulty}</Text>
           </View>
-          <Text style={[styles.txt]}>{currSection.difficulty}</Text>
         </View>
-      </View>
-      <View
-        style={{
-          borderWidth: 1,
-          backgroundColor: Colors.dark.bg_light,
-          borderColor: Colors.dark.bg_light,
-          padding: 20,
-          paddingVertical: 30,
-          borderRadius: 20,
-          elevation: 3,
-          shadowColor: Colors.dark.text_muted,
-          marginBottom: 10,
-          minHeight: "20%",
-          justifyContent: "center",
-        }}
-      >
-        <Text
+        <View
+          style={{
+            borderWidth: 1,
+            backgroundColor: Colors.dark.bg_light,
+            borderColor: Colors.dark.bg_light,
+            padding: 20,
+            paddingVertical: 30,
+            borderRadius: 20,
+            elevation: 3,
+            shadowColor: Colors.dark.text_muted,
+            marginBottom: 10,
+            minHeight: "20%",
+            justifyContent: "center",
+          }}
+        >
+          <Text
+            style={[
+              styles.txt,
+              { fontSize: 25, textAlign: "center", lineHeight: 35 },
+            ]}
+          >
+            {currQuestion.question}
+          </Text>
+        </View>
+        <View
           style={[
-            styles.txt,
-            { fontSize: 25, textAlign: "center", lineHeight: 35 },
+            { gap: 15 },
+            currQuestion.type === QUESTION_TYPES.TF && {
+              flexDirection: "row",
+              justifyContent: "center",
+              gap: 10,
+            },
           ]}
         >
-          {currQuestion.question}
-        </Text>
-      </View>
-      <View
-        style={[
-          { gap: 15 },
-          currQuestion.type === QUESTION_TYPES.TF && {
-            flexDirection: "row",
-            justifyContent: "center",
-            gap: 10,
-          },
-        ]}
-      >
-        {currQuestion.options.map((o: any, index: number) => {
-          if (currQuestion.type === QUESTION_TYPES.MC)
-            return (
-              <Pressable
-                key={index}
-                style={[
-                  {
-                    borderWidth: 1,
-                    backgroundColor: Colors.dark.bg_light,
-                    borderColor: Colors.dark.bg_light,
-                    padding: 15,
-                    paddingLeft: 30,
-                    borderRadius: 50,
-                    elevation: 3,
-                    shadowColor: Colors.dark.text_muted,
-                    justifyContent: "center",
-                  },
-                  pressedAnswer === index && { elevation: 0 },
-                  selectedAnswer === index && {
-                    backgroundColor: Colors.dark.border_muted,
-                  },
-                ]}
-                onPressIn={() => setPressedAnswer(index)}
-                onPress={() =>
-                  selectedAnswer === index
-                    ? setSelectedAnswer(null)
-                    : setSelectedAnswer(index)
-                }
-                onPressOut={() => setPressedAnswer(null)}
-              >
-                <Text
+          {currQuestion.type === QUESTION_TYPES.SA && (
+            <TextInput
+              selectionColor={Colors.dark.text}
+              placeholder="Type your answer..."
+              placeholderTextColor={Colors.dark.text_muted}
+              style={{
+                width: "100%",
+                height: 60,
+                borderColor: Colors.dark.border_muted,
+                borderWidth: 1,
+                paddingHorizontal: 20,
+                fontSize: 18,
+                borderRadius: 20,
+                color: Colors.dark.text,
+                fontFamily: REGULAR_FONT,
+              }}
+            />
+          )}
+          {currQuestion.options.map((o: any, index: number) => {
+            if (currQuestion.type === QUESTION_TYPES.MC)
+              return (
+                <Pressable
+                  key={index}
                   style={[
-                    styles.txt,
-                    { fontSize: 25 },
-                    pressedAnswer === index && {
-                      color: Colors.dark.text_muted,
-                    },
-                  ]}
-                >
-                  {o.text}
-                </Text>
-              </Pressable>
-            );
-          else if (currQuestion.type === QUESTION_TYPES.TF)
-            return (
-              <Pressable
-                key={index}
-                style={[
-                  {
-                    borderWidth: 1,
-                    backgroundColor: Colors.dark.bg_light,
-                    borderColor: Colors.dark.bg_light,
-                    padding: 15,
-                    width: "45%",
-                    borderRadius: 50,
-                    elevation: 3,
-                    shadowColor: Colors.dark.text_muted,
-                  },
-                  pressedAnswer === index && { elevation: 0 },
-                  selectedAnswer === index && {
-                    backgroundColor: Colors.dark.border_muted,
-                  },
-                ]}
-                onPressIn={() => setPressedAnswer(index)}
-                onPress={() =>
-                  selectedAnswer === index
-                    ? setSelectedAnswer(null)
-                    : setSelectedAnswer(index)
-                }
-                onPressOut={() => setPressedAnswer(null)}
-              >
-                <Text
-                  style={[
-                    styles.txt,
                     {
-                      color: Colors.dark.success,
-                      fontSize: 25,
-                      textAlign: "center",
+                      borderWidth: 1,
+                      backgroundColor: Colors.dark.bg_light,
+                      borderColor: Colors.dark.bg_light,
+                      padding: 15,
+                      paddingLeft: 30,
+                      borderRadius: 50,
+                      elevation: 3,
+                      shadowColor: Colors.dark.text_muted,
+                      justifyContent: "center",
                     },
-                    o.text === "False" && { color: Colors.dark.danger },
-                    pressedAnswer === index &&
-                      o.text === "False" && {
-                        color: Colors.dark.danger_muted,
-                      },
-                    pressedAnswer === index &&
-                      o.text === "True" && {
-                        color: Colors.dark.success_muted,
-                      },
+                    pressedAnswer === index && { elevation: 0 },
+                    selectedAnswer === index && {
+                      backgroundColor: Colors.dark.border_muted,
+                    },
                   ]}
+                  onPressIn={() => setPressedAnswer(index)}
+                  onPress={() =>
+                    selectedAnswer === index
+                      ? setSelectedAnswer(null)
+                      : setSelectedAnswer(index)
+                  }
+                  onPressOut={() => setPressedAnswer(null)}
                 >
-                  {o.text}
-                </Text>
-              </Pressable>
-            );
-        })}
-      </View>
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-around",
-          marginTop: "auto",
-        }}
-      >
+                  <Text
+                    style={[
+                      styles.txtItalic,
+                      { fontSize: 20 },
+                      pressedAnswer === index && {
+                        color: Colors.dark.text_muted,
+                      },
+                    ]}
+                  >
+                    {o.text}
+                  </Text>
+                </Pressable>
+              );
+            else if (currQuestion.type === QUESTION_TYPES.TF)
+              return (
+                <Pressable
+                  key={index}
+                  style={[
+                    {
+                      borderWidth: 1,
+                      backgroundColor: Colors.dark.bg_light,
+                      borderColor: Colors.dark.bg_light,
+                      padding: 15,
+                      width: "45%",
+                      borderRadius: 50,
+                      elevation: 3,
+                      shadowColor: Colors.dark.text_muted,
+                    },
+                    pressedAnswer === index && { elevation: 0 },
+                    selectedAnswer === index && {
+                      backgroundColor: Colors.dark.border_muted,
+                    },
+                  ]}
+                  onPressIn={() => setPressedAnswer(index)}
+                  onPress={() =>
+                    selectedAnswer === index
+                      ? setSelectedAnswer(null)
+                      : setSelectedAnswer(index)
+                  }
+                  onPressOut={() => setPressedAnswer(null)}
+                >
+                  <Text
+                    style={[
+                      styles.txtItalic,
+                      {
+                        color: Colors.dark.success,
+                        fontSize: 20,
+                        textAlign: "center",
+                      },
+                      o.text === "False" && { color: Colors.dark.danger },
+                      pressedAnswer === index &&
+                        o.text === "False" && {
+                          color: Colors.dark.danger_muted,
+                        },
+                      pressedAnswer === index &&
+                        o.text === "True" && {
+                          color: Colors.dark.success_muted,
+                        },
+                    ]}
+                  >
+                    {o.text}
+                  </Text>
+                </Pressable>
+              );
+          })}
+        </View>
         <View
           style={{
             flexDirection: "row",
-            gap: 10,
-            alignItems: "center",
+            justifyContent: "space-around",
+            marginTop: "auto",
           }}
         >
-          <Heart />
-          <Text style={[styles.txt, { fontSize: 20 }]}>2</Text>
-        </View>
-        <Pressable onPress={() => handleNextButton()}>
-          <CircularProgress
-            size={80}
-            strokeWidth={3}
-            progress={currQuestionIndex + 1}
-            fontSize={30}
-            percent={false}
-            total={currSection.questions.length}
-            arrow={selectedAnswer !== null ? true : false}
-          />
-        </Pressable>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <Text style={[styles.txt, { fontSize: 20 }]}>3</Text>
-          <Hint />
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 10,
+              alignItems: "center",
+            }}
+          >
+            <Heart />
+            <Text style={[styles.txt, { fontSize: 20 }]}>2</Text>
+          </View>
+          <Pressable onPress={() => handleNextButton()}>
+            <CircularProgress
+              size={80}
+              strokeWidth={3}
+              progress={currQuestionIndex + 1}
+              fontSize={23}
+              percent={false}
+              total={currSection.questions.length}
+              arrow={selectedAnswer !== null ? true : false}
+            />
+          </Pressable>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Text style={[styles.txt, { fontSize: 20 }]}>3</Text>
+            <Hint />
+          </View>
         </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 
 const styles = StyleSheet.create({
   txt: {
-    fontFamily: "Italic-Regular",
+    fontFamily: REGULAR_FONT,
+    color: Colors.dark.text,
+  },
+  txtItalic: {
+    fontFamily: ITALIC_FONT,
     color: Colors.dark.text,
   },
 });

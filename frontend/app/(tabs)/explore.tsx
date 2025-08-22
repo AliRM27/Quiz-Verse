@@ -9,6 +9,7 @@ import {
   Keyboard,
 } from "react-native";
 import Search from "@/assets/svgs/search.svg";
+import { REGULAR_FONT } from "@/constants/Styles";
 
 export default function Explore() {
   return (
@@ -28,7 +29,7 @@ export default function Explore() {
               padding: 15,
               paddingLeft: 50,
               color: Colors.dark.text,
-              fontFamily: "Inter-Regular",
+              fontFamily: REGULAR_FONT,
             }}
             placeholder="Write something"
             placeholderTextColor={Colors.dark.text_muted}

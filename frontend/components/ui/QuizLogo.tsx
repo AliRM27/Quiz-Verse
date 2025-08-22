@@ -10,13 +10,16 @@ import { API_URL } from "@/services/config";
 const Loader = () => (
   <View
     style={{
-      backgroundColor: Colors.dark.bg_dark,
+      backgroundColor: Colors.dark.bg_light,
       height: "100%",
       alignItems: "center",
       justifyContent: "center",
+      borderWidth: 1,
+      borderColor: Colors.dark.border,
+      borderRadius: 10,
     }}
   >
-    <ActivityIndicator color={Colors.dark.text} />
+    {/* <ActivityIndicator color={Colors.dark.text} /> */}
   </View>
 );
 
