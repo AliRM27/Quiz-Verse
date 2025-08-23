@@ -34,6 +34,7 @@ export default function Index() {
   const [pressedAnswer, setPressedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState<boolean>(false);
   const [correctAnswers, setCorrectAnswers] = useState<number>(0);
+  const [shortAnswer, setShortAnswer] = useState<string>("");
   const { data, isLoading } = useQuery({
     queryKey: ["quizLevel", id],
     queryFn: ({ queryKey }) => fetchQuiz(queryKey[1]),
@@ -70,9 +71,18 @@ export default function Index() {
   const handleNextButton = async () => {
     if (
       currQuestionIndex <= currSection.questions.length - 1 &&
-      selectedAnswer !== null
+      (selectedAnswer !== null || shortAnswer.trim() !== "")
     ) {
-      const isCorrect = currQuestion.options[selectedAnswer].isCorrect;
+      let isCorrect;
+      if (selectedAnswer !== null)
+        isCorrect = currQuestion.options[selectedAnswer].isCorrect;
+      else
+        isCorrect =
+          currQuestion.options.find(
+            (o: any) =>
+              o.isCorrect &&
+              o.text.toLowerCase().trim() === shortAnswer.toLowerCase().trim()
+          ) !== undefined;
 
       isCorrect && setCorrectAnswers((p) => p + 1); // if you still show this in UI
 
@@ -253,6 +263,8 @@ export default function Index() {
               selectionColor={Colors.dark.text}
               placeholder="Type your answer..."
               placeholderTextColor={Colors.dark.text_muted}
+              value={shortAnswer}
+              onChangeText={(t) => setShortAnswer(t)}
               style={{
                 width: "100%",
                 height: 60,
@@ -266,101 +278,102 @@ export default function Index() {
               }}
             />
           )}
-          {currQuestion.options.map((o: any, index: number) => {
-            if (currQuestion.type === QUESTION_TYPES.MC)
-              return (
-                <Pressable
-                  key={index}
-                  style={[
-                    {
-                      borderWidth: 1,
-                      backgroundColor: Colors.dark.bg_light,
-                      borderColor: Colors.dark.bg_light,
-                      padding: 15,
-                      paddingLeft: 30,
-                      borderRadius: 50,
-                      elevation: 3,
-                      shadowColor: Colors.dark.text_muted,
-                      justifyContent: "center",
-                    },
-                    pressedAnswer === index && { elevation: 0 },
-                    selectedAnswer === index && {
-                      backgroundColor: Colors.dark.border_muted,
-                    },
-                  ]}
-                  onPressIn={() => setPressedAnswer(index)}
-                  onPress={() =>
-                    selectedAnswer === index
-                      ? setSelectedAnswer(null)
-                      : setSelectedAnswer(index)
-                  }
-                  onPressOut={() => setPressedAnswer(null)}
-                >
-                  <Text
+          {currQuestion.type !== QUESTION_TYPES.SA &&
+            currQuestion.options.map((o: any, index: number) => {
+              if (currQuestion.type === QUESTION_TYPES.MC)
+                return (
+                  <Pressable
+                    key={index}
                     style={[
-                      styles.txtItalic,
-                      { fontSize: 20 },
-                      pressedAnswer === index && {
-                        color: Colors.dark.text_muted,
-                      },
-                    ]}
-                  >
-                    {o.text}
-                  </Text>
-                </Pressable>
-              );
-            else if (currQuestion.type === QUESTION_TYPES.TF)
-              return (
-                <Pressable
-                  key={index}
-                  style={[
-                    {
-                      borderWidth: 1,
-                      backgroundColor: Colors.dark.bg_light,
-                      borderColor: Colors.dark.bg_light,
-                      padding: 15,
-                      width: "45%",
-                      borderRadius: 50,
-                      elevation: 3,
-                      shadowColor: Colors.dark.text_muted,
-                    },
-                    pressedAnswer === index && { elevation: 0 },
-                    selectedAnswer === index && {
-                      backgroundColor: Colors.dark.border_muted,
-                    },
-                  ]}
-                  onPressIn={() => setPressedAnswer(index)}
-                  onPress={() =>
-                    selectedAnswer === index
-                      ? setSelectedAnswer(null)
-                      : setSelectedAnswer(index)
-                  }
-                  onPressOut={() => setPressedAnswer(null)}
-                >
-                  <Text
-                    style={[
-                      styles.txtItalic,
                       {
-                        color: Colors.dark.success,
-                        fontSize: 20,
-                        textAlign: "center",
+                        borderWidth: 1,
+                        backgroundColor: Colors.dark.bg_light,
+                        borderColor: Colors.dark.bg_light,
+                        padding: 15,
+                        paddingLeft: 30,
+                        borderRadius: 50,
+                        elevation: 3,
+                        shadowColor: Colors.dark.text_muted,
+                        justifyContent: "center",
                       },
-                      o.text === "False" && { color: Colors.dark.danger },
-                      pressedAnswer === index &&
-                        o.text === "False" && {
-                          color: Colors.dark.danger_muted,
-                        },
-                      pressedAnswer === index &&
-                        o.text === "True" && {
-                          color: Colors.dark.success_muted,
-                        },
+                      pressedAnswer === index && { elevation: 0 },
+                      selectedAnswer === index && {
+                        backgroundColor: Colors.dark.border_muted,
+                      },
                     ]}
+                    onPressIn={() => setPressedAnswer(index)}
+                    onPress={() =>
+                      selectedAnswer === index
+                        ? setSelectedAnswer(null)
+                        : setSelectedAnswer(index)
+                    }
+                    onPressOut={() => setPressedAnswer(null)}
                   >
-                    {o.text}
-                  </Text>
-                </Pressable>
-              );
-          })}
+                    <Text
+                      style={[
+                        styles.txtItalic,
+                        { fontSize: 20 },
+                        pressedAnswer === index && {
+                          color: Colors.dark.text_muted,
+                        },
+                      ]}
+                    >
+                      {o.text}
+                    </Text>
+                  </Pressable>
+                );
+              else if (currQuestion.type === QUESTION_TYPES.TF)
+                return (
+                  <Pressable
+                    key={index}
+                    style={[
+                      {
+                        borderWidth: 1,
+                        backgroundColor: Colors.dark.bg_light,
+                        borderColor: Colors.dark.bg_light,
+                        padding: 15,
+                        width: "45%",
+                        borderRadius: 50,
+                        elevation: 3,
+                        shadowColor: Colors.dark.text_muted,
+                      },
+                      pressedAnswer === index && { elevation: 0 },
+                      selectedAnswer === index && {
+                        backgroundColor: Colors.dark.border_muted,
+                      },
+                    ]}
+                    onPressIn={() => setPressedAnswer(index)}
+                    onPress={() =>
+                      selectedAnswer === index
+                        ? setSelectedAnswer(null)
+                        : setSelectedAnswer(index)
+                    }
+                    onPressOut={() => setPressedAnswer(null)}
+                  >
+                    <Text
+                      style={[
+                        styles.txtItalic,
+                        {
+                          color: Colors.dark.success,
+                          fontSize: 20,
+                          textAlign: "center",
+                        },
+                        o.text === "False" && { color: Colors.dark.danger },
+                        pressedAnswer === index &&
+                          o.text === "False" && {
+                            color: Colors.dark.danger_muted,
+                          },
+                        pressedAnswer === index &&
+                          o.text === "True" && {
+                            color: Colors.dark.success_muted,
+                          },
+                      ]}
+                    >
+                      {o.text}
+                    </Text>
+                  </Pressable>
+                );
+            })}
         </View>
         <View
           style={{
@@ -387,7 +400,10 @@ export default function Index() {
               fontSize={23}
               percent={false}
               total={currSection.questions.length}
-              arrow={selectedAnswer !== null ? true : false}
+              arrow={
+                (selectedAnswer !== null ? true : false) ||
+                shortAnswer.trim() !== ""
+              }
             />
           </Pressable>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
