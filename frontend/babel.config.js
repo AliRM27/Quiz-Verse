@@ -1,2 +1,10 @@
-export const presets = ["babel-preset-expo"];
-export const plugins = ["react-native-reanimated/plugin"];
+module.exports = function (api) {
+  api.cache(true);
+  return {
+    presets: ["babel-preset-expo"],
+    plugins: [
+      // keep reanimated first
+      "react-native-reanimated/plugin",
+    ],
+  };
+};

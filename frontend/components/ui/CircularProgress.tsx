@@ -4,7 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { View, Text, StyleSheet, Animated, Easing } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import ArrowRight from "@/assets/svgs/rightArrow.svg";
-import { ITALIC_FONT } from "@/constants/Styles";
+import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -36,9 +36,9 @@ const CircularProgress = ({
   useEffect(() => {
     Animated.timing(animatedValue, {
       toValue: progress,
-      duration: 600, // animation speed
+      duration: 1200, // animation speed
       useNativeDriver: true,
-      easing: Easing.elastic(1.2),
+      easing: Easing.elastic(1),
     }).start();
   }, [progress]);
 
@@ -99,11 +99,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   text: {
-    color: "#ccc",
+    color: Colors.dark.text,
     fontSize: WIDTH < 700 ? WIDTH * (13 / myWidth) : 18,
     fontWeight: "bold",
     textAlign: "center",
-    fontFamily: ITALIC_FONT,
+    fontFamily: REGULAR_FONT,
   },
 });
 

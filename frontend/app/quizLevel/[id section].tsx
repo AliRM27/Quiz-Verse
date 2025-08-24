@@ -69,67 +69,62 @@ export default function Index() {
   const prevAnswered = currProgress.sections[Number(section)].answered ?? [];
 
   const handleNextButton = async () => {
-    if (
-      currQuestionIndex <= currSection.questions.length - 1 &&
-      (selectedAnswer !== null || shortAnswer.trim() !== "")
-    ) {
-      let isCorrect;
-      if (selectedAnswer !== null)
-        isCorrect = currQuestion.options[selectedAnswer].isCorrect;
-      else
-        isCorrect =
-          currQuestion.options.find(
-            (o: any) =>
-              o.isCorrect &&
-              o.text.toLowerCase().trim() === shortAnswer.toLowerCase().trim()
-          ) !== undefined;
+    let isCorrect;
+    if (selectedAnswer !== null)
+      isCorrect = currQuestion.options[selectedAnswer].isCorrect;
+    else
+      isCorrect =
+        currQuestion.options.find(
+          (o: any) =>
+            o.isCorrect &&
+            o.text.toLowerCase().trim() === shortAnswer.toLowerCase().trim()
+        ) !== undefined;
 
-      isCorrect && setCorrectAnswers((p) => p + 1); // if you still show this in UI
+    isCorrect && setCorrectAnswers((p) => p + 1); // if you still show this in UI
 
-      // If this question becomes newly-correct in this run, remember it
-      if (isCorrect && !prevAnswered.includes(currQuestionIndex)) {
-        setNewCorrectIndexes((prev) => {
-          if (prev.has(currQuestionIndex)) return prev;
-          const next = new Set(prev);
-          next.add(currQuestionIndex);
-          return next;
-        });
-      }
-
-      const isLast = currQuestionIndex === currSection.questions.length - 1;
-
-      if (isLast) {
-        setShowResult(true);
-
-        // Prepare payload: only new indexes from this run
-        const pending = new Set<number>(newCorrectIndexes);
-        if (isCorrect && !prevAnswered.includes(currQuestionIndex)) {
-          pending.add(currQuestionIndex);
-        }
-        const delta = pending.size; // how many NEWly correct this run
-
-        try {
-          if (delta > 0) {
-            await updateUserProgress({
-              quizId: id,
-              difficulty: currSection.difficulty,
-              updates: {
-                questions: delta, // <-- increment by delta
-                rewards: 0, // or your trophy logic
-                answered: Array.from(pending), // <-- only NEW indexes
-              },
-            });
-          }
-          setNewCorrectIndexes(new Set()); // clear buffer after sync
-        } catch (err) {
-          console.log(err);
-        }
-      } else {
-        setCurrQuestionIndex((p) => p + 1);
-      }
-
-      setSelectedAnswer(null);
+    // If this question becomes newly-correct in this run, remember it
+    if (isCorrect && !prevAnswered.includes(currQuestionIndex)) {
+      setNewCorrectIndexes((prev) => {
+        if (prev.has(currQuestionIndex)) return prev;
+        const next = new Set(prev);
+        next.add(currQuestionIndex);
+        return next;
+      });
     }
+
+    const isLast = currQuestionIndex === currSection.questions.length - 1;
+
+    if (isLast) {
+      setShowResult(true);
+
+      // Prepare payload: only new indexes from this run
+      const pending = new Set<number>(newCorrectIndexes);
+      if (isCorrect && !prevAnswered.includes(currQuestionIndex)) {
+        pending.add(currQuestionIndex);
+      }
+      const delta = pending.size; // how many NEWly correct this run
+
+      try {
+        if (delta > 0) {
+          await updateUserProgress({
+            quizId: id,
+            difficulty: currSection.difficulty,
+            updates: {
+              questions: delta, // <-- increment by delta
+              rewards: 0, // or your trophy logic
+              answered: Array.from(pending), // <-- only NEW indexes
+            },
+          });
+        }
+        setNewCorrectIndexes(new Set()); // clear buffer after sync
+      } catch (err) {
+        console.log(err);
+      }
+    } else {
+      setCurrQuestionIndex((p) => p + 1);
+    }
+
+    setSelectedAnswer(null);
   };
 
   if (showResult)
@@ -294,9 +289,12 @@ export default function Index() {
                         borderRadius: 50,
                         elevation: 3,
                         shadowColor: Colors.dark.text_muted,
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 4,
                         justifyContent: "center",
                       },
-                      pressedAnswer === index && { elevation: 0 },
+                      pressedAnswer === index && { shadowOpacity: 0 },
                       selectedAnswer === index && {
                         backgroundColor: Colors.dark.border_muted,
                       },
@@ -336,8 +334,11 @@ export default function Index() {
                         borderRadius: 50,
                         elevation: 3,
                         shadowColor: Colors.dark.text_muted,
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 4,
                       },
-                      pressedAnswer === index && { elevation: 0 },
+                      pressedAnswer === index && { shadowOpacity: 0 },
                       selectedAnswer === index && {
                         backgroundColor: Colors.dark.border_muted,
                       },
@@ -392,7 +393,16 @@ export default function Index() {
             <Heart />
             <Text style={[styles.txt, { fontSize: 20 }]}>2</Text>
           </View>
-          <Pressable onPress={() => handleNextButton()}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            disabled={
+              !(
+                currQuestionIndex <= currSection.questions.length - 1 &&
+                (selectedAnswer !== null || shortAnswer.trim() !== "")
+              )
+            }
+            onPress={() => handleNextButton()}
+          >
             <CircularProgress
               size={80}
               strokeWidth={3}
@@ -405,7 +415,7 @@ export default function Index() {
                 shortAnswer.trim() !== ""
               }
             />
-          </Pressable>
+          </TouchableOpacity>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             <Text style={[styles.txt, { fontSize: 20 }]}>3</Text>
             <Hint />

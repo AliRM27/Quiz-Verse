@@ -32,7 +32,7 @@ const Result = ({
         title={"Back Home"}
         onPress={async () => {
           await refreshUser();
-          router.replace("/(tabs)");
+          router.back();
         }}
       />
     </View>

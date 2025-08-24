@@ -110,15 +110,16 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 <TouchableOpacity
                   activeOpacity={0.8}
                   style={styles.logoContainer}
-                  onPress={() =>
+                  onPress={() => {
+                    setIsVisible(false);
                     router.push({
                       pathname: "/quizLevel/[id section]",
                       params: {
                         id: quiz._id,
                         section: String(selectedLevelIndex),
                       },
-                    })
-                  }
+                    });
+                  }}
                 >
                   <QuizLogo name={quiz.logoFile} />
                 </TouchableOpacity>
