@@ -81,6 +81,19 @@ export const updateUserProgress = async (update: {
   }
 };
 
+export const searchQuizzes = async (query: string) => {
+  console.log("Searching quizzes with query:", query);
+  try {
+    const res = await api.get("api/quizzes/search", {
+      params: { query }, // cleaner than string concatenation
+    });
+    return res.data;
+  } catch (err) {
+    console.log(err);
+    return [];
+  }
+};
+
 export const fetchUnlockedQuizzes = async (userId: string | undefined) => {
   try {
     const res = await api.get("api/quizzes/unlocked/" + userId);

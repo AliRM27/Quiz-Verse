@@ -38,6 +38,25 @@ export const getQuizById = async (req, res) => {
   }
 };
 
+export const searchQuizzes = async (req, res) => {
+  const { query } = req.query;
+
+  let quizzes;
+
+  try {
+    if (!query) {
+      quizzes = await Quiz.find().limit(10);
+    } else {
+      quizzes = await Quiz.find({
+        $or: [{ title: { $regex: query, $options: "i" } }],
+      }).limit(20);
+    }
+    res.status(200).json(quizzes);
+  } catch (error) {
+    return res.status(500).json({ message: "Error searching quizzes" });
+  }
+};
+
 export const createQuiz = async (req, res) => {
   const newQuiz = new Quiz(req.body);
   try {
