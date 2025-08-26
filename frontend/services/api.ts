@@ -82,7 +82,6 @@ export const updateUserProgress = async (update: {
 };
 
 export const searchQuizzes = async (query: string) => {
-  console.log("Searching quizzes with query:", query);
   try {
     const res = await api.get("api/quizzes/search", {
       params: { query }, // cleaner than string concatenation
