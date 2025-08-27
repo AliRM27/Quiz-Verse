@@ -4,8 +4,6 @@ import {
   Text,
   View,
   TextInput,
-  TouchableWithoutFeedback,
-  Keyboard,
   ActivityIndicator,
   FlatList,
 } from "react-native";
@@ -17,12 +15,12 @@ import { searchQuizzes } from "@/services/api";
 import { debounce } from "lodash";
 import QuizLogo from "@/components/ui/QuizLogo";
 import { useUser } from "@/context/userContext";
-import Info from "@/components/ui/Info";
+import { myWidth, WIDTH } from "@/constants/Dimensions";
 
 export default function Explore() {
   const [focused, setFocused] = useState(false);
-  const [query, setQuery] = useState<string>("");
-  const [input, setInput] = useState<string>("");
+  const [query, setQuery] = useState("");
+  const [input, setInput] = useState("");
   const { user, loading } = useUser();
 
   const debouncedSetSearch = useMemo(
@@ -37,28 +35,17 @@ export default function Explore() {
   }, [debouncedSetSearch]);
 
   const handleChangeText = (text: string) => {
-    setInput(text); // immediate UI update
-    debouncedSetSearch(text); // debounce for search
+    setInput(text);
+    debouncedSetSearch(text);
   };
 
-  const {
-    data: quizzes,
-    refetch,
-    isLoading,
-  } = useQuery({
+  const { data: quizzes, isLoading } = useQuery({
     queryKey: ["searchQuizzes", query],
     queryFn: () => searchQuizzes(query),
   });
-  // --- IGNORE ---
+
   return (
-    <View
-      style={{
-        alignItems: "center",
-        height: "100%",
-        width: "100%",
-        gap: 20,
-      }}
-    >
+    <View style={styles.container}>
       <View style={{ width: "80%" }}>
         <TextInput
           value={input}
@@ -66,22 +53,7 @@ export default function Explore() {
           onBlur={() => setFocused(false)}
           selectionColor={Colors.dark.text}
           onChangeText={handleChangeText}
-          style={[
-            {
-              width: "100%",
-              backgroundColor: Colors.dark.bg_light,
-              borderRadius: 50,
-              padding: 15,
-              paddingLeft: 50,
-              color: Colors.dark.text,
-              fontFamily: REGULAR_FONT,
-              borderWidth: 1,
-              borderColor: Colors.dark.bg_dark,
-            },
-            focused && {
-              borderColor: Colors.dark.text,
-            },
-          ]}
+          style={[styles.input, focused && { borderColor: Colors.dark.text }]}
           placeholder="Write something"
           placeholderTextColor={Colors.dark.text_muted}
         />
@@ -93,6 +65,7 @@ export default function Explore() {
           stroke={"black"}
         />
       </View>
+
       {(isLoading || loading) && (
         <ActivityIndicator style={{ marginTop: 10 }} />
       )}
@@ -104,111 +77,70 @@ export default function Explore() {
       <FlatList
         data={quizzes}
         keyExtractor={(item) => item._id}
-        style={{
-          width: "100%",
-          paddingHorizontal: 10,
-        }}
+        style={{ width: "100%", paddingHorizontal: 10 }}
         contentContainerStyle={{ gap: 20 }}
         renderItem={({ item }) => {
+          const progress =
+            user?.progress.find((p) => p.quizId._id === item._id)
+              ?.questionsCompleted || 0;
+          const rewards =
+            user?.progress.find((p) => p.quizId._id === item._id)
+              ?.rewardsTotal || 0;
+          const progressPercent = item.questionsTotal
+            ? ((progress / item.questionsTotal) * 100).toFixed(0)
+            : 0;
+          const rewardPercent = item.rewardsTotal
+            ? ((rewards / item.rewardsTotal) * 100).toFixed(0)
+            : 0;
+
           return (
-            <View
-              style={{
-                padding: 10,
-                borderWidth: 1,
-                borderColor: Colors.dark.border_muted,
-                borderRadius: 10,
-                flexDirection: "row",
-                height: 150,
-                width: "100%",
-                alignItems: "center",
-              }}
-            >
-              <View
-                style={{
-                  borderRadius: 10,
-                  overflow: "hidden",
-                  width: 125,
-                  height: 125,
-                  marginRight: 10,
-                }}
-              >
+            <View style={styles.card}>
+              {/* Left: Logo */}
+              <View style={styles.logoWrapper}>
                 <QuizLogo name={item.logoFile} />
               </View>
-              <View style={{ gap: 10 }}>
-                <Text
-                  style={[{ fontSize: 18, fontWeight: "bold" }, styles.txt]}
-                >
+
+              {/* Right: Info */}
+              <View style={styles.infoWrapper}>
+                <Text style={[styles.txt, styles.title]} numberOfLines={2}>
                   {item.title}
                 </Text>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 20,
-                  }}
-                >
-                  <View style={{ width: 120 }}>
-                    <View>
-                      <Text style={[styles.txt, { fontSize: 13 }]}>
-                        Progress
-                      </Text>
+
+                <View style={styles.bottomSection}>
+                  <View style={styles.progressWrapper}>
+                    <Text style={[styles.txt, styles.barLabel]}>Progress</Text>
+                    <View style={styles.barBackground}>
                       <View
-                        style={{
-                          width: "100%",
-                          backgroundColor: Colors.dark.border_muted,
-                          borderRadius: 10,
-                        }}
-                      >
-                        <View
-                          style={{
-                            width: `${user?.progress.find((p) => p.quizId._id === item._id)?.questionsCompleted ? (user?.progress.find((p) => p.quizId._id === item._id).questionsCompleted / item.questionsTotal) * 100 : 0}%`,
-                            backgroundColor: Colors.dark.text,
-                            borderRadius: 10,
-                            height: 4,
-                          }}
-                        />
-                      </View>
-                      <Text style={[styles.txt_muted, { fontSize: 12 }]}>
-                        {user?.progress.find((p) => p.quizId._id === item._id)
-                          ?.questionsCompleted
-                          ? `${(user?.progress.find((p) => p.quizId._id === item._id).questionsCompleted / item.questionsTotal) * 100}`
-                          : `0`}
-                        %
-                      </Text>
+                        style={[
+                          styles.barFill,
+                          { width: `${Number(progressPercent)}%` },
+                        ]}
+                      />
                     </View>
-                    <View>
-                      <Text style={[styles.txt, { fontSize: 13 }]}>
-                        Rewards
-                      </Text>
+                    <Text style={[styles.txt_muted, styles.barText]}>
+                      {progressPercent}%
+                    </Text>
+
+                    <Text style={[styles.txt, styles.barLabel]}>Rewards</Text>
+                    <View style={styles.barBackground}>
                       <View
-                        style={{
-                          width: "100%",
-                          backgroundColor: Colors.dark.border_muted,
-                          borderRadius: 10,
-                        }}
-                      >
-                        <View
-                          style={{
-                            width: `${user?.progress.find((p) => p.quizId._id === item._id)?.rewardsTotal ? (user?.progress.find((p) => p.quizId._id === item._id).rewardsTotal / item.rewardsTotal) * 100 : 0}%`,
+                        style={[
+                          styles.barFill,
+                          {
                             backgroundColor: Colors.dark.secondary,
-                            borderRadius: 10,
-                            height: 4,
-                          }}
-                        />
-                      </View>
-                      <Text style={[styles.txt_muted, { fontSize: 12 }]}>
-                        {user?.progress.find((p) => p.quizId._id === item._id)
-                          ?.rewardsTotal
-                          ? `${(user?.progress.find((p) => p.quizId._id === item._id).rewardsTotal / item.rewardsTotal) * 100}`
-                          : `0`}
-                        %
-                      </Text>
+                            width: `${Number(rewardPercent)}%`,
+                          },
+                        ]}
+                      />
                     </View>
+                    <Text style={[styles.txt_muted, styles.barText]}>
+                      {rewards}/{item.rewardsTotal}
+                    </Text>
                   </View>
-                  <Text style={[styles.txt_muted, { fontSize: 8, width: 120 }]}>
+
+                  <Text style={[styles.txt_muted, styles.disclaimer]}>
                     This is a fan-made quiz, not officially connected to{" "}
-                    {item.company} or the creators of “{item.title}”. The game
-                    title is a trademark of {item.company}.
+                    {item.company} or the creators of “{item.title}”.
                   </Text>
                 </View>
               </View>
@@ -221,6 +153,23 @@ export default function Explore() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    height: "100%",
+    width: "100%",
+    gap: 20,
+  },
+  input: {
+    width: "100%",
+    backgroundColor: Colors.dark.bg_light,
+    borderRadius: 50,
+    padding: 15,
+    paddingLeft: 50,
+    color: Colors.dark.text,
+    fontFamily: REGULAR_FONT,
+    borderWidth: 1,
+    borderColor: Colors.dark.bg_dark,
+  },
   txt: {
     fontFamily: REGULAR_FONT,
     color: Colors.dark.text,
@@ -228,5 +177,66 @@ const styles = StyleSheet.create({
   txt_muted: {
     fontFamily: REGULAR_FONT,
     color: Colors.dark.text_muted,
+  },
+  card: {
+    flexDirection: "row",
+    padding: 10,
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
+    borderRadius: 10,
+    backgroundColor: Colors.dark.bg,
+    width: "100%",
+    height: 150,
+    alignItems: "center",
+  },
+  logoWrapper: {
+    width: WIDTH * (113 / myWidth),
+    height: WIDTH * (113 / myWidth),
+    borderRadius: 10,
+    overflow: "hidden",
+    marginRight: 10,
+    borderWidth: 0.7,
+    borderColor: Colors.dark.border,
+  },
+  infoWrapper: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 8,
+    flexWrap: "wrap",
+  },
+  bottomSection: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  progressWrapper: {
+    flex: 1,
+    marginRight: 10,
+  },
+  barLabel: {
+    fontSize: 13,
+  },
+  barBackground: {
+    height: 3,
+    backgroundColor: Colors.dark.border_muted,
+    borderRadius: 10,
+    marginVertical: 2,
+  },
+  barFill: {
+    height: "100%",
+    backgroundColor: Colors.dark.text,
+    borderRadius: 10,
+  },
+  barText: {
+    fontSize: 12,
+    marginBottom: 6,
+  },
+  disclaimer: {
+    fontSize: 9,
+    flexShrink: 1,
+    width: WIDTH * (90 / myWidth),
   },
 });

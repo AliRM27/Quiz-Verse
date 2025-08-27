@@ -59,7 +59,7 @@ export const Colors = {
   dark: {
     bg_gradient: ["#000000ff", "#3d3d3dff"],
     bg_dark: "hsl(336 0% 1%)",
-    bg: "hsl(300 0% 4%)",
+    bg: "hsl(300 0% 6%)",
     bg_light: "hsl(0 0% 9%)",
     text: "hsl(300 0% 95%)",
     text_muted: "hsl(300 0% 69%)",
