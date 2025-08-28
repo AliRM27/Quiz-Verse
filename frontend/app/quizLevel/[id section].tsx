@@ -294,7 +294,10 @@ export default function Index() {
                         shadowRadius: 4,
                         justifyContent: "center",
                       },
-                      pressedAnswer === index && { shadowOpacity: 0 },
+                      pressedAnswer === index && {
+                        shadowOpacity: 0,
+                        elevation: 0,
+                      },
                       selectedAnswer === index && {
                         backgroundColor: Colors.dark.border_muted,
                       },
@@ -338,7 +341,10 @@ export default function Index() {
                         shadowOpacity: 0.25,
                         shadowRadius: 4,
                       },
-                      pressedAnswer === index && { shadowOpacity: 0 },
+                      pressedAnswer === index && {
+                        shadowOpacity: 0,
+                        elevation: 0,
+                      },
                       selectedAnswer === index && {
                         backgroundColor: Colors.dark.border_muted,
                       },
