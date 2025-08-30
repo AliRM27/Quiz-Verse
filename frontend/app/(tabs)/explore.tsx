@@ -60,8 +60,8 @@ export default function Explore() {
         <Search
           width={25}
           height={25}
-          style={{ position: "absolute", top: 12, left: 13 }}
-          color={"white"}
+          style={{ position: "absolute", top: 12, left: 15 }}
+          color={Colors.dark.text_muted}
           stroke={"black"}
         />
       </View>
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     padding: 10,
     borderWidth: 1,
-    borderColor: Colors.dark.border_muted,
+    borderColor: Colors.dark.bg_light,
     borderRadius: 10,
     backgroundColor: Colors.dark.bg,
     width: "100%",

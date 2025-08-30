@@ -17,6 +17,7 @@ import Info from "@/components/ui/Info";
 import { myWidth, WIDTH } from "@/constants/Dimensions";
 import QuizModal from "@/components/animatinos/QuizModal";
 import { useMemo, useState } from "react";
+import { router } from "expo-router";
 
 export default function Profile() {
   const { logout, user, deleteAccount, loading } = useUser();
@@ -88,10 +89,14 @@ export default function Profile() {
           </Text>
         </View>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <TouchableOpacity style={styles.iconBackground}>
+          <TouchableOpacity activeOpacity={0.6} style={styles.iconBackground}>
             <EditIcon width={24} height={24} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBackground}>
+          <TouchableOpacity
+            onPress={() => router.push("/(settings)")}
+            activeOpacity={0.6}
+            style={styles.iconBackground}
+          >
             <SettingsIcon width={24} height={24} />
           </TouchableOpacity>
         </View>
