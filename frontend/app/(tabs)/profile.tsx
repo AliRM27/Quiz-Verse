@@ -4,14 +4,13 @@ import {
   Text,
   Image,
   StyleSheet,
-  Button,
   ActivityIndicator,
 } from "react-native";
 import { useUser } from "@/context/userContext";
 import { Colors } from "@/constants/Colors";
 import SettingsIcon from "@/assets/svgs/settings.svg";
 import EditIcon from "@/assets/svgs/edit.svg";
-import { defaultStyles, REGULAR_FONT, ITALIC_FONT } from "@/constants/Styles";
+import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
 import QuizLogo from "@/components/ui/QuizLogo";
 import Info from "@/components/ui/Info";
 import { myWidth, WIDTH } from "@/constants/Dimensions";
@@ -20,7 +19,7 @@ import { useMemo, useState } from "react";
 import { router } from "expo-router";
 
 export default function Profile() {
-  const { logout, user, deleteAccount, loading } = useUser();
+  const { user, loading } = useUser();
   const [currQuiz, setCurrQuiz] = useState(user?.lastPlayed[0]?.quizId);
   const [visible, setVisible] = useState(false);
 
@@ -240,7 +239,6 @@ export default function Profile() {
           )}
         </View>
       </View>
-      <Button title="Log out" onPress={() => logout()} />
     </View>
   );
 }

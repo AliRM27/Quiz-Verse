@@ -25,7 +25,7 @@ import Back from "@/assets/svgs/backArr.svg";
 import { router } from "expo-router";
 
 const Settings = () => {
-  const { user } = useUser();
+  const { user, logout } = useUser();
   const [state, setState] = useState(false);
 
   if (!user) {
@@ -118,6 +118,7 @@ const Settings = () => {
             </View>
           </TouchableOpacity>
           <TouchableOpacity
+            onPress={() => logout()}
             activeOpacity={0.7}
             style={{
               flexDirection: "row",
