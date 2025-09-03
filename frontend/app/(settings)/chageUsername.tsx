@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Colors } from "@/constants/Colors";
 import { REGULAR_FONT } from "@/constants/Styles";
 import { Auth, layout } from "@/constants/Dimensions";
