@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { Colors } from "@/constants/Colors";
-import { REGULAR_FONT } from "@/constants/Styles";
 import { Auth, layout } from "@/constants/Dimensions";
 import ArrBack from "@/assets/svgs/backArr.svg";
 import { router } from "expo-router";
