@@ -56,6 +56,8 @@ export default function Explore() {
           style={[styles.input, focused && { borderColor: Colors.dark.text }]}
           placeholder="Write something"
           placeholderTextColor={Colors.dark.text_muted}
+          autoCorrect={false}
+          returnKeyType="search"
         />
         <Search
           width={25}
