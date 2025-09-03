@@ -6,6 +6,8 @@ import {
   TextInput,
   ActivityIndicator,
   FlatList,
+  Pressable,
+  Keyboard,
 } from "react-native";
 import Search from "@/assets/svgs/search.svg";
 import { REGULAR_FONT } from "@/constants/Styles";
@@ -16,6 +18,7 @@ import { debounce } from "lodash";
 import QuizLogo from "@/components/ui/QuizLogo";
 import { useUser } from "@/context/userContext";
 import { myWidth, WIDTH } from "@/constants/Dimensions";
+import Close from "@/assets/svgs/close.svg";
 
 export default function Explore() {
   const [focused, setFocused] = useState(false);
@@ -66,6 +69,20 @@ export default function Explore() {
           color={Colors.dark.text_muted}
           stroke={"black"}
         />
+        <Pressable
+          onPress={() => {
+            setFocused(false);
+            setInput("");
+            setQuery("");
+            Keyboard.dismiss();
+          }}
+          style={[
+            { position: "absolute", top: 12, right: 15 },
+            !focused && { display: "none" },
+          ]}
+        >
+          <Close width={25} height={25} color={Colors.dark.text_muted} />
+        </Pressable>
       </View>
 
       {(isLoading || loading) && (
