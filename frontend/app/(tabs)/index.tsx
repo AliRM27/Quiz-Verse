@@ -2,7 +2,6 @@ import { Text, StyleSheet, View, Image } from "react-native";
 import { Colors } from "@/constants/Colors";
 import ProfilePic from "@/assets/svgs/profilePic.svg";
 import Trophy from "@/assets/svgs/currencyTropht.svg";
-import Dimond from "@/assets/svgs/currencyDiamond.svg";
 import { defaultStyles } from "@/constants/Styles";
 import { layout } from "@/constants/Dimensions";
 import HomePageCards from "@/components/HomePageCards";
