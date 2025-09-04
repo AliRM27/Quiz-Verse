@@ -92,7 +92,7 @@ export default function HomePageCards() {
   }
 
   return (
-    <View style={[defaultStyles.container, {}]}>
+    <View style={defaultStyles.container}>
       <Animated.FlatList
         ref={flatListRef}
         data={data}
@@ -232,8 +232,11 @@ export default function HomePageCards() {
           <CircularProgress
             progress={
               quiz.questionsTotal > 0
-                ? (currentProgress?.questionsCompleted / quiz.questionsTotal) *
-                  100
+                ? Math.floor(
+                    (currentProgress?.questionsCompleted /
+                      quiz.questionsTotal) *
+                      100
+                  )
                 : 0
             }
             size={HEIGHT * (50 / myHeight)}

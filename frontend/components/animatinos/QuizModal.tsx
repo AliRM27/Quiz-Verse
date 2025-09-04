@@ -174,11 +174,11 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 <LineDashed />
                 <View>
                   <CircularProgress
-                    progress={
+                    progress={Math.floor(
                       (currentProgress?.questionsCompleted /
                         quiz.questionsTotal) *
-                      100
-                    }
+                        100
+                    )}
                     size={HEIGHT * (50 / myHeight)}
                     strokeWidth={3}
                   />

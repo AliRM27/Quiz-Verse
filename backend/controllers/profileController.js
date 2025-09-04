@@ -67,9 +67,15 @@ export const updateProgress = async (req, res) => {
 
       await User.findByIdAndUpdate(
         userId,
-        { $push: { progress: newProgress } },
+        {
+          $push: {
+            progress: newProgress,
+            unlockedQuizzes: { quizId: quizObjectId },
+          },
+        },
         { new: true }
       );
+      return res.status(200).json({ message: "Progress entry ensured" });
     }
 
     // Step 2: Update fields for the section

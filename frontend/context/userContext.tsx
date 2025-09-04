@@ -19,6 +19,7 @@ type User = {
   email: string;
   profileImage: string;
   completedQuizzes: any[];
+  unlockedQuizzes: any[];
   progress: any[];
   role: string;
   stars: number;
