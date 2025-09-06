@@ -312,7 +312,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     >
                       <View
                         style={{
-                          width: `${(currentProgress.sections[index].questions / lvl.questions.length) * 100}%`,
+                          width: `${(currentProgress?.sections[index].questions / lvl.questions.length) * 100}%`,
                           backgroundColor: Colors.dark.text,
                           height: 3,
                           borderRadius: 6,
@@ -320,7 +320,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                       />
                     </View>
                     <Text style={[styles.txt_muted, { fontSize: 10 }]}>
-                      {currentProgress.sections[index].questions} /{" "}
+                      {currentProgress?.sections[index].questions} /{" "}
                       {lvl.questions.length}
                     </Text>
                   </View>
@@ -335,7 +335,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     >
                       <View
                         style={{
-                          width: `${(currentProgress.sections[index].rewards / lvl.rewards) * 100}%`,
+                          width: `${(currentProgress?.sections[index].rewards / lvl.rewards) * 100}%`,
                           backgroundColor: "#FFB11F",
                           height: 3,
                           borderRadius: 6,
@@ -343,7 +343,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                       />
                     </View>
                     <Text style={[styles.txt_muted, { fontSize: 10 }]}>
-                      {currentProgress.sections[index].rewards} / {lvl.rewards}
+                      {currentProgress?.sections[index].rewards} / {lvl.rewards}
                     </Text>
                   </View>
                 </TouchableOpacity>

@@ -22,7 +22,7 @@ export default function Index() {
   useEffect(() => {
     configureGoogleSignIn();
     // If already authenticated, redirect to tabs
-    if (isAuthenticated && !loading) {
+    if (isAuthenticated && !loading && !signingIn) {
       router.replace("/(tabs)");
     }
   }, [isAuthenticated, loading]);
@@ -69,15 +69,37 @@ export default function Index() {
           onPress={async () => {
             setSigningIn(true);
             setErrorMsg("");
+
             try {
               await GoogleSignin.hasPlayServices();
               const userInfo = await GoogleSignin.signIn();
+
+              // If no userInfo or no idToken, treat it as cancelled or failed
+              if (!userInfo.data?.idToken) {
+                setErrorMsg("Sign in was cancelled or did not return a token.");
+                return;
+              }
+
+              // Optional: clear out stale sessions if you want strictly fresh sign-ins
+              // await GoogleSignin.signOut();
+
+              // Get fresh tokens
               const tokens = await GoogleSignin.getTokens();
+
+              // Call your backend
               const res = await googleAuth(tokens.idToken);
+
+              // Set user data and route
               await setUserData(res?.data.user, res?.data.token);
-              res?.data.user.name === ""
-                ? router.replace("/(auth)/createUsername")
-                : router.replace("/(tabs)");
+
+              console.log(res?.data.user.name);
+
+              if (res?.data.user?.name === "") {
+                console.log("No username, redirecting to createUsername");
+                router.replace("/(auth)/createUsername");
+              } else {
+                router.replace("/(tabs)");
+              }
             } catch (error: any) {
               let msg = "Login error. Please try again.";
               if (error?.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -89,6 +111,7 @@ export default function Index() {
               ) {
                 msg = "Google Play Services not available.";
               }
+
               setErrorMsg(msg);
               console.log("Login error:", error);
             } finally {
