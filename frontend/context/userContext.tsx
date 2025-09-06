@@ -24,7 +24,7 @@ type User = {
   role: string;
   stars: number;
   level: number;
-  lastPlayed: QuizType[];
+  lastPlayed: any[];
 };
 
 type UserContextType = {
@@ -36,6 +36,8 @@ type UserContextType = {
   deleteAccount: () => Promise<void>;
   isAuthenticated: boolean;
   refreshUser: () => Promise<void>;
+  lastIndexCard: number;
+  setLastIndexRef: (index: number) => void;
 };
 
 const UserContext = createContext<UserContextType>({
@@ -47,12 +49,15 @@ const UserContext = createContext<UserContextType>({
   deleteAccount: async () => {},
   isAuthenticated: false,
   refreshUser: async () => {},
+  lastIndexCard: 0,
+  setLastIndexRef: () => {},
 });
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lastIndexCard, setLastIndexRef] = useState<number>(0);
 
   const isAuthenticated = !!user && !!token;
 
@@ -93,6 +98,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = useCallback(async () => {
     setUser(null);
     setToken(null);
+    setLastIndexRef(0);
     await SecureStore.deleteItemAsync("token");
     router.replace("/(auth)");
   }, []);
@@ -120,6 +126,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       deleteAccount,
       isAuthenticated,
       refreshUser,
+      lastIndexCard,
+      setLastIndexRef,
     }),
     [
       user,
@@ -130,6 +138,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       deleteAccount,
       isAuthenticated,
       refreshUser,
+      lastIndexCard,
+      setLastIndexRef,
     ]
   );
 

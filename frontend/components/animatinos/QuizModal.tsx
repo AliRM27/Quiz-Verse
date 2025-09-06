@@ -3,15 +3,13 @@ import {
   Text,
   StyleSheet,
   Modal,
-  Button,
   Animated,
   PanResponder,
   TouchableOpacity,
   ScrollView,
-  Alert,
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
-import { Colors, GradientColors } from "@/constants/Colors";
+import { Colors } from "@/constants/Colors";
 import { HEIGHT, myHeight, myWidth, WIDTH } from "@/constants/Dimensions";
 import { QuizModalProps } from "@/types";
 import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
@@ -21,6 +19,8 @@ import RotatingGradient from "../ui/gradients/GlowingView";
 import QuizLogo from "@/components/ui/QuizLogo";
 import Info from "../ui/Info";
 import { router } from "expo-router";
+import { updateUser } from "@/services/api";
+import { useUser } from "@/context/userContext";
 
 const QuizModal: React.FC<QuizModalProps> = ({
   isVisible,
@@ -30,6 +30,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
 }) => {
   const translateY = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
+  const { user, refreshUser } = useUser();
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) =>
@@ -62,21 +63,33 @@ const QuizModal: React.FC<QuizModalProps> = ({
   const [selectedLevelIndex, setSelectedLevelIndex] = useState(0);
 
   useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(opacity, {
-          toValue: 0.5,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [opacity]);
+    if (isVisible) {
+      // Reset opacity to 1 so it always starts from a known value
+      opacity.setValue(1);
+
+      const loop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(opacity, {
+            toValue: 0.5,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacity, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+
+      loop.start();
+
+      return () => {
+        // stop the animation when modal closes
+        loop.stop();
+      };
+    }
+  }, [isVisible]);
 
   return (
     <Modal
@@ -110,15 +123,30 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 <TouchableOpacity
                   activeOpacity={0.8}
                   style={styles.logoContainer}
-                  onPress={() => {
-                    setIsVisible(false);
-                    router.push({
-                      pathname: "/quizLevel/[id section]",
-                      params: {
-                        id: quiz._id,
-                        section: String(selectedLevelIndex),
-                      },
-                    });
+                  onPress={async () => {
+                    try {
+                      if (
+                        user &&
+                        !user.lastPlayed.some((q) => q.quizId._id === quiz._id)
+                      ) {
+                        user.lastPlayed = [
+                          { quizId: quiz._id },
+                          ...user.lastPlayed,
+                        ];
+                        user.lastPlayed.length > 2 && user.lastPlayed.pop();
+                        await updateUser({ lastPlayed: user?.lastPlayed });
+                      }
+                      setIsVisible(false);
+                      router.push({
+                        pathname: "/quizLevel/[id section]",
+                        params: {
+                          id: quiz._id,
+                          section: String(selectedLevelIndex),
+                        },
+                      });
+                    } catch (err) {
+                      console.log(err);
+                    }
                   }}
                 >
                   <QuizLogo name={quiz.logoFile} />

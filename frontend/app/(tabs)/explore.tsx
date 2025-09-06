@@ -112,9 +112,7 @@ export default function Explore() {
         </Pressable>
       </View>
 
-      {(isLoading || loading) && (
-        <ActivityIndicator style={{ marginTop: 10 }} />
-      )}
+      {(isLoading || loading) && <></>}
 
       {!isLoading && !loading && quizzes?.length === 0 && (
         <Text style={styles.txt}>No quizzes found.</Text>
@@ -141,7 +139,9 @@ export default function Explore() {
 
           return (
             <View style={styles.card}>
-              {!user.unlockedQuizzes.some((q) => q.quizId._id === item._id) && (
+              {!user.unlockedQuizzes.some(
+                (q) => q.quizId._id === item._id || q.quizId === item._id
+              ) && (
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => handleAddQuiz(item._id)}

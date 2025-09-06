@@ -70,15 +70,16 @@ export default function Index() {
 
   const handleNextButton = async () => {
     let isCorrect;
-    if (selectedAnswer !== null)
+    if (selectedAnswer !== null) {
       isCorrect = currQuestion.options[selectedAnswer].isCorrect;
-    else
+    } else {
       isCorrect =
         currQuestion.options.find(
           (o: any) =>
             o.isCorrect &&
             o.text.toLowerCase().trim() === shortAnswer.toLowerCase().trim()
         ) !== undefined;
+    }
 
     isCorrect && setCorrectAnswers((p) => p + 1); // if you still show this in UI
 
@@ -123,7 +124,7 @@ export default function Index() {
     } else {
       setCurrQuestionIndex((p) => p + 1);
     }
-
+    setShortAnswer("");
     setSelectedAnswer(null);
   };
 
@@ -147,7 +148,16 @@ export default function Index() {
           gap: 20,
         }}
       >
-        <Pressable onPress={() => router.back()}>
+        <Pressable
+          onPress={async () => {
+            try {
+              await refreshUser();
+              router.back();
+            } catch (err) {
+              console.log(err);
+            }
+          }}
+        >
           <BackArr />
         </Pressable>
         <View

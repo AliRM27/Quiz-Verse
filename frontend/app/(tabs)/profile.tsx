@@ -127,7 +127,7 @@ export default function Profile() {
                     paddingTop: 10,
                     paddingHorizontal: 20,
                     alignItems: "center",
-                    gap: 5,
+                    gap: 10,
                   },
                   index === 0 && {
                     borderRightWidth: 1,
@@ -142,10 +142,11 @@ export default function Profile() {
                     alignItems: "center",
                     borderBottomWidth: 1,
                     borderColor: Colors.dark.border,
-                    gap: 5,
+                    gap: 8,
                   }}
                 >
                   <TouchableOpacity
+                    activeOpacity={0.7}
                     onPress={() => {
                       setCurrQuiz(quizId);
                       setVisible((p) => !p);
@@ -169,11 +170,13 @@ export default function Profile() {
                   >
                     <Info company={quizId.company} title={quizId.title} />
                   </Text>
-                  <Text style={[styles.txt, { fontSize: 18 }]}>
+                  <Text
+                    style={[styles.txt, { fontSize: 15, textAlign: "center" }]}
+                  >
                     {quizId.title}
                   </Text>
                 </View>
-                <View style={{ width: "80%", gap: 7 }}>
+                <View style={{ width: "80%", gap: 15 }}>
                   <View style={{ gap: 3 }}>
                     <Text style={[styles.txt, { fontSize: 12 }]}>Progress</Text>
                     <View
@@ -185,7 +188,7 @@ export default function Profile() {
                     >
                       <View
                         style={{
-                          width: `${(currentProgress.questionsCompleted / quizId.questionsTotal) * 100}%`,
+                          width: `${(currentProgress?.questionsCompleted / quizId.questionsTotal) * 100}%`,
                           backgroundColor: Colors.dark.text,
                           borderRadius: 6,
                           height: 3,
@@ -193,9 +196,11 @@ export default function Profile() {
                       />
                     </View>
                     <Text style={[styles.txt, { fontSize: 10 }]}>
-                      {(currentProgress.questionsCompleted /
-                        quizId.questionsTotal) *
-                        100}
+                      {Math.floor(
+                        (currentProgress?.questionsCompleted /
+                          quizId.questionsTotal) *
+                          100
+                      )}
                       %
                     </Text>
                   </View>
@@ -210,7 +215,7 @@ export default function Profile() {
                     >
                       <View
                         style={{
-                          width: `${(currentProgress.rewardsTotal / quizId.rewardsTotal) * 100}%`,
+                          width: `${(currentProgress?.rewardsTotal / quizId.rewardsTotal) * 100}%`,
                           backgroundColor: Colors.dark.secondary,
                           borderRadius: 6,
                           height: 3,
@@ -218,7 +223,7 @@ export default function Profile() {
                       />
                     </View>
                     <Text style={[styles.txt, { fontSize: 10 }]}>
-                      {(currentProgress.rewardsTotal / quizId.rewardsTotal) *
+                      {(currentProgress?.rewardsTotal / quizId.rewardsTotal) *
                         100}
                       %
                     </Text>

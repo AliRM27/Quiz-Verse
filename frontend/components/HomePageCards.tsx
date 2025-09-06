@@ -27,10 +27,10 @@ const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
 
 export default function HomePageCards() {
   const scrollX = useRef(new Animated.Value(0)).current;
+  const { user, loading, lastIndexCard, setLastIndexRef } = useUser();
   const flatListRef = useRef<Animated.FlatList<any>>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const { user, loading } = useUser();
   const scrollToCard = useCallback((index: number) => {
     flatListRef.current?.scrollToIndex({
       index,
@@ -49,6 +49,19 @@ export default function HomePageCards() {
     if (!user?.progress || !quiz?._id) return undefined;
     return user.progress.find((quizObj) => quizObj.quizId._id === quiz._id);
   }, [user, quiz]);
+
+  useEffect(() => {
+    // Scroll back to where user left off (if > 0)
+    if (flatListRef.current && lastIndexCard > 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToIndex({
+          index: lastIndexCard,
+          animated: false,
+        });
+      }, 0);
+      setCurrentIndex(lastIndexCard); // sync local state
+    }
+  }, []);
 
   if (loading || isLoading) {
     return (
@@ -162,9 +175,13 @@ export default function HomePageCards() {
                 activeOpacity={0.8}
                 style={{ borderRadius: 10, overflow: "hidden" }}
                 onPress={() => {
-                  index === currentIndex
-                    ? setIsModalVisible((p) => !p)
-                    : scrollToCard(index);
+                  if (index === currentIndex) {
+                    setLastIndexRef(index);
+                    setIsModalVisible((p) => !p);
+                    return;
+                  }
+                  setLastIndexRef(index);
+                  scrollToCard(index);
                 }}
               >
                 <RotatingGradient isOn={index === currentIndex}>
