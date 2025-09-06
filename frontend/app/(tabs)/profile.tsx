@@ -114,124 +114,144 @@ export default function Profile() {
             height: 300,
           }}
         >
-          {user?.lastPlayed.map((quiz, index) => {
-            const quizId = quiz.quizId;
-            const currentProgress = progressMap.get(quiz.quizId._id);
-            return (
-              <View
-                key={index}
-                style={[
-                  {
-                    width: "50%",
-                    height: "100%",
-                    paddingTop: 10,
-                    paddingHorizontal: 20,
-                    alignItems: "center",
-                    gap: 10,
-                  },
-                  index === 0 && {
-                    borderRightWidth: 1,
-                    borderColor: Colors.dark.border,
-                  },
-                ]}
-              >
+          {user.lastPlayed.length === 0 ? (
+            <Text
+              style={{
+                color: Colors.dark.text,
+                textAlign: "center",
+                width: "100%",
+                margin: "auto",
+              }}
+            >
+              Play Quizzes
+            </Text>
+          ) : (
+            user?.lastPlayed.map((quiz, index) => {
+              const quizId = quiz.quizId;
+              const currentProgress = progressMap.get(quiz.quizId._id);
+              return (
                 <View
-                  style={{
-                    width: "100%",
-                    height: "62%",
-                    alignItems: "center",
-                    borderBottomWidth: 1,
-                    borderColor: Colors.dark.border,
-                    gap: 8,
-                  }}
-                >
-                  <TouchableOpacity
-                    activeOpacity={0.7}
-                    onPress={() => {
-                      setCurrQuiz(quizId);
-                      setVisible((p) => !p);
-                    }}
-                    style={{
-                      borderWidth: 1,
+                  key={index}
+                  style={[
+                    {
+                      width: "50%",
+                      height: "100%",
+                      paddingTop: 10,
+                      paddingHorizontal: 20,
+                      alignItems: "center",
+                      gap: 10,
+                    },
+                    index === 0 && {
+                      borderRightWidth: 1,
                       borderColor: Colors.dark.border,
-                      borderRadius: 10,
-                      overflow: "hidden",
-                      height: WIDTH * (100 / myWidth),
-                      width: WIDTH * (100 / myWidth),
+                    },
+                  ]}
+                >
+                  <View
+                    style={{
+                      width: "100%",
+                      height: "62%",
+                      alignItems: "center",
+                      borderBottomWidth: 1,
+                      borderColor: Colors.dark.border,
+                      gap: 8,
                     }}
                   >
-                    <QuizLogo name={quizId.logoFile} />
-                  </TouchableOpacity>
-                  <Text
-                    style={[
-                      styles.txt_muted,
-                      { fontSize: 5, textAlign: "center", width: "75%" },
-                    ]}
-                  >
-                    <Info company={quizId.company} title={quizId.title} />
-                  </Text>
-                  <Text
-                    style={[styles.txt, { fontSize: 15, textAlign: "center" }]}
-                  >
-                    {quizId.title}
-                  </Text>
-                </View>
-                <View style={{ width: "80%", gap: 15 }}>
-                  <View style={{ gap: 3 }}>
-                    <Text style={[styles.txt, { fontSize: 12 }]}>Progress</Text>
-                    <View
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        setCurrQuiz(quizId);
+                        setVisible((p) => !p);
+                      }}
                       style={{
-                        width: "100%",
-                        backgroundColor: Colors.dark.border,
-                        borderRadius: 6,
+                        borderWidth: 1,
+                        borderColor: Colors.dark.border,
+                        borderRadius: 10,
+                        overflow: "hidden",
+                        height: WIDTH * (100 / myWidth),
+                        width: WIDTH * (100 / myWidth),
                       }}
                     >
-                      <View
-                        style={{
-                          width: `${(currentProgress?.questionsCompleted / quizId.questionsTotal) * 100}%`,
-                          backgroundColor: Colors.dark.text,
-                          borderRadius: 6,
-                          height: 3,
-                        }}
-                      />
-                    </View>
-                    <Text style={[styles.txt, { fontSize: 10 }]}>
-                      {Math.floor(
-                        (currentProgress?.questionsCompleted /
-                          quizId.questionsTotal) *
-                          100
-                      )}
-                      %
+                      <QuizLogo name={quizId.logoFile} />
+                    </TouchableOpacity>
+                    <Text
+                      style={[
+                        styles.txt_muted,
+                        { fontSize: 5, textAlign: "center", width: "75%" },
+                      ]}
+                    >
+                      <Info company={quizId.company} title={quizId.title} />
+                    </Text>
+                    <Text
+                      style={[
+                        styles.txt,
+                        { fontSize: 15, textAlign: "center" },
+                      ]}
+                    >
+                      {quizId.title}
                     </Text>
                   </View>
-                  <View style={{ gap: 3 }}>
-                    <Text style={[styles.txt, { fontSize: 12 }]}>Rewards</Text>
-                    <View
-                      style={{
-                        width: "100%",
-                        backgroundColor: Colors.dark.border,
-                        borderRadius: 6,
-                      }}
-                    >
+                  <View style={{ width: "80%", gap: 15 }}>
+                    <View style={{ gap: 3 }}>
+                      <Text style={[styles.txt, { fontSize: 12 }]}>
+                        Progress
+                      </Text>
                       <View
                         style={{
-                          width: `${(currentProgress?.rewardsTotal / quizId.rewardsTotal) * 100}%`,
-                          backgroundColor: Colors.dark.secondary,
+                          width: "100%",
+                          backgroundColor: Colors.dark.border,
                           borderRadius: 6,
-                          height: 3,
                         }}
-                      />
+                      >
+                        <View
+                          style={{
+                            width: `${(currentProgress?.questionsCompleted / quizId.questionsTotal) * 100}%`,
+                            backgroundColor: Colors.dark.text,
+                            borderRadius: 6,
+                            height: 3,
+                          }}
+                        />
+                      </View>
+                      <Text style={[styles.txt, { fontSize: 10 }]}>
+                        {Math.floor(
+                          (currentProgress?.questionsCompleted /
+                            quizId.questionsTotal) *
+                            100
+                        )}
+                        %
+                      </Text>
                     </View>
-                    <Text style={[styles.txt, { fontSize: 10 }]}>
-                      {(currentProgress?.rewardsTotal / quizId.rewardsTotal) *
-                        100}
-                      %
-                    </Text>
+                    <View style={{ gap: 3 }}>
+                      <Text style={[styles.txt, { fontSize: 12 }]}>
+                        Rewards
+                      </Text>
+                      <View
+                        style={{
+                          width: "100%",
+                          backgroundColor: Colors.dark.border,
+                          borderRadius: 6,
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: `${(currentProgress?.rewardsTotal / quizId.rewardsTotal) * 100}%`,
+                            backgroundColor: Colors.dark.secondary,
+                            borderRadius: 6,
+                            height: 3,
+                          }}
+                        />
+                      </View>
+                      <Text style={[styles.txt, { fontSize: 10 }]}>
+                        {(currentProgress?.rewardsTotal / quizId.rewardsTotal) *
+                          100}
+                        %
+                      </Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            );
-          })}
+              );
+            })
+          )}
           {currQuiz && (
             <QuizModal
               quiz={currQuiz}
