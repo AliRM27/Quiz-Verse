@@ -143,7 +143,7 @@ export default function Index() {
           paddingTop: layout.paddingTop,
           paddingBottom: 50,
           paddingHorizontal: 15,
-          backgroundColor: Colors.dark.bg_dark,
+          backgroundColor: "#131313",
           height: "100%",
           gap: 20,
         }}
@@ -167,30 +167,20 @@ export default function Index() {
             alignItems: "center",
           }}
         >
-          <View>
-            <Text
-              style={[
-                styles.txt,
-                {
-                  fontSize: 17,
-                  marginTop: 15,
-                  fontWeight: 600,
-                },
-              ]}
-            >
-              Question {currQuestionIndex + 1}
-            </Text>
+          <View style={{ gap: 10 }}>
             <Text
               style={[
                 styles.txt,
                 {
                   fontSize: 25,
+                  fontWeight: "600",
                 },
               ]}
             >
               {data.title}
             </Text>
           </View>
+
           <View
             style={{
               alignItems: "center",
@@ -229,16 +219,31 @@ export default function Index() {
             <Text style={[styles.txt]}>{currSection.difficulty}</Text>
           </View>
         </View>
+        <Text
+          style={[
+            styles.txt,
+            {
+              fontSize: 17,
+              marginTop: 15,
+              fontWeight: 600,
+            },
+          ]}
+        >
+          Question {currQuestionIndex + 1}
+        </Text>
         <View
           style={{
             borderWidth: 1,
             backgroundColor: Colors.dark.bg_light,
-            borderColor: Colors.dark.bg_light,
+            borderColor: "#1F1D1D",
             padding: 20,
             paddingVertical: 30,
             borderRadius: 20,
             elevation: 3,
-            shadowColor: Colors.dark.text_muted,
+            shadowColor: "black",
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: 0.5,
+            shadowRadius: 1,
             marginBottom: 10,
             minHeight: "20%",
             justifyContent: "center",
@@ -270,6 +275,9 @@ export default function Index() {
               placeholderTextColor={Colors.dark.text_muted}
               value={shortAnswer}
               onChangeText={(t) => setShortAnswer(t)}
+              autoCorrect={false}
+              autoCapitalize="none"
+              autoFocus
               style={{
                 width: "100%",
                 height: 60,
@@ -293,15 +301,15 @@ export default function Index() {
                       {
                         borderWidth: 1,
                         backgroundColor: Colors.dark.bg_light,
-                        borderColor: Colors.dark.bg_light,
+                        borderColor: "#1F1D1D",
                         padding: 15,
                         paddingLeft: 30,
                         borderRadius: 50,
                         elevation: 3,
-                        shadowColor: Colors.dark.text_muted,
+                        shadowColor: "black",
                         shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 4,
+                        shadowOpacity: 0.5,
+                        shadowRadius: 1,
                         justifyContent: "center",
                       },
                       pressedAnswer === index && {
@@ -309,7 +317,8 @@ export default function Index() {
                         elevation: 0,
                       },
                       selectedAnswer === index && {
-                        backgroundColor: Colors.dark.border_muted,
+                        backgroundColor: "#232423",
+                        borderColor: "#323333",
                       },
                     ]}
                     onPressIn={() => setPressedAnswer(index)}
@@ -341,22 +350,23 @@ export default function Index() {
                       {
                         borderWidth: 1,
                         backgroundColor: Colors.dark.bg_light,
-                        borderColor: Colors.dark.bg_light,
+                        borderColor: "#1F1D1D",
                         padding: 15,
                         width: "45%",
                         borderRadius: 50,
                         elevation: 3,
-                        shadowColor: Colors.dark.text_muted,
+                        shadowColor: "black",
                         shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 4,
+                        shadowOpacity: 0.5,
+                        shadowRadius: 1,
                       },
                       pressedAnswer === index && {
                         shadowOpacity: 0,
                         elevation: 0,
                       },
                       selectedAnswer === index && {
-                        backgroundColor: Colors.dark.border_muted,
+                        backgroundColor: "#232423",
+                        borderColor: "#323333",
                       },
                     ]}
                     onPressIn={() => setPressedAnswer(index)}

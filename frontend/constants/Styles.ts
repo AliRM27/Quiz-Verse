@@ -4,7 +4,7 @@ import { layout } from "./Dimensions";
 
 export const BR = 10;
 
-export const REGULAR_FONT = "Inter-Regular";
+export const REGULAR_FONT = "Inter";
 export const ITALIC_FONT = "Inter-Italic";
 
 export const defaultStyles = StyleSheet.create({

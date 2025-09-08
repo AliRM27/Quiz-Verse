@@ -42,12 +42,36 @@ export default function HomeScreen() {
             { gap: HEIGHT * (10 / myHeight) },
           ]}
         >
-          <Image
-            src={user?.profileImage}
-            width={50}
-            height={50}
-            style={{ borderRadius: 50 }}
-          />
+          <View
+            style={{
+              borderWidth: 2,
+              borderColor: Colors.dark.primary,
+              transform: [{ rotate: "45deg" }],
+              padding: 3,
+              borderRadius: 20,
+            }}
+          >
+            <View
+              style={{
+                width: 50,
+                height: 50,
+                transform: [{ rotate: "0deg" }],
+                overflow: "hidden",
+                justifyContent: "center",
+                alignItems: "center",
+                borderRadius: 15,
+              }}
+            >
+              <Image
+                src={user?.profileImage}
+                width={60}
+                height={60}
+                style={{
+                  transform: [{ rotate: "-45deg" }],
+                }}
+              />
+            </View>
+          </View>
           <Text style={styles.txt}>{user?.name}</Text>
         </View>
         {/* <View

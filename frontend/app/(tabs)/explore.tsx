@@ -189,7 +189,13 @@ export default function Explore() {
                         ]}
                       />
                     </View>
-                    <Text style={[styles.txt_muted, styles.barText]}>
+                    <Text
+                      style={[
+                        styles.txt_muted,
+                        styles.barText,
+                        { fontSize: 10 },
+                      ]}
+                    >
                       {progressPercent}%
                     </Text>
 
@@ -205,7 +211,13 @@ export default function Explore() {
                         ]}
                       />
                     </View>
-                    <Text style={[styles.txt_muted, styles.barText]}>
+                    <Text
+                      style={[
+                        styles.txt_muted,
+                        styles.barText,
+                        { fontSize: 10 },
+                      ]}
+                    >
                       {rewards}/{item.rewardsTotal}
                     </Text>
                   </View>

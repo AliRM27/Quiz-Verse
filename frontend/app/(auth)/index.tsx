@@ -92,10 +92,7 @@ export default function Index() {
               // Set user data and route
               await setUserData(res?.data.user, res?.data.token);
 
-              console.log(res?.data.user.name);
-
               if (res?.data.user?.name === "") {
-                console.log("No username, redirecting to createUsername");
                 router.replace("/(auth)/createUsername");
               } else {
                 router.replace("/(tabs)");

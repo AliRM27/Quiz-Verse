@@ -44,7 +44,7 @@ export default function createUsername() {
     }
     setloading(true);
     try {
-      const res = await updateUser({ name: val });
+      await updateUser({ name: val });
       user.name = val;
       router.replace("/(tabs)");
     } catch (err) {

@@ -20,8 +20,9 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("@/assets/fonts/SpaceMono-Regular.ttf"),
     "LibertinusMono-Regular": require("@/assets/fonts/LibertinusMono-Regular.ttf"),
-    "Inter-Regular": require("@/assets/fonts/Inter-Regular.ttf"),
+    // "Inter-Regular": require("@/assets/fonts/Inter-Regular.ttf"),
     "Inter-Italic": require("@/assets/fonts/Inter-Italic.ttf"),
+    Inter: require("@/assets/fonts/Inter-VariableFont_opsz,wght.ttf"),
   });
   const { user, isAuthenticated } = useUser();
 

@@ -54,17 +54,42 @@ export default function Profile() {
         ]}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <Image
-            src={user?.profileImage}
-            width={60}
-            height={60}
-            style={{ borderRadius: 50 }}
-          />
+          <View
+            style={{
+              borderWidth: 2,
+              borderColor: "#58d01cff",
+              transform: [{ rotate: "45deg" }],
+              padding: 3,
+              borderRadius: 20,
+            }}
+          >
+            <View
+              style={{
+                width: 50,
+                height: 50,
+                transform: [{ rotate: "0deg" }],
+                overflow: "hidden",
+                justifyContent: "center",
+                alignItems: "center",
+                borderRadius: 15,
+              }}
+            >
+              <Image
+                src={user?.profileImage}
+                width={60}
+                height={60}
+                style={{
+                  transform: [{ rotate: "-45deg" }],
+                }}
+              />
+            </View>
+          </View>
           <Text
             style={[
               styles.txt,
               {
                 fontSize: 18,
+                fontWeight: "600",
               },
             ]}
           >
@@ -185,7 +210,11 @@ export default function Profile() {
                     <Text
                       style={[
                         styles.txt,
-                        { fontSize: 15, textAlign: "center" },
+                        {
+                          fontSize: 14,
+                          textAlign: "center",
+                          fontWeight: "600",
+                        },
                       ]}
                     >
                       {quizId.title}
@@ -242,9 +271,7 @@ export default function Profile() {
                         />
                       </View>
                       <Text style={[styles.txt, { fontSize: 10 }]}>
-                        {(currentProgress?.rewardsTotal / quizId.rewardsTotal) *
-                          100}
-                        %
+                        {currentProgress?.rewardsTotal} / {quizId.rewardsTotal}
                       </Text>
                     </View>
                   </View>
