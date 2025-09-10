@@ -20,11 +20,11 @@ type User = {
   profileImage: string;
   completedQuizzes: any[];
   unlockedQuizzes: any[];
+  lastPlayed: any[];
   progress: any[];
   role: string;
   stars: number;
   level: number;
-  lastPlayed: any[];
 };
 
 type UserContextType = {

@@ -5,6 +5,7 @@ import {
   Image,
   StyleSheet,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { useUser } from "@/context/userContext";
 import { Colors } from "@/constants/Colors";
@@ -21,7 +22,8 @@ import { router } from "expo-router";
 export default function Profile() {
   const { user, loading } = useUser();
   const [currQuiz, setCurrQuiz] = useState(user?.lastPlayed[0]?.quizId);
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState<boolean>(false);
+  const [categroyPressed, setCategoryPressed] = useState<string>("Uncompleted");
 
   const progressMap = useMemo(() => {
     const map = new Map();
@@ -42,7 +44,13 @@ export default function Profile() {
   // const currentProgress = progressMap.get(quizId._id);
 
   return (
-    <View style={{ alignItems: "center", gap: 30 }}>
+    <ScrollView
+      contentContainerStyle={{
+        alignItems: "center",
+        gap: 30,
+        paddingTop: 10,
+      }}
+    >
       <View
         style={[
           defaultStyles.containerRow,
@@ -53,7 +61,7 @@ export default function Profile() {
           },
         ]}
       >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
           <View
             style={{
               borderWidth: 2,
@@ -291,7 +299,71 @@ export default function Profile() {
           )}
         </View>
       </View>
-    </View>
+      <Text
+        style={[
+          styles.txt,
+          { alignSelf: "flex-start", fontSize: 18, marginLeft: 10 },
+        ]}
+      >
+        Your Quizzes
+      </Text>
+      <View
+        style={{
+          width: "100%",
+          borderColor: Colors.dark.border,
+          borderWidth: 1,
+          borderRadius: 10,
+          height: 300,
+          padding: 20,
+        }}
+      >
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          {["Uncompleted", "Completed", "Perfect"].map((category, index) => (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => {
+                setCategoryPressed(category);
+              }}
+              key={index}
+              style={[
+                styles.categoryButton,
+                category === categroyPressed && {
+                  backgroundColor: Colors.dark.text,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.categoryButtonText,
+                  styles.txt,
+                  category === categroyPressed && { color: Colors.dark.bg },
+                ]}
+              >
+                {category}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <View>
+          <Text>
+            {user.progress.map((quiz, index) => {
+              if (
+                !quiz.completed &&
+                !quiz.perfected &&
+                categroyPressed === "Uncompleted"
+              ) {
+                return (
+                  <Text key={index} style={styles.txt}>
+                    {quiz.quizId.title}
+                  </Text>
+                );
+              }
+            })}
+          </Text>
+        </View>
+        <View></View>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -309,5 +381,15 @@ const styles = StyleSheet.create({
   txt_muted: {
     color: Colors.dark.text_muted,
     fontFamily: REGULAR_FONT,
+  },
+  categoryButton: {
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+  },
+  categoryButtonText: {
+    color: Colors.dark.text,
   },
 });

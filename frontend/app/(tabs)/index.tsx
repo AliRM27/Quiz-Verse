@@ -39,7 +39,7 @@ export default function HomeScreen() {
         <View
           style={[
             defaultStyles.containerRow,
-            { gap: HEIGHT * (10 / myHeight) },
+            { gap: HEIGHT * (20 / myHeight) },
           ]}
         >
           <View
