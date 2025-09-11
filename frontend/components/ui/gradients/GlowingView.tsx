@@ -58,7 +58,7 @@ const RotatingGradient = ({ children, isOn = true }: any) => {
       start={start}
       end={end}
       style={{
-        padding: 1,
+        padding: 2,
         borderRadius: 10,
       }}
     >

@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import Quiz from "../models/Quiz.js";
 import mongoose from "mongoose";
 
 export const getProfile = async (req, res) => {
@@ -79,7 +80,7 @@ export const updateProgress = async (req, res) => {
     }
 
     // Step 2: Update fields for the section
-    user = await User.findById(userId);
+    const quiz = await Quiz.findById(quizId);
     const quizProgress = user.progress.find(
       (p) => p.quizId.toString() === quizObjectId.toString()
     );
@@ -102,12 +103,6 @@ export const updateProgress = async (req, res) => {
       });
     }
 
-    // Update completed/perfected if provided
-    if (updates.completed !== undefined)
-      quizProgress.completed = updates.completed;
-    if (updates.perfected !== undefined)
-      quizProgress.perfected = updates.perfected;
-
     // Step 3: Recalculate totals
     quizProgress.questionsCompleted = quizProgress.sections.reduce(
       (sum, s) => sum + (s.questions || 0),
@@ -117,6 +112,16 @@ export const updateProgress = async (req, res) => {
       (sum, s) => sum + (s.rewards || 0),
       0
     );
+
+    if (quizProgress.questionsCompleted === quiz.questionsTotal) {
+      quizProgress.completed = true;
+    }
+    if (
+      quizProgress.rewardsTotal === quiz.rewardsTotal &&
+      quizProgress.completed
+    ) {
+      quizProgress.perfected = true;
+    }
 
     await user.save();
 

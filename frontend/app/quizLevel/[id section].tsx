@@ -10,7 +10,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { layout } from "@/constants/Dimensions";
 import { Colors } from "@/constants/Colors";
 import { router, useLocalSearchParams } from "expo-router";
@@ -24,7 +24,7 @@ import Hint from "@/assets/svgs/hint.svg";
 import Heart from "@/assets/svgs/heartQuiz.svg";
 import CircularProgress from "@/components/ui/CircularProgress";
 import Result from "@/components/Result";
-import { updateUserProgress } from "@/services/api";
+import { updateUserProgress, updateUser } from "@/services/api";
 import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
 
 export default function Index() {
@@ -97,6 +97,7 @@ export default function Index() {
 
     if (isLast) {
       setShowResult(true);
+      handleUserLastPlayed();
 
       // Prepare payload: only new indexes from this run
       const pending = new Set<number>(newCorrectIndexes);
@@ -128,13 +129,22 @@ export default function Index() {
     setSelectedAnswer(null);
   };
 
-  if (showResult)
+  const handleUserLastPlayed = async () => {
+    if (user && user.lastPlayed[0].quizId._id !== data._id) {
+      user.lastPlayed = [{ quizId: data._id }, ...user.lastPlayed];
+      user.lastPlayed.length > 2 && user.lastPlayed.pop();
+      await updateUser({ lastPlayed: user?.lastPlayed });
+    }
+  };
+
+  if (showResult) {
     return (
       <Result
         correctAnswers={correctAnswers}
         total={currSection.questions.length}
       />
     );
+  }
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -151,6 +161,11 @@ export default function Index() {
         <Pressable
           onPress={async () => {
             try {
+              if (user && user.lastPlayed[0].quizId._id !== data._id) {
+                user.lastPlayed = [{ quizId: data._id }, ...user.lastPlayed];
+                user.lastPlayed.length > 2 && user.lastPlayed.pop();
+                await updateUser({ lastPlayed: user?.lastPlayed });
+              }
               await refreshUser();
               router.back();
             } catch (err) {

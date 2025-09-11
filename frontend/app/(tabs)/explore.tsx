@@ -131,10 +131,10 @@ export default function Explore() {
             user?.progress.find((p) => p.quizId._id === item._id)
               ?.rewardsTotal || 0;
           const progressPercent = item.questionsTotal
-            ? ((progress / item.questionsTotal) * 100).toFixed(0)
+            ? Math.floor((progress / item.questionsTotal) * 100)
             : 0;
           const rewardPercent = item.rewardsTotal
-            ? ((rewards / item.rewardsTotal) * 100).toFixed(0)
+            ? Math.floor((rewards / item.rewardsTotal) * 100)
             : 0;
 
           return (
@@ -185,7 +185,7 @@ export default function Explore() {
                       <View
                         style={[
                           styles.barFill,
-                          { width: `${Number(progressPercent)}%` },
+                          { width: `${progressPercent}%` },
                         ]}
                       />
                     </View>
@@ -206,7 +206,7 @@ export default function Explore() {
                           styles.barFill,
                           {
                             backgroundColor: Colors.dark.secondary,
-                            width: `${Number(rewardPercent)}%`,
+                            width: `${rewardPercent}%`,
                           },
                         ]}
                       />

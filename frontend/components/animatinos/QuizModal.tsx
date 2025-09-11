@@ -125,17 +125,6 @@ const QuizModal: React.FC<QuizModalProps> = ({
                   style={styles.logoContainer}
                   onPress={async () => {
                     try {
-                      if (
-                        user &&
-                        !user.lastPlayed.some((q) => q.quizId._id === quiz._id)
-                      ) {
-                        user.lastPlayed = [
-                          { quizId: quiz._id },
-                          ...user.lastPlayed,
-                        ];
-                        user.lastPlayed.length > 2 && user.lastPlayed.pop();
-                        await updateUser({ lastPlayed: user?.lastPlayed });
-                      }
                       setIsVisible(false);
                       router.push({
                         pathname: "/quizLevel/[id section]",

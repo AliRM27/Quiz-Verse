@@ -24,6 +24,10 @@ export default function Profile() {
   const [currQuiz, setCurrQuiz] = useState(user?.lastPlayed[0]?.quizId);
   const [visible, setVisible] = useState<boolean>(false);
   const [categroyPressed, setCategoryPressed] = useState<string>("Uncompleted");
+  const [currIndex, setCurrIndex] = useState<number>(0);
+  const [currLogoFile, setCurrLogoFile] = useState<string>(
+    user?.lastPlayed[0]?.quizId.logoFile
+  );
 
   const progressMap = useMemo(() => {
     const map = new Map();
@@ -40,8 +44,44 @@ export default function Profile() {
       </View>
     );
 
-  // const quizId = user.lastPlayed[0].quizId;
-  // const currentProgress = progressMap.get(quizId._id);
+  const filteredQuizzes = user.progress.filter((quiz) => {
+    if (
+      !quiz.completed &&
+      !quiz.perfected &&
+      categroyPressed === "Uncompleted"
+    ) {
+      return true;
+    } else if (
+      categroyPressed === "Completed" &&
+      quiz.completed &&
+      !quiz.perfected
+    ) {
+      return true;
+    } else if (
+      categroyPressed === "Perfect" &&
+      quiz.completed &&
+      quiz.perfected
+    ) {
+      return true;
+    }
+    return false;
+  });
+
+  const goNext = () => {
+    if (currIndex < filteredQuizzes.length - 1) {
+      setCurrIndex(currIndex + 1);
+    }
+  };
+
+  const goPrev = () => {
+    if (currIndex > 0) {
+      setCurrIndex(currIndex - 1);
+    }
+  };
+
+  const currentProgressList = progressMap.get(
+    filteredQuizzes[currIndex]?.quizId._id
+  );
 
   return (
     <ScrollView
@@ -144,7 +184,7 @@ export default function Profile() {
             borderWidth: 1,
             borderColor: Colors.dark.border_muted,
             borderRadius: 10,
-            height: 300,
+            height: 320,
           }}
         >
           {user.lastPlayed.length === 0 ? (
@@ -159,7 +199,7 @@ export default function Profile() {
               Play Quizzes
             </Text>
           ) : (
-            user?.lastPlayed.map((quiz, index) => {
+            user?.lastPlayed?.map((quiz, index) => {
               const quizId = quiz.quizId;
               const currentProgress = progressMap.get(quiz.quizId._id);
               return (
@@ -169,9 +209,9 @@ export default function Profile() {
                     {
                       width: "50%",
                       height: "100%",
-                      paddingTop: 10,
                       paddingHorizontal: 20,
                       alignItems: "center",
+                      justifyContent: "center",
                       gap: 10,
                     },
                     index === 0 && {
@@ -183,7 +223,7 @@ export default function Profile() {
                   <View
                     style={{
                       width: "100%",
-                      height: "62%",
+                      height: "57%",
                       alignItems: "center",
                       borderBottomWidth: 1,
                       borderColor: Colors.dark.border,
@@ -205,7 +245,11 @@ export default function Profile() {
                         width: WIDTH * (100 / myWidth),
                       }}
                     >
-                      <QuizLogo name={quizId.logoFile} />
+                      {quizId.logoFile ? (
+                        <QuizLogo name={quizId.logoFile} />
+                      ) : (
+                        <QuizLogo name={currLogoFile} />
+                      )}
                     </TouchableOpacity>
                     <Text
                       style={[
@@ -287,16 +331,6 @@ export default function Profile() {
               );
             })
           )}
-          {currQuiz && (
-            <QuizModal
-              quiz={currQuiz}
-              isVisible={visible}
-              setIsVisible={setVisible}
-              currentProgress={user?.progress.find(
-                (quizObj) => quizObj.quizId._id === currQuiz._id
-              )}
-            />
-          )}
         </View>
       </View>
       <Text
@@ -315,6 +349,7 @@ export default function Profile() {
           borderRadius: 10,
           height: 300,
           padding: 20,
+          justifyContent: "space-between",
         }}
       >
         <View style={{ flexDirection: "row", gap: 10 }}>
@@ -323,6 +358,7 @@ export default function Profile() {
               activeOpacity={0.7}
               onPress={() => {
                 setCategoryPressed(category);
+                setCurrIndex(0);
               }}
               key={index}
               style={[
@@ -344,25 +380,147 @@ export default function Profile() {
             </TouchableOpacity>
           ))}
         </View>
-        <View>
-          <Text>
-            {user.progress.map((quiz, index) => {
-              if (
-                !quiz.completed &&
-                !quiz.perfected &&
-                categroyPressed === "Uncompleted"
-              ) {
-                return (
-                  <Text key={index} style={styles.txt}>
-                    {quiz.quizId.title}
-                  </Text>
-                );
-              }
-            })}
-          </Text>
+        {filteredQuizzes.length > 0 &&
+          filteredQuizzes[currIndex].quizId.logoFile && (
+            <View
+              style={{
+                flexDirection: "row",
+                gap: 10,
+                alignItems: "center",
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => {
+                  setCurrQuiz(filteredQuizzes[currIndex].quizId);
+                  setVisible((p) => !p);
+                }}
+                style={{
+                  width: 150,
+                  height: 150,
+                  borderRadius: 10,
+                  overflow: "hidden",
+                  borderWidth: 1,
+                  borderColor: Colors.dark.border,
+                }}
+              >
+                <QuizLogo name={filteredQuizzes[currIndex].quizId.logoFile} />
+              </TouchableOpacity>
+              <View style={{ gap: 10 }}>
+                <Text style={[styles.txt, { fontWeight: 700, fontSize: 20 }]}>
+                  {filteredQuizzes[currIndex].quizId.title}
+                </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 20,
+                  }}
+                >
+                  <View style={{ width: WIDTH * (120 / myWidth) }}>
+                    <Text style={[styles.txt]}>Progress</Text>
+                    <View
+                      style={{
+                        backgroundColor: Colors.dark.border_muted,
+                        borderRadius: 10,
+                        marginVertical: 5,
+                      }}
+                    >
+                      <View
+                        style={[
+                          {
+                            width: `${Math.floor((currentProgressList.questionsCompleted / filteredQuizzes[currIndex].quizId.questionsTotal) * 100)}%`,
+                            height: 4,
+                            backgroundColor: Colors.dark.text,
+                            borderRadius: 10,
+                          },
+                        ]}
+                      />
+                    </View>
+                    <Text style={[styles.txt_muted, { fontSize: 10 }]}>
+                      {Math.floor(
+                        (currentProgressList.questionsCompleted /
+                          filteredQuizzes[currIndex].quizId.questionsTotal) *
+                          100
+                      )}
+                      %
+                    </Text>
+
+                    <Text style={[styles.txt, { marginTop: 10 }]}>Rewards</Text>
+                    <View
+                      style={{
+                        backgroundColor: Colors.dark.border_muted,
+                        borderRadius: 10,
+                        marginVertical: 5,
+                      }}
+                    >
+                      <View
+                        style={[
+                          {
+                            backgroundColor: Colors.dark.secondary,
+                            width: `${Math.floor((currentProgressList.rewardsTotal / filteredQuizzes[currIndex].quizId.rewardsTotal) * 100)}%`,
+                            height: 4,
+                            borderRadius: 10,
+                          },
+                        ]}
+                      />
+                    </View>
+                    <Text style={[styles.txt_muted, { fontSize: 10 }]}>
+                      {currentProgressList.rewardsTotal} /{" "}
+                      {filteredQuizzes[currIndex].quizId.rewardsTotal}
+                    </Text>
+                  </View>
+
+                  {categroyPressed === "Completed" && (
+                    <View
+                      style={{
+                        borderWidth: 4,
+                        borderColor: Colors.dark.success,
+                        width: 50,
+                        height: 50,
+                        borderRadius: 50,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.txt,
+                          {
+                            fontSize: 30,
+                            fontWeight: 800,
+                          },
+                        ]}
+                      >
+                        A
+                      </Text>
+                    </View>
+                  )}
+                  {categroyPressed === "Perfect" && (
+                    <Text style={[styles.txt]}>S</Text>
+                  )}
+                </View>
+              </View>
+            </View>
+          )}
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <TouchableOpacity onPress={goPrev}>
+            <Text style={styles.txt}>Prev</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={goNext}>
+            <Text style={styles.txt}>Next</Text>
+          </TouchableOpacity>
         </View>
-        <View></View>
       </View>
+      {currQuiz && (
+        <QuizModal
+          quiz={currQuiz}
+          isVisible={visible}
+          setIsVisible={setVisible}
+          currentProgress={user?.progress.find(
+            (quizObj) => quizObj.quizId._id === currQuiz._id
+          )}
+        />
+      )}
     </ScrollView>
   );
 }
