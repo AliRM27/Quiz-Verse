@@ -53,7 +53,7 @@ const CircularProgress = ({
       <Svg width={size + 1} height={size + 1}>
         {/* Background Circle */}
         <Circle
-          stroke={Colors.dark.border}
+          stroke={Colors.dark.border_muted}
           fill="none"
           cx={size / 2}
           cy={size / 2}
@@ -62,7 +62,7 @@ const CircularProgress = ({
         />
         {/* Progress Circle */}
         <AnimatedCircle
-          stroke="#ccc"
+          stroke="#00ff6aff"
           fill="none"
           cx={size / 2}
           cy={size / 2}

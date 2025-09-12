@@ -74,41 +74,6 @@ export default function HomeScreen() {
           </View>
           <Text style={styles.txt}>{user?.name}</Text>
         </View>
-        {/* <View
-          style={[
-            defaultStyles.containerRow,
-            {
-              gap: HEIGHT * (10 / myHeight),
-              borderWidth: 0,
-              borderColor: Colors.dark.border,
-            },
-          ]}
-        >
-          <View
-            style={[
-              defaultStyles.containerRow,
-              {
-                borderWidth: 0,
-                borderColor: Colors.dark.border,
-              },
-            ]}
-          >
-            <Trophy width={25} height={25} style={{ zIndex: 1 }} />
-            <Text style={[styles.currency]}>657</Text>
-          </View>
-          <View
-            style={[
-              defaultStyles.containerRow,
-              {
-                borderWidth: 0,
-                borderColor: Colors.dark.border,
-              },
-            ]}
-          >
-            <Dimond width={25} height={25} style={{ zIndex: 1 }} />
-            <Text style={[styles.currency]}>37</Text>
-          </View>
-        </View> */}
       </View>
       <Carousel />
       <View

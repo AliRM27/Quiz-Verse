@@ -280,7 +280,7 @@ export default function Profile() {
                       <View
                         style={{
                           width: "100%",
-                          backgroundColor: Colors.dark.border,
+                          backgroundColor: Colors.dark.border_muted,
                           borderRadius: 6,
                         }}
                       >
@@ -309,7 +309,7 @@ export default function Profile() {
                       <View
                         style={{
                           width: "100%",
-                          backgroundColor: Colors.dark.border,
+                          backgroundColor: Colors.dark.border_muted,
                           borderRadius: 6,
                         }}
                       >
@@ -390,6 +390,7 @@ export default function Profile() {
               }}
             >
               <TouchableOpacity
+                activeOpacity={0.7}
                 onPress={() => {
                   setCurrQuiz(filteredQuizzes[currIndex].quizId);
                   setVisible((p) => !p);
@@ -541,8 +542,9 @@ const styles = StyleSheet.create({
     fontFamily: REGULAR_FONT,
   },
   categoryButton: {
-    borderWidth: 1,
+    borderWidth: 0,
     borderColor: Colors.dark.border,
+    backgroundColor: "#222222ff",
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 20,

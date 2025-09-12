@@ -289,7 +289,7 @@ export default function HomePageCards() {
           <View
             style={{
               width: "80%",
-              backgroundColor: Colors.dark.border,
+              backgroundColor: Colors.dark.border_muted,
               borderRadius: 6,
               marginTop: HEIGHT * (10 / myHeight),
             }}
