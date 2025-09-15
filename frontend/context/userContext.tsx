@@ -9,8 +9,6 @@ import React, {
 import * as SecureStore from "expo-secure-store";
 import { fetchUser, deleteUser } from "@/services/api"; // Adjust the import path as necessary
 import { router } from "expo-router";
-import { QuizType } from "@/types";
-import { Text } from "react-native";
 
 type User = {
   _id: string;
@@ -25,6 +23,7 @@ type User = {
   role: string;
   stars: number;
   level: number;
+  language: string;
 };
 
 type UserContextType = {

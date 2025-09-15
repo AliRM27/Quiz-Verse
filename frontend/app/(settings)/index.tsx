@@ -96,6 +96,7 @@ const Settings = () => {
             </View>
           </TouchableOpacity>
           <TouchableOpacity
+            onPress={() => router.push("/(settings)/changeLanguage")}
             activeOpacity={0.7}
             style={{
               flexDirection: "row",
@@ -114,7 +115,7 @@ const Settings = () => {
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
-              <Text style={styles.txt_muted}>English</Text>
+              <Text style={styles.txt_muted}>{user.language}</Text>
               <RightInd />
             </View>
           </TouchableOpacity>

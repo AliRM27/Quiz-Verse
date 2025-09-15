@@ -24,56 +24,44 @@ export default function HomeScreen() {
     <View
       style={{
         alignItems: "center",
-        gap: HEIGHT * (40 / myHeight),
+        gap: 40,
         height: "100%",
       }}
     >
       <View
-        style={[
-          defaultStyles.containerRow,
-          {
-            width: "90%",
-          },
-        ]}
+        style={[defaultStyles.containerRow, { gap: HEIGHT * (20 / myHeight) }]}
       >
         <View
-          style={[
-            defaultStyles.containerRow,
-            { gap: HEIGHT * (20 / myHeight) },
-          ]}
+          style={{
+            borderWidth: 2,
+            borderColor: Colors.dark.primary,
+            transform: [{ rotate: "45deg" }],
+            padding: 3,
+            borderRadius: 20,
+          }}
         >
           <View
             style={{
-              borderWidth: 2,
-              borderColor: Colors.dark.primary,
-              transform: [{ rotate: "45deg" }],
-              padding: 3,
-              borderRadius: 20,
+              width: 50,
+              height: 50,
+              transform: [{ rotate: "0deg" }],
+              overflow: "hidden",
+              justifyContent: "center",
+              alignItems: "center",
+              borderRadius: 15,
             }}
           >
-            <View
+            <Image
+              src={user?.profileImage}
+              width={60}
+              height={60}
               style={{
-                width: 50,
-                height: 50,
-                transform: [{ rotate: "0deg" }],
-                overflow: "hidden",
-                justifyContent: "center",
-                alignItems: "center",
-                borderRadius: 15,
+                transform: [{ rotate: "-45deg" }],
               }}
-            >
-              <Image
-                src={user?.profileImage}
-                width={60}
-                height={60}
-                style={{
-                  transform: [{ rotate: "-45deg" }],
-                }}
-              />
-            </View>
+            />
           </View>
-          <Text style={styles.txt}>{user?.name}</Text>
         </View>
+        <Text style={styles.txt}>{user?.name}</Text>
       </View>
       <Carousel />
       <View

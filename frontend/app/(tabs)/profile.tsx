@@ -18,6 +18,8 @@ import { myWidth, WIDTH } from "@/constants/Dimensions";
 import QuizModal from "@/components/animatinos/QuizModal";
 import { useMemo, useState } from "react";
 import { router } from "expo-router";
+import NextArr from "@/assets/svgs/nextArr.svg";
+import PrevArr from "@/assets/svgs/prevArr.svg";
 
 export default function Profile() {
   const { user, loading } = useUser();
@@ -44,7 +46,7 @@ export default function Profile() {
       </View>
     );
 
-  const filteredQuizzes = user.progress.filter((quiz) => {
+  let filteredQuizzes = user.progress.filter((quiz) => {
     if (
       !quiz.completed &&
       !quiz.perfected &&
@@ -85,10 +87,10 @@ export default function Profile() {
 
   return (
     <ScrollView
+      showsVerticalScrollIndicator={false}
       contentContainerStyle={{
         alignItems: "center",
-        gap: 30,
-        paddingTop: 10,
+        paddingTop: 4,
       }}
     >
       <View
@@ -174,7 +176,9 @@ export default function Profile() {
         </View>
       </View>
       <View style={{ width: "100%", gap: 20 }}>
-        <Text style={[styles.txt, { fontSize: 18, marginLeft: 10 }]}>
+        <Text
+          style={[styles.txt, { fontSize: 18, marginLeft: 10, marginTop: 30 }]}
+        >
           Last Played
         </Text>
         <View
@@ -333,26 +337,46 @@ export default function Profile() {
           )}
         </View>
       </View>
-      <Text
-        style={[
-          styles.txt,
-          { alignSelf: "flex-start", fontSize: 18, marginLeft: 10 },
-        ]}
+      <View
+        style={{
+          alignSelf: "flex-start",
+          flexDirection: "row",
+          alignItems: "center",
+          marginTop: 30,
+          gap: 20,
+          marginLeft: 10,
+          marginBottom: 20,
+        }}
       >
-        Your Quizzes
-      </Text>
+        <Text style={[styles.txt, { fontSize: 18 }]}>Your Quizzes</Text>
+        <TouchableOpacity
+          onPress={() => router.push("/(quizzes)/collection")}
+          activeOpacity={0.7}
+        >
+          <Text
+            style={[
+              styles.txt_muted,
+              { fontSize: 15, textDecorationLine: "underline" },
+            ]}
+          >
+            View All -{">"}
+          </Text>
+        </TouchableOpacity>
+      </View>
       <View
         style={{
           width: "100%",
-          borderColor: Colors.dark.border,
+          borderColor: Colors.dark.border_muted,
           borderWidth: 1,
           borderRadius: 10,
-          height: 300,
+          height: 350,
           padding: 20,
           justifyContent: "space-between",
         }}
       >
-        <View style={{ flexDirection: "row", gap: 10 }}>
+        <View
+          style={{ flexDirection: "row", gap: 20, justifyContent: "center" }}
+        >
           {["Uncompleted", "Completed", "Perfect"].map((category, index) => (
             <TouchableOpacity
               activeOpacity={0.7}
@@ -372,7 +396,11 @@ export default function Profile() {
                 style={[
                   styles.categoryButtonText,
                   styles.txt,
-                  category === categroyPressed && { color: Colors.dark.bg },
+                  category === categroyPressed && {
+                    color: Colors.dark.bg,
+                    fontWeight: 600,
+                  },
+                  { fontSize: 15 },
                 ]}
               >
                 {category}
@@ -497,18 +525,44 @@ export default function Profile() {
                     </View>
                   )}
                   {categroyPressed === "Perfect" && (
-                    <Text style={[styles.txt]}>S</Text>
+                    <Text
+                      style={[
+                        styles.txt,
+                        {
+                          fontSize: 30,
+                          fontWeight: 800,
+                        },
+                      ]}
+                    >
+                      S
+                    </Text>
                   )}
                 </View>
               </View>
             </View>
           )}
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            borderWidth: 1,
+            borderColor: Colors.dark.border,
+            padding: 10,
+            borderRadius: 15,
+            width: "80%",
+            alignSelf: "center",
+          }}
+        >
           <TouchableOpacity onPress={goPrev}>
-            <Text style={styles.txt}>Prev</Text>
+            <PrevArr width={20} height={20} />
           </TouchableOpacity>
+          <Text style={styles.txt_muted}>
+            {filteredQuizzes.length - 1 - currIndex}+
+          </Text>
           <TouchableOpacity onPress={goNext}>
-            <Text style={styles.txt}>Next</Text>
+            <Text style={styles.txt}>
+              <NextArr width={20} height={20} />
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -546,8 +600,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.dark.border,
     backgroundColor: "#222222ff",
     paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
+    paddingHorizontal: 15,
+    borderRadius: 5,
   },
   categoryButtonText: {
     color: Colors.dark.text,

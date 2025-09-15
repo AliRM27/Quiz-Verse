@@ -45,6 +45,11 @@ const userSchema = new mongoose.Schema({
     enum: ["user", "admin"],
     default: "user",
   },
+  language: {
+    type: String,
+    required: true,
+    default: "en",
+  },
 });
 
 const User = mongoose.model("User", userSchema);
