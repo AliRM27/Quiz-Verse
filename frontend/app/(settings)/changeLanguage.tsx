@@ -7,14 +7,20 @@ import {
   StyleSheet,
   Pressable,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import ArrBack from "@/assets/svgs/backArr.svg";
 import { router } from "expo-router";
 import { useUser } from "@/context/userContext";
+import { useTranslation } from "react-i18next";
+import { updateUser } from "@/services/api";
+import { useState } from "react";
 
 const ChangeLanguage = () => {
   const languages = ["English", "Deutsch", "Русский"];
-  const { user } = useUser();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { user, refreshUser } = useUser();
+  const { t } = useTranslation();
 
   if (!user) {
     return;
@@ -38,15 +44,37 @@ const ChangeLanguage = () => {
         <ArrBack />
       </Pressable>
       <Text style={[styles.txt, { fontSize: 30, fontWeight: 700 }]}>
-        Change language
+        {t("play")}
       </Text>
       {languages.map((language, index) => (
-        <TouchableOpacity key={index}>
-          <Text
-            style={[styles.txt, user.language === language && { color: "red" }]}
-          >
-            {language}
-          </Text>
+        <TouchableOpacity
+          disabled={language === user.language}
+          onPress={async () => {
+            setIsLoading(true);
+            try {
+              user.language = language;
+              await updateUser(user);
+              await refreshUser();
+              router.back();
+            } catch (err) {
+              console.log(err);
+            }
+            setIsLoading(false);
+          }}
+          key={index}
+        >
+          {isLoading && user.language === language ? (
+            <ActivityIndicator />
+          ) : (
+            <Text
+              style={[
+                styles.txt,
+                user.language === language && { color: "red" },
+              ]}
+            >
+              {language}
+            </Text>
+          )}
         </TouchableOpacity>
       ))}
     </View>

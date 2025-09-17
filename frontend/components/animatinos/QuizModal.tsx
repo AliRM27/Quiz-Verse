@@ -19,8 +19,8 @@ import RotatingGradient from "../ui/gradients/GlowingView";
 import QuizLogo from "@/components/ui/QuizLogo";
 import Info from "../ui/Info";
 import { router } from "expo-router";
-import { updateUser } from "@/services/api";
-import { useUser } from "@/context/userContext";
+
+import { useTranslation } from "react-i18next";
 
 const QuizModal: React.FC<QuizModalProps> = ({
   isVisible,
@@ -30,7 +30,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
 }) => {
   const translateY = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
-  const { user, refreshUser } = useUser();
+  const { t } = useTranslation();
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) =>
@@ -186,7 +186,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 <Text
                   style={[styles.txt, { fontSize: WIDTH * (15 / myWidth) }]}
                 >
-                  Progress
+                  {t("progress")}
                 </Text>
                 <LineDashed />
                 <View>
@@ -225,7 +225,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     },
                   ]}
                 >
-                  Rewards
+                  {t("rewards")}
                 </Text>
                 <LineDashed />
                 <View
@@ -291,7 +291,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                       lvl.difficulty.slice(1).toLowerCase()}
                   </Text>
                   <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
-                    <Text style={[styles.txt_muted]}>Progress</Text>
+                    <Text style={[styles.txt_muted]}>{t("progress")}</Text>
                     <View
                       style={{
                         width: "80%",
@@ -314,7 +314,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     </Text>
                   </View>
                   <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
-                    <Text style={[styles.txt_muted]}>Rewards</Text>
+                    <Text style={[styles.txt_muted]}>{t("rewards")}</Text>
                     <View
                       style={{
                         width: "80%",

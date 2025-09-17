@@ -14,12 +14,15 @@ import ArrBack from "@/assets/svgs/backArr.svg";
 import { router } from "expo-router";
 import { useUser } from "@/context/userContext";
 import { updateUser } from "@/services/api";
+import { useTranslation } from "react-i18next";
 
 const ChnageUsername = () => {
   const [newName, setNewName] = useState("");
   const [error, setError] = useState("");
   const [loading, setloading] = useState(false);
   const { user } = useUser();
+
+  const { t } = useTranslation();
 
   if (!user) {
     return (
@@ -72,20 +75,25 @@ const ChnageUsername = () => {
       >
         <ArrBack />
       </Pressable>
-      <Text style={[styles.txt, { fontSize: 30, fontWeight: 700 }]}>
-        Change Username
+      <Text
+        style={[
+          styles.txt,
+          { fontSize: 30, fontWeight: 700, textAlign: "center" },
+        ]}
+      >
+        {t("changeUsername")}
       </Text>
       <View style={{ alignItems: "center", gap: 5 }}>
         <Text style={{ color: Colors.dark.text_muted, fontSize: 20 }}>
-          Enter your new username
+          {t("enterYourNewUsername")}
         </Text>
         <Text style={{ color: Colors.dark.border, fontSize: 15 }}>
-          Make it better though
+          {t("makeItBetter")}
         </Text>
       </View>
       <TextInput
         style={styles.input}
-        placeholder={"Enter your new username"}
+        placeholder={t("enterYourNewUsername")}
         placeholderTextColor={Colors.dark.text_muted}
         value={newName}
         onChangeText={(c) => setNewName(c)}
@@ -105,7 +113,7 @@ const ChnageUsername = () => {
           <ActivityIndicator color={Colors.dark.bg_dark} />
         ) : (
           <Text style={{ color: Colors.dark.bg_dark, fontSize: 20 }}>
-            Change
+            {t("change")}
           </Text>
         )}
       </TouchableOpacity>

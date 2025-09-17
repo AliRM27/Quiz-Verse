@@ -9,6 +9,7 @@ import React, {
 import * as SecureStore from "expo-secure-store";
 import { fetchUser, deleteUser } from "@/services/api"; // Adjust the import path as necessary
 import { router } from "expo-router";
+import { initI18n } from "@/utils/i18n";
 
 type User = {
   _id: string;
@@ -69,6 +70,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         const res = await fetchUser(storedToken);
         setUser(res?.data);
         setToken(storedToken);
+        initI18n(res?.data.language);
       } catch (err) {
         setUser(null);
         setToken(null);

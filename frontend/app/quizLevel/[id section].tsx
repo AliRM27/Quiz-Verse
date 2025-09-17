@@ -11,7 +11,13 @@ import {
   Keyboard,
 } from "react-native";
 import { useEffect, useState } from "react";
-import { layout } from "@/constants/Dimensions";
+import {
+  HEIGHT,
+  layout,
+  myHeight,
+  myWidth,
+  WIDTH,
+} from "@/constants/Dimensions";
 import { Colors } from "@/constants/Colors";
 import { router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
@@ -26,6 +32,7 @@ import CircularProgress from "@/components/ui/CircularProgress";
 import Result from "@/components/Result";
 import { updateUserProgress, updateUser } from "@/services/api";
 import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
+import { languageMap } from "@/utils/i18n";
 
 export default function Index() {
   const { id, section } = useLocalSearchParams();
@@ -46,7 +53,7 @@ export default function Index() {
     setNewCorrectIndexes(new Set());
   }, [section, id]);
 
-  if (loading || isLoading) {
+  if (loading || isLoading || !user) {
     return (
       <View
         style={{
@@ -77,7 +84,8 @@ export default function Index() {
         currQuestion.options.find(
           (o: any) =>
             o.isCorrect &&
-            o.text.toLowerCase().trim() === shortAnswer.toLowerCase().trim()
+            o.text[languageMap[user.language]].toLowerCase().trim() ===
+              shortAnswer.toLowerCase().trim()
         ) !== undefined;
     }
 
@@ -151,7 +159,7 @@ export default function Index() {
       <View
         style={{
           paddingTop: layout.paddingTop,
-          paddingBottom: 50,
+          paddingBottom: 40,
           paddingHorizontal: 15,
           backgroundColor: "#131313",
           height: "100%",
@@ -195,7 +203,6 @@ export default function Index() {
               {data.title}
             </Text>
           </View>
-
           <View
             style={{
               alignItems: "center",
@@ -205,8 +212,8 @@ export default function Index() {
           >
             <View
               style={{
-                width: 60,
-                height: 60,
+                width: HEIGHT * (60 / myHeight),
+                height: HEIGHT * (60 / myHeight),
                 borderRadius: 10,
                 overflow: "hidden",
                 borderWidth: 1,
@@ -234,18 +241,6 @@ export default function Index() {
             <Text style={[styles.txt]}>{currSection.difficulty}</Text>
           </View>
         </View>
-        <Text
-          style={[
-            styles.txt,
-            {
-              fontSize: 17,
-              marginTop: 15,
-              fontWeight: 600,
-            },
-          ]}
-        >
-          Question {currQuestionIndex + 1}
-        </Text>
         <View
           style={{
             borderWidth: 1,
@@ -267,10 +262,25 @@ export default function Index() {
           <Text
             style={[
               styles.txt,
+              {
+                fontSize: 14,
+                marginTop: 15,
+                fontWeight: 600,
+                position: "absolute",
+                top: -10,
+                left: 10,
+              },
+            ]}
+          >
+            Question {currQuestionIndex + 1}
+          </Text>
+          <Text
+            style={[
+              styles.txt,
               { fontSize: 25, textAlign: "center", lineHeight: 35 },
             ]}
           >
-            {currQuestion.question}
+            {currQuestion.question[languageMap[user.language]]}
           </Text>
         </View>
         <View
@@ -320,7 +330,7 @@ export default function Index() {
                         padding: 15,
                         paddingLeft: 30,
                         borderRadius: 50,
-                        elevation: 3,
+                        elevation: 7,
                         shadowColor: "black",
                         shadowOffset: { width: 0, height: 4 },
                         shadowOpacity: 0.5,
@@ -353,7 +363,7 @@ export default function Index() {
                         },
                       ]}
                     >
-                      {o.text}
+                      {o.text[languageMap[user.language]]}
                     </Text>
                   </Pressable>
                 );
@@ -369,7 +379,7 @@ export default function Index() {
                         padding: 15,
                         width: "45%",
                         borderRadius: 50,
-                        elevation: 3,
+                        elevation: 7,
                         shadowColor: "black",
                         shadowOffset: { width: 0, height: 4 },
                         shadowOpacity: 0.5,
@@ -400,18 +410,20 @@ export default function Index() {
                           fontSize: 20,
                           textAlign: "center",
                         },
-                        o.text === "False" && { color: Colors.dark.danger },
+                        o.text["en"] === "False" && {
+                          color: Colors.dark.danger,
+                        },
                         pressedAnswer === index &&
-                          o.text === "False" && {
+                          o.text["en"] === "False" && {
                             color: Colors.dark.danger_muted,
                           },
                         pressedAnswer === index &&
-                          o.text === "True" && {
+                          o.text["en"] === "True" && {
                             color: Colors.dark.success_muted,
                           },
                       ]}
                     >
-                      {o.text}
+                      {o.text[languageMap[user.language]]}
                     </Text>
                   </Pressable>
                 );

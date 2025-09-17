@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   ScrollView,
+  Platform,
 } from "react-native";
 import { useUser } from "@/context/userContext";
 import { Colors } from "@/constants/Colors";
@@ -20,12 +21,16 @@ import { useMemo, useState } from "react";
 import { router } from "expo-router";
 import NextArr from "@/assets/svgs/nextArr.svg";
 import PrevArr from "@/assets/svgs/prevArr.svg";
+import { useTranslation } from "react-i18next";
 
 export default function Profile() {
   const { user, loading } = useUser();
   const [currQuiz, setCurrQuiz] = useState(user?.lastPlayed[0]?.quizId);
   const [visible, setVisible] = useState<boolean>(false);
-  const [categroyPressed, setCategoryPressed] = useState<string>("Uncompleted");
+  const { t } = useTranslation();
+  const [categroyPressed, setCategoryPressed] = useState<string>(
+    t("uncompleted")
+  );
   const [currIndex, setCurrIndex] = useState<number>(0);
   const [currLogoFile, setCurrLogoFile] = useState<string>(
     user?.lastPlayed[0]?.quizId.logoFile
@@ -50,17 +55,17 @@ export default function Profile() {
     if (
       !quiz.completed &&
       !quiz.perfected &&
-      categroyPressed === "Uncompleted"
+      categroyPressed === t("uncompleted")
     ) {
       return true;
     } else if (
-      categroyPressed === "Completed" &&
+      categroyPressed === t("completed") &&
       quiz.completed &&
       !quiz.perfected
     ) {
       return true;
     } else if (
-      categroyPressed === "Perfect" &&
+      categroyPressed === t("perfect") &&
       quiz.completed &&
       quiz.perfected
     ) {
@@ -179,7 +184,7 @@ export default function Profile() {
         <Text
           style={[styles.txt, { fontSize: 18, marginLeft: 10, marginTop: 30 }]}
         >
-          Last Played
+          {t("lastPlayed")}
         </Text>
         <View
           style={{
@@ -279,7 +284,7 @@ export default function Profile() {
                   <View style={{ width: "80%", gap: 15 }}>
                     <View style={{ gap: 3 }}>
                       <Text style={[styles.txt, { fontSize: 12 }]}>
-                        Progress
+                        {t("progress")}
                       </Text>
                       <View
                         style={{
@@ -308,7 +313,7 @@ export default function Profile() {
                     </View>
                     <View style={{ gap: 3 }}>
                       <Text style={[styles.txt, { fontSize: 12 }]}>
-                        Rewards
+                        {t("rewards")}
                       </Text>
                       <View
                         style={{
@@ -348,7 +353,7 @@ export default function Profile() {
           marginBottom: 20,
         }}
       >
-        <Text style={[styles.txt, { fontSize: 18 }]}>Your Quizzes</Text>
+        <Text style={[styles.txt, { fontSize: 18 }]}>{t("yourQuizzes")}</Text>
         <TouchableOpacity
           onPress={() => router.push("/(quizzes)/collection")}
           activeOpacity={0.7}
@@ -359,7 +364,7 @@ export default function Profile() {
               { fontSize: 15, textDecorationLine: "underline" },
             ]}
           >
-            View All -{">"}
+            {t("viewAll")} -{">"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -377,36 +382,40 @@ export default function Profile() {
         <View
           style={{ flexDirection: "row", gap: 20, justifyContent: "center" }}
         >
-          {["Uncompleted", "Completed", "Perfect"].map((category, index) => (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => {
-                setCategoryPressed(category);
-                setCurrIndex(0);
-              }}
-              key={index}
-              style={[
-                styles.categoryButton,
-                category === categroyPressed && {
-                  backgroundColor: Colors.dark.text,
-                },
-              ]}
-            >
-              <Text
+          {[t("uncompleted"), t("completed"), t("perfect")].map(
+            (category, index) => (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  setCategoryPressed(category);
+                  setCurrIndex(0);
+                }}
+                key={index}
                 style={[
-                  styles.categoryButtonText,
-                  styles.txt,
+                  styles.categoryButton,
                   category === categroyPressed && {
-                    color: Colors.dark.bg,
-                    fontWeight: 600,
+                    backgroundColor: Colors.dark.text,
                   },
-                  { fontSize: 15 },
                 ]}
               >
-                {category}
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.categoryButtonText,
+                    styles.txt,
+                    category === categroyPressed && {
+                      color: Colors.dark.bg,
+                      fontWeight: 600,
+                    },
+                    category === categroyPressed &&
+                      Platform.OS === "android" && { fontWeight: 700 },
+                    { fontSize: 15 },
+                  ]}
+                >
+                  {category}
+                </Text>
+              </TouchableOpacity>
+            )
+          )}
         </View>
         {filteredQuizzes.length > 0 &&
           filteredQuizzes[currIndex].quizId.logoFile && (
@@ -446,7 +455,7 @@ export default function Profile() {
                   }}
                 >
                   <View style={{ width: WIDTH * (120 / myWidth) }}>
-                    <Text style={[styles.txt]}>Progress</Text>
+                    <Text style={[styles.txt]}>{t("progress")}</Text>
                     <View
                       style={{
                         backgroundColor: Colors.dark.border_muted,
@@ -474,7 +483,9 @@ export default function Profile() {
                       %
                     </Text>
 
-                    <Text style={[styles.txt, { marginTop: 10 }]}>Rewards</Text>
+                    <Text style={[styles.txt, { marginTop: 10 }]}>
+                      {t("rewards")}
+                    </Text>
                     <View
                       style={{
                         backgroundColor: Colors.dark.border_muted,
@@ -499,7 +510,7 @@ export default function Profile() {
                     </Text>
                   </View>
 
-                  {categroyPressed === "Completed" && (
+                  {categroyPressed === t("completed") && (
                     <View
                       style={{
                         borderWidth: 4,
@@ -524,7 +535,7 @@ export default function Profile() {
                       </Text>
                     </View>
                   )}
-                  {categroyPressed === "Perfect" && (
+                  {categroyPressed === t("perfect") && (
                     <Text
                       style={[
                         styles.txt,
@@ -557,7 +568,10 @@ export default function Profile() {
             <PrevArr width={20} height={20} />
           </TouchableOpacity>
           <Text style={styles.txt_muted}>
-            {filteredQuizzes.length - 1 - currIndex}+
+            {filteredQuizzes.length === 0
+              ? 0
+              : filteredQuizzes.length - 1 - currIndex}
+            {filteredQuizzes.length !== 0 && "+"}
           </Text>
           <TouchableOpacity onPress={goNext}>
             <Text style={styles.txt}>

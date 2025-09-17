@@ -23,10 +23,12 @@ import Share from "@/assets/svgs/share.svg";
 import Bell from "@/assets/svgs/bell.svg";
 import Back from "@/assets/svgs/backArr.svg";
 import { router } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 const Settings = () => {
   const { user, logout } = useUser();
   const [state, setState] = useState(false);
+  const { t } = useTranslation();
 
   if (!user) {
     return (
@@ -57,10 +59,10 @@ const Settings = () => {
         <Back />
       </Pressable>
       <Text style={[styles.txt, { fontSize: 25, fontWeight: 700 }]}>
-        Settings
+        {t("settings")}
       </Text>
       <View style={{ gap: 20 }}>
-        <Text style={[styles.txt_muted, { fontSize: 10 }]}>ACCOUNT</Text>
+        <Text style={[styles.txt_muted, { fontSize: 10 }]}>{t("account")}</Text>
         <View
           style={{
             backgroundColor: Colors.dark.bg_light,
@@ -82,7 +84,7 @@ const Settings = () => {
               style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
               <Person />
-              <Text style={[styles.txt]}>Username</Text>
+              <Text style={[styles.txt]}>{t("username")}</Text>
             </View>
             <View
               style={{
@@ -110,7 +112,7 @@ const Settings = () => {
               style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
               <Global stroke={"#999999"} />
-              <Text style={[styles.txt]}>Language</Text>
+              <Text style={[styles.txt]}>{t("language")}</Text>
             </View>
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
@@ -130,11 +132,11 @@ const Settings = () => {
             }}
           >
             <LogOut />
-            <Text style={{ color: "#FF383C" }}>Log Out</Text>
+            <Text style={{ color: "#FF383C" }}>{t("logOut")}</Text>
           </TouchableOpacity>
         </View>
         <Text style={[styles.txt_muted, { fontSize: 10, marginTop: 10 }]}>
-          SOCIAL
+          {t("social")}
         </Text>
         <View
           style={{
@@ -156,7 +158,7 @@ const Settings = () => {
               style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
               <Share />
-              <Text style={[styles.txt]}>Share QuizVerse</Text>
+              <Text style={[styles.txt]}>{t("shareQuizverse")}</Text>
             </View>
             <View
               style={{
@@ -181,7 +183,7 @@ const Settings = () => {
               style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
               <Friends />
-              <Text style={[styles.txt]}>Friends</Text>
+              <Text style={[styles.txt]}>{t("friends")}</Text>
             </View>
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
@@ -192,7 +194,7 @@ const Settings = () => {
           </TouchableOpacity>
         </View>
         <Text style={[styles.txt_muted, { fontSize: 10, marginTop: 10 }]}>
-          HELP & SUPPORT
+          {t("helpSupport")}
         </Text>
         <View
           style={{
@@ -212,7 +214,7 @@ const Settings = () => {
               style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
               <Info />
-              <Text style={[styles.txt]}>Contact Us</Text>
+              <Text style={[styles.txt]}>{t("contactUs")}</Text>
             </View>
             <View
               style={{
@@ -226,7 +228,7 @@ const Settings = () => {
           </TouchableOpacity>
         </View>
         <Text style={[styles.txt_muted, { fontSize: 10, marginTop: 10 }]}>
-          OTHER
+          {t("other")}
         </Text>
         <View
           style={{
@@ -245,7 +247,7 @@ const Settings = () => {
               style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
               <Bell />
-              <Text style={[styles.txt]}>Notifications</Text>
+              <Text style={[styles.txt]}>{t("notifications")}</Text>
             </View>
             <View
               style={{
@@ -279,7 +281,7 @@ const Settings = () => {
               style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
               <Info />
-              <Text style={[styles.txt]}>About QuizVerse</Text>
+              <Text style={[styles.txt]}>{t("aboutQuizverse")}</Text>
             </View>
             <View
               style={{

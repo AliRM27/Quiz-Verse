@@ -50,10 +50,11 @@ const quizSchema = new mongoose.Schema({
       questions: [
         {
           question: {
-            type: String,
-            required: true,
-            trim: true,
+            en: { type: String, required: true, trim: true },
+            de: { type: String, required: true, trim: true },
+            ru: { type: String, required: true, trim: true },
           },
+
           reward: {
             type: Number,
             required: true,
@@ -67,7 +68,11 @@ const quizSchema = new mongoose.Schema({
           },
           options: [
             {
-              text: { type: String, required: true, trim: true },
+              text: {
+                en: { type: String, required: true, trim: true },
+                de: { type: String, required: true, trim: true },
+                ru: { type: String, required: true, trim: true },
+              },
               isCorrect: { type: Boolean, default: false },
             },
           ],

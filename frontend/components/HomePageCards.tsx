@@ -21,6 +21,7 @@ import QuizLogo from "@/components/ui/QuizLogo";
 import { useUser } from "@/context/userContext";
 import { REGULAR_FONT } from "@/constants/Styles";
 import Info from "./ui/Info";
+import { useTranslation } from "react-i18next";
 
 const ITEM_WIDTH = HEIGHT * (150 / myHeight);
 const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
@@ -37,6 +38,8 @@ export default function HomePageCards() {
       animated: true,
     });
   }, []);
+
+  const { t } = useTranslation();
 
   // Wait for user state to load before running query
   const { data, error, isLoading } = useQuery({
@@ -243,7 +246,7 @@ export default function HomePageCards() {
           ]}
         >
           <Text style={[styles.txt, { fontSize: WIDTH * (14 / myWidth) }]}>
-            Progress
+            {t("progress")}
           </Text>
           <LineDashed />
           <CircularProgress
@@ -283,7 +286,7 @@ export default function HomePageCards() {
               },
             ]}
           >
-            Rewards
+            {t("rewards")}
           </Text>
           <LineDashed />
           <View

@@ -22,6 +22,7 @@ import { myWidth, WIDTH } from "@/constants/Dimensions";
 import Close from "@/assets/svgs/close.svg";
 import Add from "@/assets/svgs/add.svg";
 import { updateUserProgress } from "@/services/api";
+import { useTranslation } from "react-i18next";
 
 export default function Explore() {
   const [focused, setFocused] = useState(false);
@@ -29,6 +30,7 @@ export default function Explore() {
   const [input, setInput] = useState("");
   const { user, loading, refreshUser } = useUser();
   const [loadingUpdate, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const debouncedSetSearch = useMemo(
     () => debounce((text: string) => setQuery(text), 500),
@@ -84,7 +86,7 @@ export default function Explore() {
           selectionColor={Colors.dark.text}
           onChangeText={handleChangeText}
           style={[styles.input, focused && { borderColor: Colors.dark.text }]}
-          placeholder="Write something"
+          placeholder={t("search")}
           placeholderTextColor={Colors.dark.text_muted}
           autoCorrect={false}
           returnKeyType="search"
@@ -180,7 +182,9 @@ export default function Explore() {
 
                 <View style={styles.bottomSection}>
                   <View style={styles.progressWrapper}>
-                    <Text style={[styles.txt, styles.barLabel]}>Progress</Text>
+                    <Text style={[styles.txt, styles.barLabel]}>
+                      {t("progress")}
+                    </Text>
                     <View style={styles.barBackground}>
                       <View
                         style={[
@@ -199,7 +203,9 @@ export default function Explore() {
                       {progressPercent}%
                     </Text>
 
-                    <Text style={[styles.txt, styles.barLabel]}>Rewards</Text>
+                    <Text style={[styles.txt, styles.barLabel]}>
+                      {t("rewards")}
+                    </Text>
                     <View style={styles.barBackground}>
                       <View
                         style={[
