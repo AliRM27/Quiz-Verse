@@ -62,7 +62,7 @@ const CircularProgress = ({
         />
         {/* Progress Circle */}
         <AnimatedCircle
-          stroke="#00ff6aff"
+          stroke={Colors.dark.text}
           fill="none"
           cx={size / 2}
           cy={size / 2}
