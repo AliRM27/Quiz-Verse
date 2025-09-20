@@ -23,6 +23,7 @@ import Close from "@/assets/svgs/close.svg";
 import Add from "@/assets/svgs/add.svg";
 import { updateUserProgress } from "@/services/api";
 import { useTranslation } from "react-i18next";
+import ProgressBar from "@/components/animatinos/progressBar";
 
 export default function Explore() {
   const [focused, setFocused] = useState(false);
@@ -186,11 +187,14 @@ export default function Explore() {
                       {t("progress")}
                     </Text>
                     <View style={styles.barBackground}>
-                      <View
-                        style={[
-                          styles.barFill,
-                          { width: `${progressPercent}%` },
-                        ]}
+                      <ProgressBar
+                        color={Colors.dark.text}
+                        progress={
+                          user?.progress.find((p) => p.quizId._id === item._id)
+                            ?.questionsCompleted
+                        }
+                        total={item.questionsTotal}
+                        height={3}
                       />
                     </View>
                     <Text
@@ -207,14 +211,14 @@ export default function Explore() {
                       {t("rewards")}
                     </Text>
                     <View style={styles.barBackground}>
-                      <View
-                        style={[
-                          styles.barFill,
-                          {
-                            backgroundColor: Colors.dark.secondary,
-                            width: `${rewardPercent}%`,
-                          },
-                        ]}
+                      <ProgressBar
+                        color={Colors.dark.secondary}
+                        progress={
+                          user?.progress.find((p) => p.quizId._id === item._id)
+                            ?.rewardsTotal
+                        }
+                        total={item.rewardsTotal}
+                        height={3}
                       />
                     </View>
                     <Text

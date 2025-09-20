@@ -22,6 +22,7 @@ import { useUser } from "@/context/userContext";
 import { REGULAR_FONT } from "@/constants/Styles";
 import Info from "./ui/Info";
 import { useTranslation } from "react-i18next";
+import ProgressBar from "./animatinos/progressBar";
 
 const ITEM_WIDTH = HEIGHT * (150 / myHeight);
 const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
@@ -297,17 +298,10 @@ export default function HomePageCards() {
               marginTop: HEIGHT * (10 / myHeight),
             }}
           >
-            <View
-              style={{
-                width: `${
-                  quiz.rewardsTotal > 0
-                    ? (currentProgress?.rewardsTotal / quiz.rewardsTotal) * 100
-                    : 0
-                }%`,
-                height: 4,
-                backgroundColor: "#FFB11F",
-                borderRadius: 6,
-              }}
+            <ProgressBar
+              color="#FFB11F"
+              total={quiz.rewardsTotal}
+              progress={currentProgress?.rewardsTotal}
             />
           </View>
           <Text style={[styles.txt_muted, { fontSize: 12 }]}>

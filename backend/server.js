@@ -21,10 +21,9 @@ connectDB();
 const PORT = process.env.PORT || 7777;
 const app = express();
 
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cors());
-app.use(express.json());
-
-//Mobile App
 //entry point
 app.get("/", (req, res) => {
   res.send("Welcome to Quiz Verse");

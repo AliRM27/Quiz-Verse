@@ -21,6 +21,7 @@ import Info from "../ui/Info";
 import { router } from "expo-router";
 
 import { useTranslation } from "react-i18next";
+import ProgressBar from "./progressBar";
 
 const QuizModal: React.FC<QuizModalProps> = ({
   isVisible,
@@ -236,13 +237,10 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     marginTop: HEIGHT * (10 / myHeight),
                   }}
                 >
-                  <View
-                    style={{
-                      width: `${(currentProgress?.rewardsTotal / quiz.rewardsTotal) * 100}%`,
-                      height: 4,
-                      backgroundColor: "#FFB11F",
-                      borderRadius: 6,
-                    }}
+                  <ProgressBar
+                    color={"#FFB11F"}
+                    progress={currentProgress?.rewardsTotal}
+                    total={quiz.rewardsTotal}
                   />
                 </View>
                 <Text style={[styles.txt_muted, { fontSize: 12 }]}>
@@ -299,13 +297,11 @@ const QuizModal: React.FC<QuizModalProps> = ({
                         borderRadius: 6,
                       }}
                     >
-                      <View
-                        style={{
-                          width: `${(currentProgress?.sections[index].questions / lvl.questions.length) * 100}%`,
-                          backgroundColor: Colors.dark.text,
-                          height: 3,
-                          borderRadius: 6,
-                        }}
+                      <ProgressBar
+                        color={Colors.dark.text}
+                        progress={currentProgress?.sections[index].questions}
+                        total={lvl.questions.length}
+                        height={3}
                       />
                     </View>
                     <Text style={[styles.txt_muted, { fontSize: 10 }]}>
@@ -322,13 +318,11 @@ const QuizModal: React.FC<QuizModalProps> = ({
                         borderRadius: 6,
                       }}
                     >
-                      <View
-                        style={{
-                          width: `${(currentProgress?.sections[index].rewards / lvl.rewards) * 100}%`,
-                          backgroundColor: "#FFB11F",
-                          height: 3,
-                          borderRadius: 6,
-                        }}
+                      <ProgressBar
+                        color={"#FFB11F"}
+                        progress={currentProgress?.sections[index].rewards}
+                        total={lvl.rewards}
+                        height={3}
                       />
                     </View>
                     <Text style={[styles.txt_muted, { fontSize: 10 }]}>

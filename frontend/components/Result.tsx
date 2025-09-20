@@ -9,9 +9,11 @@ import { useUser } from "@/context/userContext";
 const Result = ({
   correctAnswers,
   total,
+  rewards,
 }: {
   correctAnswers: number;
   total: number;
+  rewards: number;
 }) => {
   const { refreshUser } = useUser();
   return (
@@ -28,6 +30,7 @@ const Result = ({
       <Text style={styles.txt}>
         Result: {correctAnswers} / {total}
       </Text>
+      <Text style={styles.txt}>Rewards: {rewards}</Text>
       <Button
         title={"Back Home"}
         onPress={async () => {

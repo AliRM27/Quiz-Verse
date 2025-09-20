@@ -22,6 +22,7 @@ import { router } from "expo-router";
 import NextArr from "@/assets/svgs/nextArr.svg";
 import PrevArr from "@/assets/svgs/prevArr.svg";
 import { useTranslation } from "react-i18next";
+import ProgressBar from "@/components/animatinos/progressBar";
 
 export default function Profile() {
   const { user, loading } = useUser();
@@ -293,13 +294,11 @@ export default function Profile() {
                           borderRadius: 6,
                         }}
                       >
-                        <View
-                          style={{
-                            width: `${(currentProgress?.questionsCompleted / quizId.questionsTotal) * 100}%`,
-                            backgroundColor: Colors.dark.text,
-                            borderRadius: 6,
-                            height: 3,
-                          }}
+                        <ProgressBar
+                          color={Colors.dark.text}
+                          height={3}
+                          total={quizId.questionsTotal}
+                          progress={currentProgress?.questionsCompleted}
                         />
                       </View>
                       <Text style={[styles.txt, { fontSize: 10 }]}>
@@ -322,13 +321,11 @@ export default function Profile() {
                           borderRadius: 6,
                         }}
                       >
-                        <View
-                          style={{
-                            width: `${(currentProgress?.rewardsTotal / quizId.rewardsTotal) * 100}%`,
-                            backgroundColor: Colors.dark.secondary,
-                            borderRadius: 6,
-                            height: 3,
-                          }}
+                        <ProgressBar
+                          color={Colors.dark.secondary}
+                          height={3}
+                          total={quizId.rewardsTotal}
+                          progress={currentProgress?.rewardsTotal}
                         />
                       </View>
                       <Text style={[styles.txt, { fontSize: 10 }]}>
@@ -463,15 +460,10 @@ export default function Profile() {
                         marginVertical: 5,
                       }}
                     >
-                      <View
-                        style={[
-                          {
-                            width: `${Math.floor((currentProgressList.questionsCompleted / filteredQuizzes[currIndex].quizId.questionsTotal) * 100)}%`,
-                            height: 4,
-                            backgroundColor: Colors.dark.text,
-                            borderRadius: 10,
-                          },
-                        ]}
+                      <ProgressBar
+                        color={Colors.dark.text}
+                        total={filteredQuizzes[currIndex].quizId.questionsTotal}
+                        progress={currentProgressList.questionsCompleted}
                       />
                     </View>
                     <Text style={[styles.txt_muted, { fontSize: 10 }]}>
@@ -493,15 +485,10 @@ export default function Profile() {
                         marginVertical: 5,
                       }}
                     >
-                      <View
-                        style={[
-                          {
-                            backgroundColor: Colors.dark.secondary,
-                            width: `${Math.floor((currentProgressList.rewardsTotal / filteredQuizzes[currIndex].quizId.rewardsTotal) * 100)}%`,
-                            height: 4,
-                            borderRadius: 10,
-                          },
-                        ]}
+                      <ProgressBar
+                        color={Colors.dark.secondary}
+                        total={filteredQuizzes[currIndex].quizId.rewardsTotal}
+                        progress={currentProgressList.rewardsTotal}
                       />
                     </View>
                     <Text style={[styles.txt_muted, { fontSize: 10 }]}>

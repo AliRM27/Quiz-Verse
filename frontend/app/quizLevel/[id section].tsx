@@ -48,6 +48,7 @@ export default function Index() {
   });
   const { user, loading, refreshUser } = useUser();
   const [newCorrectIndexes, setNewCorrectIndexes] = useState(new Set<number>());
+  const [rewards, setRewards] = useState<number>(0);
 
   useEffect(() => {
     setNewCorrectIndexes(new Set());
@@ -89,10 +90,47 @@ export default function Index() {
         ) !== undefined;
     }
 
-    isCorrect && setCorrectAnswers((p) => p + 1); // if you still show this in UI
+    if (isCorrect) {
+      setCorrectAnswers((p) => p + 1);
+      switch (currSection.difficulty) {
+        case "Easy":
+          setRewards((p) => p + 10);
+          break;
+        case "Medium":
+          setRewards((p) => p + 15);
+          break;
+        case "Hard":
+          setRewards((p) => p + 25);
+          break;
+        case "Extreme":
+          setRewards((p) => p + 65);
+          break;
+        default:
+          break;
+      }
+    }
 
-    // If this question becomes newly-correct in this run, remember it
+    // Calculate rewardDelta immediately (not inside setState)
+    let rewardsDelta = 0;
     if (isCorrect && !prevAnswered.includes(currQuestionIndex)) {
+      switch (currSection.difficulty) {
+        case "Easy":
+          rewardsDelta = 10;
+          break;
+        case "Medium":
+          rewardsDelta = 15;
+          break;
+        case "Hard":
+          rewardsDelta = 25;
+          break;
+        case "Extreme":
+          rewardsDelta = 65;
+          break;
+        default:
+          break;
+      }
+
+      // Track new correct indexes
       setNewCorrectIndexes((prev) => {
         if (prev.has(currQuestionIndex)) return prev;
         const next = new Set(prev);
@@ -107,12 +145,11 @@ export default function Index() {
       setShowResult(true);
       handleUserLastPlayed();
 
-      // Prepare payload: only new indexes from this run
       const pending = new Set<number>(newCorrectIndexes);
       if (isCorrect && !prevAnswered.includes(currQuestionIndex)) {
         pending.add(currQuestionIndex);
       }
-      const delta = pending.size; // how many NEWly correct this run
+      const delta = pending.size;
 
       try {
         if (delta > 0) {
@@ -120,19 +157,20 @@ export default function Index() {
             quizId: id,
             difficulty: currSection.difficulty,
             updates: {
-              questions: delta, // <-- increment by delta
-              rewards: 0, // or your trophy logic
-              answered: Array.from(pending), // <-- only NEW indexes
+              questions: delta,
+              rewards: rewardsDelta,
+              answered: Array.from(pending),
             },
           });
         }
-        setNewCorrectIndexes(new Set()); // clear buffer after sync
+        setNewCorrectIndexes(new Set());
       } catch (err) {
         console.log(err);
       }
     } else {
       setCurrQuestionIndex((p) => p + 1);
     }
+
     setShortAnswer("");
     setSelectedAnswer(null);
   };
@@ -150,6 +188,7 @@ export default function Index() {
       <Result
         correctAnswers={correctAnswers}
         total={currSection.questions.length}
+        rewards={rewards}
       />
     );
   }
