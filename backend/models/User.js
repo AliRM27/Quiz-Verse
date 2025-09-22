@@ -36,6 +36,7 @@ const userSchema = new mongoose.Schema({
           answered: { type: [Number], default: [] },
           questions: { type: Number, default: 0 }, // Questions attempted/completed
           rewards: { type: Number, default: 0 }, // Trophies earned
+          streaks: { type: [Number], default: [] }, // Longest correct answer streaks
         },
       ],
     },

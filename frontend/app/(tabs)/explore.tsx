@@ -101,8 +101,8 @@ export default function Explore() {
         />
         <Pressable
           onPress={() => {
-            setFocused(false);
             setInput("");
+            setFocused(false);
             setQuery("");
             Keyboard.dismiss();
           }}

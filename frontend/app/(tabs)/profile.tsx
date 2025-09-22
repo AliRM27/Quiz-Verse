@@ -602,7 +602,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#222222ff",
     paddingVertical: 6,
     paddingHorizontal: 15,
-    borderRadius: 5,
+    borderRadius: 15,
   },
   categoryButtonText: {
     color: Colors.dark.text,

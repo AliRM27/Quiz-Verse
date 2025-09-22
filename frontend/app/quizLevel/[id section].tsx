@@ -49,10 +49,26 @@ export default function Index() {
   const { user, loading, refreshUser } = useUser();
   const [newCorrectIndexes, setNewCorrectIndexes] = useState(new Set<number>());
   const [rewards, setRewards] = useState<number>(0);
+  const [sessionRewardDelta, setSessionRewardDelta] = useState(0);
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [maxStreak, setMaxStreak] = useState(0);
 
+  // keep track of unlocked milestones
+  const [unlockedStreaks, setUnlockedStreaks] = useState<Set<number>>(
+    new Set()
+  );
   useEffect(() => {
+    if (!user || !currProgress) return;
+
+    const sectionProgress = currProgress.sections[Number(section)];
+    if (sectionProgress?.streaks) {
+      setUnlockedStreaks(new Set(sectionProgress.streaks));
+    } else {
+      setUnlockedStreaks(new Set());
+    }
+
     setNewCorrectIndexes(new Set());
-  }, [section, id]);
+  }, [user, section, id]);
 
   if (loading || isLoading || !user) {
     return (
@@ -76,8 +92,62 @@ export default function Index() {
   const currProgress = user?.progress.find((q) => q.quizId._id === data._id);
   const prevAnswered = currProgress.sections[Number(section)].answered ?? [];
 
+  type Difficulty = "Easy" | "Medium" | "Hard" | "Extreme";
+
+  const streakMilestones: Record<
+    Difficulty,
+    { threshold: number; reward: number }[]
+  > = {
+    Easy: [
+      { threshold: 5, reward: 5 },
+      { threshold: 11, reward: 15 },
+      { threshold: 17, reward: 30 },
+      { threshold: 20, reward: 50 }, // all correct
+    ],
+    Medium: [
+      { threshold: 4, reward: 5 },
+      { threshold: 8, reward: 15 },
+      { threshold: 12, reward: 30 },
+      { threshold: 15, reward: 50 },
+    ],
+    Hard: [
+      { threshold: 3, reward: 5 },
+      { threshold: 6, reward: 15 },
+      { threshold: 8, reward: 30 },
+      { threshold: 10, reward: 50 },
+    ],
+    Extreme: [
+      { threshold: 2, reward: 5 },
+      { threshold: 3, reward: 15 },
+      { threshold: 4, reward: 30 },
+      { threshold: 5, reward: 50 },
+    ],
+  };
+
+  // helper
+  const calculateNewStreakRewards = (
+    maxStreak: number,
+    difficulty: Difficulty,
+    unlocked: Set<number>
+  ) => {
+    const milestones = streakMilestones[difficulty] || [];
+    let bonus = 0;
+    const newlyUnlocked: number[] = [];
+
+    for (const { threshold, reward } of milestones) {
+      if (maxStreak >= threshold && !unlocked.has(threshold)) {
+        bonus += reward;
+        newlyUnlocked.push(threshold);
+      }
+    }
+
+    return { bonus, newlyUnlocked };
+  };
+
   const handleNextButton = async () => {
-    let isCorrect;
+    let isCorrect: boolean;
+
+    // --- Determine if the answer is correct ---
     if (selectedAnswer !== null) {
       isCorrect = currQuestion.options[selectedAnswer].isCorrect;
     } else {
@@ -90,47 +160,34 @@ export default function Index() {
         ) !== undefined;
     }
 
-    if (isCorrect) {
-      setCorrectAnswers((p) => p + 1);
-      switch (currSection.difficulty) {
-        case "Easy":
-          setRewards((p) => p + 10);
-          break;
-        case "Medium":
-          setRewards((p) => p + 15);
-          break;
-        case "Hard":
-          setRewards((p) => p + 25);
-          break;
-        case "Extreme":
-          setRewards((p) => p + 65);
-          break;
-        default:
-          break;
-      }
-    }
+    // --- Track current streak locally ---
+    const newCurrentStreak = isCorrect ? currentStreak + 1 : 0;
+    const newMaxStreak = Math.max(maxStreak, newCurrentStreak);
 
-    // Calculate rewardDelta immediately (not inside setState)
-    let rewardsDelta = 0;
+    if (isCorrect) setCorrectAnswers((p) => p + 1);
+    else setCurrentStreak(0);
+
+    // --- Base rewards for first-time correct answers ---
+    let baseRewardDelta = 0;
     if (isCorrect && !prevAnswered.includes(currQuestionIndex)) {
       switch (currSection.difficulty) {
         case "Easy":
-          rewardsDelta = 10;
+          baseRewardDelta = 10;
           break;
         case "Medium":
-          rewardsDelta = 15;
+          baseRewardDelta = 15;
           break;
         case "Hard":
-          rewardsDelta = 25;
+          baseRewardDelta = 25;
           break;
         case "Extreme":
-          rewardsDelta = 65;
-          break;
-        default:
+          baseRewardDelta = 65;
           break;
       }
 
-      // Track new correct indexes
+      setRewards((p) => p + baseRewardDelta);
+      setSessionRewardDelta((p) => p + baseRewardDelta);
+
       setNewCorrectIndexes((prev) => {
         if (prev.has(currQuestionIndex)) return prev;
         const next = new Set(prev);
@@ -139,31 +196,59 @@ export default function Index() {
       });
     }
 
+    setCurrentStreak(newCurrentStreak);
+    setMaxStreak(newMaxStreak);
+
     const isLast = currQuestionIndex === currSection.questions.length - 1;
 
     if (isLast) {
       setShowResult(true);
       handleUserLastPlayed();
 
+      // --- Calculate streak bonus using "answers-style" system ---
+      const { bonus: streakBonus, newlyUnlocked } = calculateNewStreakRewards(
+        newMaxStreak,
+        currSection.difficulty,
+        unlockedStreaks // includes previously earned streaks from DB
+      );
+
+      const mergedStreaks = new Set(unlockedStreaks);
+      newlyUnlocked.forEach((t) => mergedStreaks.add(t));
+
+      if (streakBonus > 0) {
+        setRewards((p) => p + streakBonus);
+        setSessionRewardDelta((p) => p + streakBonus);
+        setUnlockedStreaks(mergedStreaks);
+      }
+
+      // --- Prepare new answered questions ---
       const pending = new Set<number>(newCorrectIndexes);
       if (isCorrect && !prevAnswered.includes(currQuestionIndex)) {
         pending.add(currQuestionIndex);
       }
-      const delta = pending.size;
+      const deltaQuestions = pending.size;
+
+      // --- Compute total reward delta locally ---
+      const totalRewardDelta = baseRewardDelta + streakBonus;
 
       try {
-        if (delta > 0) {
+        if (deltaQuestions > 0 || totalRewardDelta > 0) {
           await updateUserProgress({
             quizId: id,
             difficulty: currSection.difficulty,
             updates: {
-              questions: delta,
-              rewards: rewardsDelta,
+              questions: deltaQuestions,
+              rewards: totalRewardDelta,
               answered: Array.from(pending),
+              streaks: Array.from(mergedStreaks), // only new milestones added
             },
           });
         }
+
+        // --- Reset for next quiz ---
         setNewCorrectIndexes(new Set());
+        setCurrentStreak(0);
+        setSessionRewardDelta(0);
       } catch (err) {
         console.log(err);
       }

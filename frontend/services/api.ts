@@ -71,7 +71,12 @@ export const updateUser = async (updatedData: any) => {
 export const updateUserProgress = async (update: {
   quizId: string | string[];
   difficulty: string;
-  updates: { questions: number; rewards: number; answered: number[] };
+  updates: {
+    questions: number;
+    rewards: number;
+    answered: number[];
+    streaks: number[];
+  };
 }) => {
   try {
     const res = await api.patch("api/users/updateProgress", update);

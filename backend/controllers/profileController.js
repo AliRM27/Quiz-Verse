@@ -59,10 +59,34 @@ export const updateProgress = async (req, res) => {
         completed: false,
         perfected: false,
         sections: [
-          { difficulty: "Easy", questions: 0, rewards: 0, answered: [] },
-          { difficulty: "Medium", questions: 0, rewards: 0, answered: [] },
-          { difficulty: "Hard", questions: 0, rewards: 0, answered: [] },
-          { difficulty: "Extreme", questions: 0, rewards: 0, answered: [] },
+          {
+            difficulty: "Easy",
+            questions: 0,
+            rewards: 0,
+            answered: [],
+            streaks: [],
+          },
+          {
+            difficulty: "Medium",
+            questions: 0,
+            rewards: 0,
+            answered: [],
+            streaks: [],
+          },
+          {
+            difficulty: "Hard",
+            questions: 0,
+            rewards: 0,
+            answered: [],
+            streaks: [],
+          },
+          {
+            difficulty: "Extreme",
+            questions: 0,
+            rewards: 0,
+            answered: [],
+            streaks: [],
+          },
         ],
       };
 
@@ -99,6 +123,15 @@ export const updateProgress = async (req, res) => {
       updates.answered.forEach((index) => {
         if (!section.answered.includes(index)) {
           section.answered.push(index);
+        }
+      });
+    }
+
+    // Merge new streaks without duplicates
+    if (updates.streaks && Array.isArray(updates.streaks)) {
+      updates.streaks.forEach((streak) => {
+        if (!section.streaks.includes(streak)) {
+          section.streaks.push(streak);
         }
       });
     }
