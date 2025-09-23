@@ -54,7 +54,7 @@ export default function RootLayout() {
               <Stack.Screen name="(settings)/index" />
               <Stack.Screen name="(quizzes)/collection" />
               <Stack.Screen
-                name="quizLevel/[id section]"
+                name="quizLevel/[id]/[section]"
                 options={{ animation: "none" }}
               />
               <Stack.Screen

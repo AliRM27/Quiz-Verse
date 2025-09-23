@@ -4,20 +4,13 @@ import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
-  Button,
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
 import { useEffect, useState } from "react";
-import {
-  HEIGHT,
-  layout,
-  myHeight,
-  myWidth,
-  WIDTH,
-} from "@/constants/Dimensions";
+import { HEIGHT, layout, myHeight } from "@/constants/Dimensions";
 import { Colors } from "@/constants/Colors";
 import { router, useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
@@ -35,7 +28,10 @@ import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
 import { languageMap } from "@/utils/i18n";
 
 export default function Index() {
-  const { id, section } = useLocalSearchParams();
+  const { id, section } = useLocalSearchParams<{
+    id: string;
+    section: string;
+  }>();
   const [currQuestionIndex, setCurrQuestionIndex] = useState<number>(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [pressedAnswer, setPressedAnswer] = useState<number | null>(null);
@@ -271,6 +267,8 @@ export default function Index() {
   if (showResult) {
     return (
       <Result
+        quiz={data}
+        selectedLevelIndex={section}
         correctAnswers={correctAnswers}
         total={currSection.questions.length}
         rewards={rewards}
@@ -299,7 +297,7 @@ export default function Index() {
                 await updateUser({ lastPlayed: user?.lastPlayed });
               }
               await refreshUser();
-              router.back();
+              router.replace("/(tabs)");
             } catch (err) {
               console.log(err);
             }

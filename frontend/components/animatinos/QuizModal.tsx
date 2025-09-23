@@ -124,19 +124,15 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 <TouchableOpacity
                   activeOpacity={0.8}
                   style={styles.logoContainer}
-                  onPress={async () => {
-                    try {
-                      setIsVisible(false);
-                      router.push({
-                        pathname: "/quizLevel/[id section]",
-                        params: {
-                          id: quiz._id,
-                          section: String(selectedLevelIndex),
-                        },
-                      });
-                    } catch (err) {
-                      console.log(err);
-                    }
+                  onPress={() => {
+                    setIsVisible(false);
+                    router.replace({
+                      pathname: "/quizLevel/[id]/[section]",
+                      params: {
+                        id: quiz._id,
+                        section: selectedLevelIndex,
+                      },
+                    });
                   }}
                 >
                   <QuizLogo name={quiz.logoFile} />
