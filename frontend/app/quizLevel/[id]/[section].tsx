@@ -9,7 +9,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HEIGHT, layout, myHeight } from "@/constants/Dimensions";
 import { Colors } from "@/constants/Colors";
 import { router, useLocalSearchParams } from "expo-router";
@@ -53,6 +53,9 @@ export default function Index() {
   const [unlockedStreaks, setUnlockedStreaks] = useState<Set<number>>(
     new Set()
   );
+
+  const newCorrectIndexesRef = useRef<Set<number>>(new Set());
+
   useEffect(() => {
     if (!user || !currProgress) return;
 
@@ -63,6 +66,7 @@ export default function Index() {
       setUnlockedStreaks(new Set());
     }
 
+    newCorrectIndexesRef.current = new Set();
     setNewCorrectIndexes(new Set());
   }, [user, section, id]);
 
@@ -163,33 +167,38 @@ export default function Index() {
     if (isCorrect) setCorrectAnswers((p) => p + 1);
     else setCurrentStreak(0);
 
-    // --- Base rewards for first-time correct answers ---
-    let baseRewardDelta = 0;
+    // --- Base rewards for first-time correct answers (per-question) ---
+    let perQuestionReward = 0;
     if (isCorrect && !prevAnswered.includes(currQuestionIndex)) {
       switch (currSection.difficulty) {
         case "Easy":
-          baseRewardDelta = 10;
+          perQuestionReward = 10;
           break;
         case "Medium":
-          baseRewardDelta = 15;
+          perQuestionReward = 15;
           break;
         case "Hard":
-          baseRewardDelta = 25;
+          perQuestionReward = 25;
           break;
         case "Extreme":
-          baseRewardDelta = 65;
+          perQuestionReward = 65;
           break;
       }
 
-      setRewards((p) => p + baseRewardDelta);
-      setSessionRewardDelta((p) => p + baseRewardDelta);
+      // update UI immediately for each question
+      setRewards((p) => p + perQuestionReward);
+      setSessionRewardDelta((p) => p + perQuestionReward);
 
+      // update state-set for UI
       setNewCorrectIndexes((prev) => {
         if (prev.has(currQuestionIndex)) return prev;
         const next = new Set(prev);
         next.add(currQuestionIndex);
         return next;
       });
+
+      // ALSO update the local ref immediately (so final calculations are accurate)
+      newCorrectIndexesRef.current.add(currQuestionIndex);
     }
 
     setCurrentStreak(newCurrentStreak);
@@ -205,27 +214,52 @@ export default function Index() {
       const { bonus: streakBonus, newlyUnlocked } = calculateNewStreakRewards(
         newMaxStreak,
         currSection.difficulty,
-        unlockedStreaks // includes previously earned streaks from DB
+        unlockedStreaks // should still be loaded from DB on quiz start
       );
 
-      const mergedStreaks = new Set(unlockedStreaks);
-      newlyUnlocked.forEach((t) => mergedStreaks.add(t));
+      // merged streaks for DB (local)
+      const localMergedStreaks = new Set(unlockedStreaks);
+      newlyUnlocked.forEach((t) => localMergedStreaks.add(t));
 
+      // apply streak bonus to UI
       if (streakBonus > 0) {
         setRewards((p) => p + streakBonus);
         setSessionRewardDelta((p) => p + streakBonus);
-        setUnlockedStreaks(mergedStreaks);
+        setUnlockedStreaks(localMergedStreaks);
       }
 
-      // --- Prepare new answered questions ---
-      const pending = new Set<number>(newCorrectIndexes);
+      // --- Prepare new answered questions from the local ref (robust) ---
+      const pending = new Set<number>(newCorrectIndexesRef.current);
+
+      // Also ensure the very last question is included if it was just answered correctly
       if (isCorrect && !prevAnswered.includes(currQuestionIndex)) {
         pending.add(currQuestionIndex);
+        newCorrectIndexesRef.current.add(currQuestionIndex);
       }
+
       const deltaQuestions = pending.size;
 
-      // --- Compute total reward delta locally ---
-      const totalRewardDelta = baseRewardDelta + streakBonus;
+      // --- Compute total base reward from the number of NEW correct questions ---
+      // reward per question is the same across the section, so:
+      let rewardPerQ = 0;
+      switch (currSection.difficulty) {
+        case "Easy":
+          rewardPerQ = 10;
+          break;
+        case "Medium":
+          rewardPerQ = 15;
+          break;
+        case "Hard":
+          rewardPerQ = 25;
+          break;
+        case "Extreme":
+          rewardPerQ = 65;
+          break;
+      }
+      const totalBaseReward = deltaQuestions * rewardPerQ;
+
+      // final total reward to persist
+      const totalRewardDelta = totalBaseReward + streakBonus;
 
       try {
         if (deltaQuestions > 0 || totalRewardDelta > 0) {
@@ -236,13 +270,14 @@ export default function Index() {
               questions: deltaQuestions,
               rewards: totalRewardDelta,
               answered: Array.from(pending),
-              streaks: Array.from(mergedStreaks), // only new milestones added
+              streaks: Array.from(localMergedStreaks),
             },
           });
         }
 
         // --- Reset for next quiz ---
         setNewCorrectIndexes(new Set());
+        newCorrectIndexesRef.current = new Set(); // reset local ref
         setCurrentStreak(0);
         setSessionRewardDelta(0);
       } catch (err) {

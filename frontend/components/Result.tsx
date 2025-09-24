@@ -26,7 +26,7 @@ const Result = ({
   return (
     <View
       style={{
-        backgroundColor: Colors.dark.bg_dark,
+        backgroundColor: Colors.dark.bg,
         alignItems: "center",
         height: "100%",
         paddingTop: layout.paddingTop,
@@ -126,8 +126,12 @@ const Result = ({
       >
         <TouchableOpacity
           onPress={async () => {
-            await refreshUser();
-            router.replace("/(tabs)");
+            try {
+              await refreshUser();
+              router.replace("/(tabs)");
+            } catch (e) {
+              console.log(e);
+            }
           }}
           activeOpacity={0.7}
           style={[styles.button, { width: "50%" }]}
