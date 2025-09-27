@@ -76,6 +76,7 @@ export const updateUserProgress = async (update: {
     rewards: number;
     answered: number[];
     streaks: number[];
+    timeBonuses: number[];
   };
 }) => {
   try {

@@ -65,6 +65,7 @@ export const updateProgress = async (req, res) => {
             rewards: 0,
             answered: [],
             streaks: [],
+            timeBonuses: [], // ✅ NEW
           },
           {
             difficulty: "Medium",
@@ -72,6 +73,7 @@ export const updateProgress = async (req, res) => {
             rewards: 0,
             answered: [],
             streaks: [],
+            timeBonuses: [], // ✅ NEW
           },
           {
             difficulty: "Hard",
@@ -79,6 +81,7 @@ export const updateProgress = async (req, res) => {
             rewards: 0,
             answered: [],
             streaks: [],
+            timeBonuses: [], // ✅ NEW
           },
           {
             difficulty: "Extreme",
@@ -86,6 +89,7 @@ export const updateProgress = async (req, res) => {
             rewards: 0,
             answered: [],
             streaks: [],
+            timeBonuses: [], // ✅ NEW
           },
         ],
       };
@@ -132,6 +136,14 @@ export const updateProgress = async (req, res) => {
       updates.streaks.forEach((streak) => {
         if (!section.streaks.includes(streak)) {
           section.streaks.push(streak);
+        }
+      });
+    }
+
+    if (updates.timeBonuses && Array.isArray(updates.timeBonuses)) {
+      updates.timeBonuses.forEach((bonus) => {
+        if (!section.timeBonuses.includes(bonus)) {
+          section.timeBonuses.push(bonus);
         }
       });
     }

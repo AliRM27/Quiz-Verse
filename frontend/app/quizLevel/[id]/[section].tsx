@@ -26,6 +26,10 @@ import Result from "@/components/Result";
 import { updateUserProgress, updateUser } from "@/services/api";
 import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
 import { languageMap } from "@/utils/i18n";
+import {
+  calculateNewTimeBonuses,
+  calculateNewStreakRewards,
+} from "@/utils/rewardsSystem";
 
 export default function Index() {
   const { id, section } = useLocalSearchParams<{
@@ -56,6 +60,9 @@ export default function Index() {
 
   const newCorrectIndexesRef = useRef<Set<number>>(new Set());
 
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [startTime, setStartTime] = useState<number | null>(null);
+
   useEffect(() => {
     if (!user || !currProgress) return;
 
@@ -69,6 +76,26 @@ export default function Index() {
     newCorrectIndexesRef.current = new Set();
     setNewCorrectIndexes(new Set());
   }, [user, section, id]);
+
+  useEffect(() => {
+    // Start timer at first question
+    if (currQuestionIndex === 0 && startTime === null) {
+      setStartTime(Date.now());
+      setTimeLeft(0);
+    }
+
+    // Update timer every second
+    let interval: NodeJS.Timeout | null = null;
+    if (startTime !== null) {
+      interval = setInterval(() => {
+        setTimeLeft(Math.floor((Date.now() - startTime) / 1000));
+      }, 1000);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [currQuestionIndex, startTime]);
 
   if (loading || isLoading || !user) {
     return (
@@ -91,58 +118,6 @@ export default function Index() {
     data.sections[Number(section)].questions[currQuestionIndex];
   const currProgress = user?.progress.find((q) => q.quizId._id === data._id);
   const prevAnswered = currProgress.sections[Number(section)].answered ?? [];
-
-  type Difficulty = "Easy" | "Medium" | "Hard" | "Extreme";
-
-  const streakMilestones: Record<
-    Difficulty,
-    { threshold: number; reward: number }[]
-  > = {
-    Easy: [
-      { threshold: 5, reward: 5 },
-      { threshold: 11, reward: 15 },
-      { threshold: 17, reward: 30 },
-      { threshold: 20, reward: 50 }, // all correct
-    ],
-    Medium: [
-      { threshold: 4, reward: 5 },
-      { threshold: 8, reward: 15 },
-      { threshold: 12, reward: 30 },
-      { threshold: 15, reward: 50 },
-    ],
-    Hard: [
-      { threshold: 3, reward: 5 },
-      { threshold: 6, reward: 15 },
-      { threshold: 8, reward: 30 },
-      { threshold: 10, reward: 50 },
-    ],
-    Extreme: [
-      { threshold: 2, reward: 5 },
-      { threshold: 3, reward: 15 },
-      { threshold: 4, reward: 30 },
-      { threshold: 5, reward: 50 },
-    ],
-  };
-
-  // helper
-  const calculateNewStreakRewards = (
-    maxStreak: number,
-    difficulty: Difficulty,
-    unlocked: Set<number>
-  ) => {
-    const milestones = streakMilestones[difficulty] || [];
-    let bonus = 0;
-    const newlyUnlocked: number[] = [];
-
-    for (const { threshold, reward } of milestones) {
-      if (maxStreak >= threshold && !unlocked.has(threshold)) {
-        bonus += reward;
-        newlyUnlocked.push(threshold);
-      }
-    }
-
-    return { bonus, newlyUnlocked };
-  };
 
   const handleNextButton = async () => {
     let isCorrect: boolean;
@@ -261,16 +236,32 @@ export default function Index() {
       // final total reward to persist
       const totalRewardDelta = totalBaseReward + streakBonus;
 
+      const prevTimeBonuses =
+        currProgress.sections[Number(section)].timeBonuses ?? [];
+
+      const { bonus: timeBonus, newlyUnlocked: newTimeBonuses } =
+        calculateNewTimeBonuses(
+          currSection.difficulty,
+          timeLeft,
+          prevTimeBonuses
+        );
+
+      if (timeBonus > 0) {
+        setRewards((p) => p + timeBonus);
+        setSessionRewardDelta((p) => p + timeBonus);
+      }
+
       try {
-        if (deltaQuestions > 0 || totalRewardDelta > 0) {
+        if (deltaQuestions > 0 || totalRewardDelta > 0 || timeBonus > 0) {
           await updateUserProgress({
             quizId: id,
             difficulty: currSection.difficulty,
             updates: {
               questions: deltaQuestions,
-              rewards: totalRewardDelta,
+              rewards: totalRewardDelta + timeBonus,
               answered: Array.from(pending),
               streaks: Array.from(localMergedStreaks),
+              timeBonuses: [...prevTimeBonuses, ...newTimeBonuses],
             },
           });
         }
