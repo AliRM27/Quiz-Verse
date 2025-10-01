@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { BackgroundGradient } from "@/components/ui/gradients/background";
 import { defaultStyles } from "@/constants/Styles";
 import { Colors } from "@/constants/Colors";
@@ -22,9 +22,6 @@ export default function Index() {
   useEffect(() => {
     configureGoogleSignIn();
     // If already authenticated, redirect to tabs
-    if (isAuthenticated && !loading && !signingIn) {
-      router.replace("/(tabs)");
-    }
   }, [isAuthenticated, loading]);
 
   if (loading || signingIn) {
@@ -90,7 +87,11 @@ export default function Index() {
               const res = await googleAuth(tokens.idToken);
 
               // Set user data and route
-              await setUserData(res?.data.user, res?.data.token);
+              await setUserData(
+                res?.data.user,
+                res?.data.token,
+                res?.data.sessionToken
+              );
 
               if (res?.data.user?.name === "") {
                 router.replace("/(auth)/createUsername");

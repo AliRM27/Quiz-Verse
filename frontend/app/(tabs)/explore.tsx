@@ -60,7 +60,13 @@ export default function Explore() {
       await updateUserProgress({
         quizId,
         difficulty: "Easy",
-        updates: { questions: 0, rewards: 0, answered: [] },
+        updates: {
+          questions: 0,
+          rewards: 0,
+          answered: [],
+          streaks: [],
+          timeBonuses: [],
+        },
       });
       await refreshUser();
     } catch (error) {
@@ -83,7 +89,6 @@ export default function Explore() {
         <TextInput
           value={input}
           onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
           selectionColor={Colors.dark.text}
           onChangeText={handleChangeText}
           style={[styles.input, focused && { borderColor: Colors.dark.text }]}
@@ -102,9 +107,9 @@ export default function Explore() {
         <Pressable
           onPress={() => {
             setInput("");
-            setFocused(false);
             setQuery("");
-            Keyboard.dismiss();
+            setFocused(false);
+            setTimeout(() => Keyboard.dismiss(), 50);
           }}
           style={[
             { position: "absolute", top: 12, right: 15 },

@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 export const googleSignIn = async (req, res) => {
   const { idToken } = req.body;
@@ -24,11 +25,9 @@ export const googleSignIn = async (req, res) => {
     const profileImage = payload.picture;
 
     // Check if user already exists
-    let user = await User.findOne({ googleId })
-      .populate(
-        "completedQuizzes.quizId lastPlayed.quizId progress.quizId unlockedQuizzes.quizId"
-      )
-      .lean();
+    let user = await User.findOne({ googleId }).populate(
+      "completedQuizzes.quizId lastPlayed.quizId progress.quizId unlockedQuizzes.quizId"
+    );
 
     if (!user) {
       // Create a new user if not found
@@ -41,12 +40,31 @@ export const googleSignIn = async (req, res) => {
       await user.save();
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const SESSION_TIMEOUT = 5 * 60 * 1000; // 2 minutes
+
+    if (
+      user.activeSession &&
+      new Date() - new Date(user.lastActiveAt) > SESSION_TIMEOUT
+    ) {
+      // Session is stale → clear it
+      user.activeSession = null;
+      user.lastActiveAt = null;
+    }
+
+    // Generate JWT token for API auth
+    const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "30d",
     });
 
-    res.status(200).json({ token, user });
+    // Generate a unique session token for this device
+    const sessionToken = crypto.randomBytes(32).toString("hex");
+
+    // Update user's active session and lastActiveAt
+    user.activeSession = sessionToken;
+    user.lastActiveAt = new Date();
+    await user.save();
+
+    res.status(200).json({ token: jwtToken, sessionToken, user });
   } catch (error) {
     console.error("Google Sign-In Error:", error);
     res.status(500).json({ message: "Internal server error" });

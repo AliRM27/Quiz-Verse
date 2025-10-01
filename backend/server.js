@@ -14,6 +14,7 @@ import {
 } from "./routes/imports.js";
 import { protect } from "./middleware/protect.js";
 import { isAdmin } from "./middleware/isAdmin.js";
+import { checkActiveSession } from "./middleware/isActive.js";
 
 dotenv.config();
 connectDB();
@@ -30,9 +31,9 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
-app.use("/api/quizzes", quizRoutes);
-app.use("/api/categories", categoryRoutes);
-app.use("/api/shop", shopRoutes);
+app.use("/api/quizzes", protect, checkActiveSession, quizRoutes);
+app.use("/api/categories", protect, checkActiveSession, categoryRoutes);
+app.use("/api/shop", protect, checkActiveSession, shopRoutes);
 app.use("/api/users", protect, profileRoutes);
 app.use("/api/admin", adminRoutes); // add protect, isAdmin later
 app.use("/api/upload-logo", uploadLogoRoute);
