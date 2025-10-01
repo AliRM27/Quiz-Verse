@@ -1,14 +1,27 @@
-import { View, Text, StyleSheet, Pressable } from "react-native";
-import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
 import { REGULAR_FONT } from "@/constants/Styles";
 import { Colors } from "@/constants/Colors";
 import { layout } from "@/constants/Dimensions";
 import { useUser } from "@/context/userContext";
 import { router } from "expo-router";
 import ArrBack from "@/assets/svgs/backArr.svg";
+import QuizLogo from "@/components/ui/QuizLogo";
+import { QuizType } from "@/types";
+import QuizModal from "@/components/animatinos/QuizModal";
+import { useState } from "react";
+import { set } from "lodash";
 
 const Collection = () => {
   const { user, loading } = useUser();
+  const [currQuiz, setCurrQuiz] = useState(user?.unlockedQuizzes[0]?.quizId);
+  const [visible, setVisible] = useState(false);
   if (loading || !user) {
     return;
   }
@@ -19,7 +32,6 @@ const Collection = () => {
         height: "100%",
         paddingVertical: layout.paddingTop,
         paddingHorizontal: 15,
-        gap: 20,
         alignItems: "center",
       }}
     >
@@ -29,14 +41,48 @@ const Collection = () => {
       >
         <ArrBack />
       </Pressable>
-      <Text style={[styles.txt, { fontSize: 25 }]}>Your Quizzes</Text>
-      <View style={{}}>
-        {user.unlockedQuizzes.map((quiz, index) => (
-          <Text key={index} style={styles.txt}>
-            {quiz.quizId.title}
-          </Text>
-        ))}
-      </View>
+      <Text style={[styles.txt, { fontSize: 25, marginBottom: 20 }]}>
+        Your Quizzes
+      </Text>
+      <FlatList
+        data={user.unlockedQuizzes}
+        contentContainerStyle={{
+          flexWrap: "wrap",
+          flexDirection: "row",
+          gap: 25,
+          justifyContent: "center",
+        }}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item }: { item: QuizType }) => (
+          <TouchableOpacity
+            onPress={() => {
+              setCurrQuiz(item.quizId);
+              setVisible(true);
+            }}
+            activeOpacity={0.7}
+            style={{
+              width: 150,
+              height: 150,
+              borderRadius: 10,
+              overflow: "hidden",
+              borderWidth: 1,
+              borderColor: Colors.dark.border,
+            }}
+          >
+            <QuizLogo name={item.quizId.logoFile} />
+          </TouchableOpacity>
+        )}
+      />
+      {currQuiz && (
+        <QuizModal
+          quiz={currQuiz}
+          isVisible={visible}
+          setIsVisible={setVisible}
+          currentProgress={user?.progress.find(
+            (quizObj) => quizObj.quizId._id === currQuiz._id
+          )}
+        />
+      )}
     </View>
   );
 };

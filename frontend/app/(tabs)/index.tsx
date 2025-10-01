@@ -2,7 +2,7 @@ import { Text, StyleSheet, View, Image } from "react-native";
 import { Colors } from "@/constants/Colors";
 import ProfilePic from "@/assets/svgs/profilePic.svg";
 import Trophy from "@/assets/svgs/currencyTropht.svg";
-import { defaultStyles } from "@/constants/Styles";
+import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
 import { layout } from "@/constants/Dimensions";
 import HomePageCards from "@/components/HomePageCards";
 import { WIDTH, HEIGHT, myHeight, myWidth } from "@/constants/Dimensions";
@@ -29,39 +29,57 @@ export default function HomeScreen() {
       }}
     >
       <View
-        style={[defaultStyles.containerRow, { gap: HEIGHT * (20 / myHeight) }]}
+        style={{
+          width: "100%",
+          flexDirection: "row",
+          gap: 20,
+          alignItems: "center",
+          marginTop: 10,
+          justifyContent: "space-around",
+        }}
       >
         <View
-          style={{
-            borderWidth: 2,
-            borderColor: Colors.dark.primary,
-            transform: [{ rotate: "45deg" }],
-            padding: 3,
-            borderRadius: 20,
-          }}
+          style={[
+            defaultStyles.containerRow,
+            { gap: HEIGHT * (20 / myHeight), justifyContent: "center" },
+          ]}
         >
           <View
             style={{
-              width: 50,
-              height: 50,
-              transform: [{ rotate: "0deg" }],
-              overflow: "hidden",
-              justifyContent: "center",
-              alignItems: "center",
-              borderRadius: 15,
+              borderWidth: 2,
+              borderColor: Colors.dark.primary,
+              transform: [{ rotate: "45deg" }],
+              padding: 3,
+              borderRadius: 20,
             }}
           >
-            <Image
-              src={user?.profileImage}
-              width={60}
-              height={60}
+            <View
               style={{
-                transform: [{ rotate: "-45deg" }],
+                width: 50,
+                height: 50,
+                transform: [{ rotate: "0deg" }],
+                overflow: "hidden",
+                justifyContent: "center",
+                alignItems: "center",
+                borderRadius: 15,
               }}
-            />
+            >
+              <Image
+                src={user?.profileImage}
+                width={60}
+                height={60}
+                style={{
+                  transform: [{ rotate: "-45deg" }],
+                }}
+              />
+            </View>
           </View>
+          <Text style={styles.txt}>{user?.name}</Text>
         </View>
-        <Text style={styles.txt}>{user?.name}</Text>
+        <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
+          <Text style={styles.txt}>Trophies: {user.stars}</Text>
+          <Text style={styles.txt}>Diamands: {user.stars}</Text>
+        </View>
       </View>
       <Carousel />
       <View
@@ -79,13 +97,13 @@ const styles = StyleSheet.create({
   txt: {
     color: Colors.dark.text,
     fontSize: 18,
-    fontFamily: "Inter-Regular SemiBold",
+    fontFamily: REGULAR_FONT,
     fontWeight: 600,
   },
   txt_muted: {
     color: Colors.dark.text_muted,
     fontSize: 15,
-    fontFamily: "Inter-Regular",
+    fontFamily: REGULAR_FONT,
   },
   currency: {
     textAlign: "right",
