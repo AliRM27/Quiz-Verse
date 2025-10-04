@@ -7,6 +7,7 @@ import {
   PanResponder,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import { Colors } from "@/constants/Colors";
@@ -19,19 +20,25 @@ import RotatingGradient from "../ui/gradients/GlowingView";
 import QuizLogo from "@/components/ui/QuizLogo";
 import Info from "../ui/Info";
 import { router } from "expo-router";
-
+import { useUser } from "@/context/userContext";
 import { useTranslation } from "react-i18next";
 import ProgressBar from "./progressBar";
+import { PRICES } from "@/constants/Prices";
+import { updateUser, updateUserProgress } from "@/services/api";
+import LockOpen from "@/assets/svgs/lock-open.svg";
 
 const QuizModal: React.FC<QuizModalProps> = ({
   isVisible,
   setIsVisible,
   quiz,
   currentProgress,
+  isUnlocked = true,
 }) => {
   const translateY = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
   const { t } = useTranslation();
+  const { user, refreshUser } = useUser();
+  const [loading, setLoading] = useState<boolean>(false);
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gestureState) =>
@@ -119,9 +126,10 @@ const QuizModal: React.FC<QuizModalProps> = ({
             contentContainerStyle={{ alignItems: "center", gap: 35 }}
             showsVerticalScrollIndicator={false}
           >
-            <Animated.View style={{ opacity }}>
+            <Animated.View style={isUnlocked && { opacity }}>
               <RotatingGradient>
                 <TouchableOpacity
+                  disabled={!isUnlocked}
                   activeOpacity={0.8}
                   style={styles.logoContainer}
                   onPress={() => {
@@ -188,11 +196,15 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 <LineDashed />
                 <View>
                   <CircularProgress
-                    progress={Math.floor(
-                      (currentProgress?.questionsCompleted /
-                        quiz.questionsTotal) *
-                        100
-                    )}
+                    progress={
+                      currentProgress
+                        ? Math.floor(
+                            (currentProgress?.questionsCompleted /
+                              quiz.questionsTotal) *
+                              100
+                          )
+                        : 0
+                    }
                     size={HEIGHT * (50 / myHeight)}
                     strokeWidth={3}
                   />
@@ -228,7 +240,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 <View
                   style={{
                     width: "80%",
-                    backgroundColor: Colors.dark.border,
+                    backgroundColor: Colors.dark.border_muted,
                     borderRadius: 6,
                     marginTop: HEIGHT * (10 / myHeight),
                   }}
@@ -240,94 +252,150 @@ const QuizModal: React.FC<QuizModalProps> = ({
                   />
                 </View>
                 <Text style={[styles.txt_muted, { fontSize: 12 }]}>
-                  {currentProgress?.rewardsTotal} / {quiz.rewardsTotal}
+                  {currentProgress ? currentProgress.rewardsTotal : 0} /{" "}
+                  {quiz.rewardsTotal}
                 </Text>
               </View>
             </View>
 
-            <View
-              style={[
-                defaultStyles.containerRow,
-                {
-                  width: "80%",
-                  flexWrap: "wrap",
-                  justifyContent: "space-around",
-                  gap: 15,
-                  marginBottom: 50,
-                },
-              ]}
-            >
-              {quiz.sections.map((lvl, index) => (
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  key={index}
-                  style={[
-                    defaultStyles.containerBackground,
-                    {
-                      paddingVertical: WIDTH * (12 / myWidth),
-                      backgroundColor: Colors.dark.bg,
-                      width: "40%",
-                      gap: WIDTH * (10 / myWidth),
-                      height: HEIGHT * (190 / myHeight),
-                    },
-                    selectedLevelIndex === index && {
-                      borderColor: Colors.dark.text,
-                    },
-                  ]}
-                  onPress={() => {
-                    setSelectedLevelIndex(index);
-                  }}
-                >
-                  <Text
-                    style={[styles.txt, { fontSize: WIDTH * (19 / myWidth) }]}
+            {isUnlocked ? (
+              <View
+                style={[
+                  defaultStyles.containerRow,
+                  {
+                    width: "80%",
+                    flexWrap: "wrap",
+                    justifyContent: "space-around",
+                    gap: 15,
+                    marginBottom: 50,
+                  },
+                ]}
+              >
+                {quiz.sections.map((lvl, index) => (
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    key={index}
+                    style={[
+                      defaultStyles.containerBackground,
+                      {
+                        paddingVertical: WIDTH * (12 / myWidth),
+                        backgroundColor: Colors.dark.bg,
+                        width: "40%",
+                        gap: WIDTH * (10 / myWidth),
+                        height: HEIGHT * (190 / myHeight),
+                      },
+                      selectedLevelIndex === index && {
+                        borderColor: Colors.dark.text,
+                      },
+                    ]}
+                    onPress={() => {
+                      setSelectedLevelIndex(index);
+                    }}
                   >
-                    {lvl.difficulty[0].toUpperCase() +
-                      lvl.difficulty.slice(1).toLowerCase()}
-                  </Text>
-                  <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
-                    <Text style={[styles.txt_muted]}>{t("progress")}</Text>
-                    <View
-                      style={{
-                        width: "80%",
-                        backgroundColor: Colors.dark.border,
-                        borderRadius: 6,
-                      }}
+                    <Text
+                      style={[styles.txt, { fontSize: WIDTH * (19 / myWidth) }]}
                     >
-                      <ProgressBar
-                        color={Colors.dark.text}
-                        progress={currentProgress?.sections[index].questions}
-                        total={lvl.questions.length}
-                        height={3}
-                      />
-                    </View>
-                    <Text style={[styles.txt_muted, { fontSize: 10 }]}>
-                      {currentProgress?.sections[index].questions} /{" "}
-                      {lvl.questions.length}
+                      {lvl.difficulty[0].toUpperCase() +
+                        lvl.difficulty.slice(1).toLowerCase()}
                     </Text>
-                  </View>
-                  <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
-                    <Text style={[styles.txt_muted]}>{t("rewards")}</Text>
                     <View
-                      style={{
-                        width: "80%",
-                        backgroundColor: Colors.dark.border,
-                        borderRadius: 6,
-                      }}
+                      style={{ width: "100%", alignItems: "center", gap: 5 }}
                     >
-                      <ProgressBar
-                        color={"#FFB11F"}
-                        progress={currentProgress?.sections[index].rewards}
-                        total={lvl.rewards}
-                        height={3}
-                      />
+                      <Text style={[styles.txt_muted]}>{t("progress")}</Text>
+                      <View
+                        style={{
+                          width: "80%",
+                          backgroundColor: Colors.dark.border,
+                          borderRadius: 6,
+                        }}
+                      >
+                        <ProgressBar
+                          color={Colors.dark.text}
+                          progress={currentProgress?.sections[index].questions}
+                          total={lvl.questions.length}
+                          height={3}
+                        />
+                      </View>
+                      <Text style={[styles.txt_muted, { fontSize: 10 }]}>
+                        {currentProgress?.sections[index].questions} /{" "}
+                        {lvl.questions.length}
+                      </Text>
                     </View>
-                    <Text style={[styles.txt_muted, { fontSize: 10 }]}>
-                      {currentProgress?.sections[index].rewards} / {lvl.rewards}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
+                    <View
+                      style={{ width: "100%", alignItems: "center", gap: 5 }}
+                    >
+                      <Text style={[styles.txt_muted]}>{t("rewards")}</Text>
+                      <View
+                        style={{
+                          width: "80%",
+                          backgroundColor: Colors.dark.border,
+                          borderRadius: 6,
+                        }}
+                      >
+                        <ProgressBar
+                          color={"#FFB11F"}
+                          progress={currentProgress?.sections[index].rewards}
+                          total={lvl.rewards}
+                          height={3}
+                        />
+                      </View>
+                      <Text style={[styles.txt_muted, { fontSize: 10 }]}>
+                        {currentProgress?.sections[index].rewards} /{" "}
+                        {lvl.rewards}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : (
+              <TouchableOpacity
+                disabled={loading}
+                onPress={async () => {
+                  setLoading(true);
+                  if (!user) return;
+                  if (user?.stars >= PRICES.quizzes.single.price.trophies) {
+                    try {
+                      await updateUser({
+                        stars:
+                          user.stars - PRICES.quizzes.single.price.trophies,
+                      });
+                      await updateUserProgress({ quizId: quiz._id });
+                    } catch (err) {
+                      console.log(err);
+                    }
+                    try {
+                      await refreshUser();
+                    } catch (err) {
+                      console.log(err);
+                    }
+                  } else {
+                    console.log("Not enough stars");
+                  }
+                  setLoading(false);
+                }}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 15,
+                  paddingHorizontal: 20,
+                  paddingVertical: 15,
+                  borderRadius: 30,
+                  borderWidth: 1,
+                  borderColor: Colors.dark.border_muted,
+                  width: 200,
+                }}
+              >
+                {!loading ? (
+                  <>
+                    <LockOpen color={Colors.dark.text} />
+                    <Text style={[styles.txt]}>Unlock</Text>
+                  </>
+                ) : (
+                  <ActivityIndicator color={Colors.dark.text} />
+                )}
+              </TouchableOpacity>
+            )}
           </ScrollView>
         </Animated.View>
       </View>
@@ -372,7 +440,7 @@ const styles = StyleSheet.create({
   txt: {
     color: Colors.dark.text,
     fontSize: 18,
-    fontFamily: REGULAR_FONT + " ",
+    fontFamily: REGULAR_FONT,
     fontWeight: 600,
   },
   txt_muted: {

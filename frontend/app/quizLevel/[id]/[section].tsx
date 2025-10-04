@@ -182,7 +182,6 @@ export default function Index() {
     const isLast = currQuestionIndex === currSection.questions.length - 1;
 
     if (isLast) {
-      setShowResult(true);
       handleUserLastPlayed();
 
       // --- Calculate streak bonus using "answers-style" system ---
@@ -264,6 +263,9 @@ export default function Index() {
               timeBonuses: [...prevTimeBonuses, ...newTimeBonuses],
             },
           });
+          await updateUser({
+            stars: user.stars + totalRewardDelta + timeBonus,
+          });
         }
 
         // --- Reset for next quiz ---
@@ -274,6 +276,7 @@ export default function Index() {
       } catch (err) {
         console.log(err);
       }
+      setShowResult(true);
     } else {
       setCurrQuestionIndex((p) => p + 1);
     }
@@ -283,7 +286,10 @@ export default function Index() {
   };
 
   const handleUserLastPlayed = async () => {
-    if (user && user.lastPlayed[0].quizId._id !== data._id) {
+    if (user.lastPlayed.length === 0) {
+      user.lastPlayed = [{ quizId: data._id }];
+      await updateUser({ lastPlayed: user.lastPlayed });
+    } else if (user.lastPlayed[0].quizId._id !== data._id) {
       user.lastPlayed = [{ quizId: data._id }, ...user.lastPlayed];
       user.lastPlayed.length > 2 && user.lastPlayed.pop();
       await updateUser({ lastPlayed: user?.lastPlayed });
@@ -317,7 +323,10 @@ export default function Index() {
         <Pressable
           onPress={async () => {
             try {
-              if (user && user.lastPlayed[0].quizId._id !== data._id) {
+              if (user.lastPlayed.length === 0) {
+                user.lastPlayed = [{ quizId: data._id }];
+                await updateUser({ lastPlayed: user.lastPlayed });
+              } else if (user.lastPlayed[0].quizId._id !== data._id) {
                 user.lastPlayed = [{ quizId: data._id }, ...user.lastPlayed];
                 user.lastPlayed.length > 2 && user.lastPlayed.pop();
                 await updateUser({ lastPlayed: user?.lastPlayed });

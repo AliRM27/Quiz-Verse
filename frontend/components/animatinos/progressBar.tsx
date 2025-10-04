@@ -14,7 +14,7 @@ const ProgressBar = ({
 }) => {
   const widthAnim = useRef(new Animated.Value(0)).current;
 
-  const percentage = total > 0 ? (progress / total) * 100 : 0;
+  const percentage = total > 0 && progress > 0 ? (progress / total) * 100 : 0;
 
   useEffect(() => {
     Animated.timing(widthAnim, {

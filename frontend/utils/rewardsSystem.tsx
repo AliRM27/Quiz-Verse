@@ -7,9 +7,9 @@ const timeBonusThresholds: Record<
   { limit: number; reward: number }[]
 > = {
   Easy: [
-    { limit: 20, reward: 5 },
-    { limit: 15, reward: 15 },
-    { limit: 10, reward: 30 },
+    { limit: 250, reward: 5 },
+    { limit: 200, reward: 15 },
+    { limit: 150, reward: 30 },
   ],
   Medium: [
     { limit: 200, reward: 5 },

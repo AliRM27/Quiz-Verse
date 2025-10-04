@@ -24,6 +24,8 @@ import Add from "@/assets/svgs/add.svg";
 import { updateUserProgress } from "@/services/api";
 import { useTranslation } from "react-i18next";
 import ProgressBar from "@/components/animatinos/progressBar";
+import QuizModal from "@/components/animatinos/QuizModal";
+import Lock from "@/assets/svgs/lock.svg";
 
 export default function Explore() {
   const [focused, setFocused] = useState(false);
@@ -31,6 +33,7 @@ export default function Explore() {
   const [input, setInput] = useState("");
   const { user, loading, refreshUser } = useUser();
   const [loadingUpdate, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
   const { t } = useTranslation();
 
   const debouncedSetSearch = useMemo(
@@ -53,6 +56,8 @@ export default function Explore() {
     queryKey: ["searchQuizzes", query],
     queryFn: () => searchQuizzes(query),
   });
+
+  const [currQuiz, setCurrQuiz] = useState(quizzes ? quizzes[0] : null);
 
   const handleAddQuiz = async (quizId: string) => {
     setLoading(true);
@@ -138,9 +143,10 @@ export default function Explore() {
           const rewards =
             user?.progress.find((p) => p.quizId._id === item._id)
               ?.rewardsTotal || 0;
-          const progressPercent = item.questionsTotal
-            ? Math.floor((progress / item.questionsTotal) * 100)
-            : 0;
+          const progressPercent =
+            progress !== 0
+              ? Math.floor((progress / item.questionsTotal) * 100)
+              : 0;
           const rewardPercent = item.rewardsTotal
             ? Math.floor((rewards / item.rewardsTotal) * 100)
             : 0;
@@ -150,35 +156,21 @@ export default function Explore() {
               {!user.unlockedQuizzes.some(
                 (q) => q.quizId._id === item._id || q.quizId === item._id
               ) && (
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => handleAddQuiz(item._id)}
-                  style={{
-                    position: "absolute",
-                    top: 20,
-                    right: 20,
-                    backgroundColor: Colors.dark.bg_light,
-                    borderRadius: 50,
-                    borderWidth: 1,
-                    borderColor: Colors.dark.border,
-                    zIndex: 2,
-                  }}
-                >
-                  {loadingUpdate ? (
-                    <ActivityIndicator color={Colors.dark.text_muted} />
-                  ) : (
-                    <Add
-                      stroke={Colors.dark.text_muted}
-                      width={20}
-                      height={20}
-                    />
-                  )}
-                </TouchableOpacity>
+                <View style={{ position: "absolute", top: 10, right: 10 }}>
+                  <Lock color={Colors.dark.text_muted} />
+                </View>
               )}
               {/* Left: Logo */}
-              <View style={styles.logoWrapper}>
+              <TouchableOpacity
+                onPress={() => {
+                  setCurrQuiz(item);
+                  setModalVisible(true);
+                }}
+                activeOpacity={0.7}
+                style={styles.logoWrapper}
+              >
                 <QuizLogo name={item.logoFile} />
-              </View>
+              </TouchableOpacity>
 
               {/* Right: Info */}
               <View style={styles.infoWrapper}>
@@ -194,10 +186,7 @@ export default function Explore() {
                     <View style={styles.barBackground}>
                       <ProgressBar
                         color={Colors.dark.text}
-                        progress={
-                          user?.progress.find((p) => p.quizId._id === item._id)
-                            ?.questionsCompleted
-                        }
+                        progress={progress}
                         total={item.questionsTotal}
                         height={3}
                       />
@@ -218,10 +207,7 @@ export default function Explore() {
                     <View style={styles.barBackground}>
                       <ProgressBar
                         color={Colors.dark.secondary}
-                        progress={
-                          user?.progress.find((p) => p.quizId._id === item._id)
-                            ?.rewardsTotal
-                        }
+                        progress={rewards}
                         total={item.rewardsTotal}
                         height={3}
                       />
@@ -247,6 +233,19 @@ export default function Explore() {
           );
         }}
       />
+      {currQuiz && (
+        <QuizModal
+          quiz={currQuiz}
+          isVisible={modalVisible}
+          setIsVisible={setModalVisible}
+          currentProgress={user.progress.find(
+            (p) => p.quizId._id === currQuiz._id
+          )}
+          isUnlocked={user.unlockedQuizzes.some(
+            (q) => q.quizId._id === currQuiz._id
+          )}
+        />
+      )}
     </View>
   );
 }

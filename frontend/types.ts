@@ -44,4 +44,5 @@ export interface QuizModalProps {
   setIsVisible: (visible: boolean) => void;
   quiz: QuizType;
   currentProgress?: any;
+  isUnlocked?: boolean;
 }

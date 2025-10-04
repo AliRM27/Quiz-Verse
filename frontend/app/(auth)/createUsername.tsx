@@ -62,6 +62,7 @@ export default function createUsername() {
         Now let’s create your Username
       </Text>
       <TextInput
+        cursorColor={Colors.dark.text}
         style={styles.input}
         placeholder={"Type your username"}
         placeholderTextColor={Colors.dark.text_muted}

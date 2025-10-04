@@ -37,7 +37,7 @@ export const updateProgress = async (req, res) => {
     const userId = req.userId;
     const { quizId, difficulty, updates } = req.body;
 
-    if (!quizId || !difficulty || !updates) {
+    if (!quizId) {
       return res
         .status(400)
         .json({ message: "quizId, difficulty and updates are required" });
@@ -105,6 +105,12 @@ export const updateProgress = async (req, res) => {
         { new: true }
       );
       return res.status(200).json({ message: "Progress entry ensured" });
+    }
+
+    if (!difficulty || !updates) {
+      return res
+        .status(400)
+        .json({ message: "quizId, difficulty and updates are required" });
     }
 
     // Step 2: Update fields for the section

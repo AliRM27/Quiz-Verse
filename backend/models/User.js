@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema({
   language: {
     type: String,
     required: true,
-    default: "en",
+    default: "English",
   },
   activeSession: {
     type: String,

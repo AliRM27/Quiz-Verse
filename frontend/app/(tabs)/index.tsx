@@ -77,8 +77,8 @@ export default function HomeScreen() {
           <Text style={styles.txt}>{user?.name}</Text>
         </View>
         <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
-          <Text style={styles.txt}>Trophies: {user.stars}</Text>
-          <Text style={styles.txt}>Diamands: {user.stars}</Text>
+          <Text style={styles.txt}>T: {user.stars}</Text>
+          <Text style={styles.txt}>D: {0}</Text>
         </View>
       </View>
       <Carousel />

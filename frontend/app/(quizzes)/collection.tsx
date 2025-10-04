@@ -16,7 +16,6 @@ import QuizLogo from "@/components/ui/QuizLogo";
 import { QuizType } from "@/types";
 import QuizModal from "@/components/animatinos/QuizModal";
 import { useState } from "react";
-import { set } from "lodash";
 
 const Collection = () => {
   const { user, loading } = useUser();
@@ -41,7 +40,7 @@ const Collection = () => {
       >
         <ArrBack />
       </Pressable>
-      <Text style={[styles.txt, { fontSize: 25, marginBottom: 20 }]}>
+      <Text style={[styles.txt, { fontSize: 25, marginBottom: 40 }]}>
         Your Quizzes
       </Text>
       <FlatList
@@ -72,6 +71,10 @@ const Collection = () => {
             <QuizLogo name={item.quizId.logoFile} />
           </TouchableOpacity>
         )}
+
+        // ListEmptyComponent={() => (
+        //   <Text style={styles.txt}>Unlock Quizzes</Text>
+        // )}
       />
       {currQuiz && (
         <QuizModal

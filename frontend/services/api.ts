@@ -89,8 +89,8 @@ export const updateUser = async (updatedData: any) => {
 
 export const updateUserProgress = async (update: {
   quizId: string | string[];
-  difficulty: string;
-  updates: {
+  difficulty?: string;
+  updates?: {
     questions: number;
     rewards: number;
     answered: number[];

@@ -11,7 +11,7 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const CircularProgress = ({
   size = 50,
   strokeWidth = 5,
-  progress = 32,
+  progress = 0,
   fontSize,
   percent = true,
   total = 100,
