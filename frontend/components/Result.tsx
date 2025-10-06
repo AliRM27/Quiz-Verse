@@ -115,6 +115,14 @@ const Result = ({
           <Wrong width={15} height={15} />
         </View>
       </View>
+      <View style={{ alignItems: "center", gap: 10 }}>
+        <Text style={[styles.txt, { fontSize: 17, fontWeight: "600" }]}>
+          Rewards
+        </Text>
+        <Text style={[styles.txt, { fontSize: 15, fontFamily: ITALIC_FONT }]}>
+          +{rewards} trophies
+        </Text>
+      </View>
       <View
         style={{
           alignItems: "center",

@@ -368,8 +368,6 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     } catch (err) {
                       console.log(err);
                     }
-                  } else {
-                    console.log("Not enough stars");
                   }
                   setLoading(false);
                 }}

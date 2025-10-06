@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { REGULAR_FONT } from "@/constants/Styles";
 import { Colors } from "@/constants/Colors";
-import { layout } from "@/constants/Dimensions";
+import { layout, myWidth, WIDTH } from "@/constants/Dimensions";
 import { useUser } from "@/context/userContext";
 import { router } from "expo-router";
 import ArrBack from "@/assets/svgs/backArr.svg";
@@ -44,13 +44,11 @@ const Collection = () => {
         Your Quizzes
       </Text>
       <FlatList
+        numColumns={2}
+        horizontal={false}
         data={user.unlockedQuizzes}
-        contentContainerStyle={{
-          flexWrap: "wrap",
-          flexDirection: "row",
-          gap: 25,
-          justifyContent: "center",
-        }}
+        style={{ width: "100%" }}
+        contentContainerStyle={{ alignItems: "center" }}
         keyExtractor={(item) => item._id}
         renderItem={({ item }: { item: QuizType }) => (
           <TouchableOpacity
@@ -60,12 +58,13 @@ const Collection = () => {
             }}
             activeOpacity={0.7}
             style={{
-              width: 150,
-              height: 150,
+              width: WIDTH * (132 / myWidth), // 150
+              height: WIDTH * (132 / myWidth), // 150
               borderRadius: 10,
               overflow: "hidden",
               borderWidth: 1,
               borderColor: Colors.dark.border,
+              margin: 10,
             }}
           >
             <QuizLogo name={item.quizId.logoFile} />

@@ -388,7 +388,7 @@ export default function Index() {
             >
               <View
                 style={{
-                  width: `${currProgress.sections[Number(section)].rewards}%`,
+                  width: `${(currProgress.sections[Number(section)].rewards / data.sections[Number(section)].rewards) * 100}%`,
                   height: 2,
                   borderRadius: 6,
                   backgroundColor: Colors.dark.secondary,

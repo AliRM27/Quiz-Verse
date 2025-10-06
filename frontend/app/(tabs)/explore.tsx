@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import Search from "@/assets/svgs/search.svg";
-import { REGULAR_FONT } from "@/constants/Styles";
+import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { searchQuizzes } from "@/services/api";
@@ -26,6 +26,8 @@ import { useTranslation } from "react-i18next";
 import ProgressBar from "@/components/animatinos/progressBar";
 import QuizModal from "@/components/animatinos/QuizModal";
 import Lock from "@/assets/svgs/lock.svg";
+import Binoculars from "@/assets/svgs/binoculars.svg";
+import SearchX from "@/assets/svgs/search-x.svg";
 
 export default function Explore() {
   const [focused, setFocused] = useState(false);
@@ -59,27 +61,6 @@ export default function Explore() {
 
   const [currQuiz, setCurrQuiz] = useState(quizzes ? quizzes[0] : null);
 
-  const handleAddQuiz = async (quizId: string) => {
-    setLoading(true);
-    try {
-      await updateUserProgress({
-        quizId,
-        difficulty: "Easy",
-        updates: {
-          questions: 0,
-          rewards: 0,
-          answered: [],
-          streaks: [],
-          timeBonuses: [],
-        },
-      });
-      await refreshUser();
-    } catch (error) {
-      console.error("Error adding quiz:", error);
-    }
-    setLoading(false);
-  };
-
   if (!user) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -97,7 +78,7 @@ export default function Explore() {
           selectionColor={Colors.dark.text}
           onChangeText={handleChangeText}
           style={[styles.input, focused && { borderColor: Colors.dark.text }]}
-          placeholder={t("search")}
+          placeholder={" " + t("search")}
           placeholderTextColor={Colors.dark.text_muted}
           autoCorrect={false}
           returnKeyType="search"
@@ -128,7 +109,21 @@ export default function Explore() {
       {(isLoading || loading) && <></>}
 
       {!isLoading && !loading && quizzes?.length === 0 && (
-        <Text style={styles.txt}>No quizzes found.</Text>
+        <View
+          style={{
+            alignItems: "center",
+            gap: 20,
+            justifyContent: "center",
+            flex: 1,
+          }}
+        >
+          <SearchX width={60} height={60} color={Colors.dark.text_muted} />
+          <Text
+            style={[styles.txt_muted, { fontSize: 16, textAlign: "center" }]}
+          >
+            No quizzes found {"\n"} try again
+          </Text>
+        </View>
       )}
 
       <FlatList

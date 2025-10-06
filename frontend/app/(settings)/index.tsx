@@ -7,8 +7,8 @@ import {
   TouchableOpacity,
   Pressable,
 } from "react-native";
-import React, { useState } from "react";
-import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
+import { useState } from "react";
+import { REGULAR_FONT } from "@/constants/Styles";
 import { Colors } from "@/constants/Colors";
 import { layout } from "@/constants/Dimensions";
 import { useUser } from "@/context/userContext";
@@ -111,7 +111,7 @@ const Settings = () => {
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
-              <Global stroke={"#999999"} />
+              <Global stroke={"#999999"} color={"transparent"} />
               <Text style={[styles.txt]}>{t("language")}</Text>
             </View>
             <View

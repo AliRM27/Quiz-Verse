@@ -23,6 +23,7 @@ import NextArr from "@/assets/svgs/nextArr.svg";
 import PrevArr from "@/assets/svgs/prevArr.svg";
 import { useTranslation } from "react-i18next";
 import ProgressBar from "@/components/animatinos/progressBar";
+import BookDashed from "@/assets/svgs/book-dashed.svg";
 
 export default function Profile() {
   const { user, loading } = useUser();
@@ -436,7 +437,7 @@ export default function Profile() {
             )
           )}
         </View>
-        {filteredQuizzes.length > 0 &&
+        {filteredQuizzes.length > 0 ? (
           filteredQuizzes[currIndex].quizId.logoFile && (
             <View
               style={{
@@ -560,7 +561,20 @@ export default function Profile() {
                 </View>
               </View>
             </View>
-          )}
+          )
+        ) : (
+          <View style={{ alignItems: "center", gap: 10 }}>
+            <BookDashed
+              width={40}
+              height={40}
+              color={Colors.dark.text_muted}
+              fill={"transparent"}
+            />
+            <Text style={styles.txt_muted}>
+              No {categroyPressed.toLowerCase()} quizzes
+            </Text>
+          </View>
+        )}
         <View
           style={{
             flexDirection: "row",
