@@ -1,8 +1,18 @@
 import Svg, { Line } from "react-native-svg";
 
-export const LineDashed = () => {
+export const LineDashed = ({
+  needMargin,
+  margin,
+}: {
+  needMargin?: boolean;
+  margin?: number;
+}) => {
   return (
-    <Svg height="1" width="100%">
+    <Svg
+      height="1"
+      width="100%"
+      style={{ marginBottom: needMargin ? margin : 0 }}
+    >
       <Line
         x1="0"
         y1="0"

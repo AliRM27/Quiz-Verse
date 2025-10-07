@@ -8,6 +8,12 @@ import { QuizType } from "@/types";
 import QuizLogo from "./ui/QuizLogo";
 import Right from "@/assets/svgs/rightAnswers.svg";
 import Wrong from "@/assets/svgs/wrongAnswers.svg";
+import { useEffect, useState } from "react";
+import CircularProgress from "./ui/CircularProgress";
+import { LineDashed } from "./ui/Line";
+import ProgressBar from "./animatinos/progressBar";
+import { useTranslation } from "react-i18next";
+import { set } from "lodash";
 
 const Result = ({
   quiz,
@@ -15,14 +21,59 @@ const Result = ({
   correctAnswers,
   total,
   rewards,
+  newQuestions,
 }: {
   quiz: QuizType;
   selectedLevelIndex: string;
   correctAnswers: number;
   total: number;
   rewards: number;
+  newQuestions?: number;
 }) => {
-  const { refreshUser } = useUser();
+  const { refreshUser, user } = useUser();
+  const { t } = useTranslation();
+  const [value, setValue] = useState<number>(0);
+  const [rewardsValue, setRewardsValue] = useState<number>(0);
+  const [showAnimation, setShowAnimation] = useState<string>("");
+
+  const userProgress = user?.progress.find((p) => p.quizId._id === quiz._id)
+    .sections[Number(selectedLevelIndex)];
+
+  const quizProgress = quiz.sections[Number(selectedLevelIndex)];
+
+  useEffect(() => {
+    setValue(
+      Math.floor(
+        (userProgress.questions / quizProgress.questions.length) * 100
+      ) || 0
+    );
+    setRewardsValue(userProgress.rewards);
+
+    if (newQuestions) {
+      setTimeout(() => {
+        setValue(
+          Math.floor(
+            ((userProgress.questions + newQuestions) /
+              quizProgress.questions.length) *
+              100
+          )
+        );
+        setShowAnimation("1");
+      }, 2000);
+    }
+
+    if (rewards > 0) {
+      setTimeout(() => {
+        setRewardsValue(userProgress.rewards + rewards || 0);
+        setShowAnimation("2");
+      }, 3500);
+    }
+
+    setTimeout(() => {
+      setShowAnimation("3");
+    }, 5000);
+  }, []);
+
   return (
     <View
       style={{
@@ -64,7 +115,7 @@ const Result = ({
           {quiz.title}
         </Text>
         <Text style={[styles.txt_muted, { fontSize: 15, marginTop: 10 }]}>
-          {quiz.sections[Number(selectedLevelIndex)].difficulty}
+          {quizProgress.difficulty}{" "}
         </Text>
       </View>
       <View
@@ -115,13 +166,88 @@ const Result = ({
           <Wrong width={15} height={15} />
         </View>
       </View>
-      <View style={{ alignItems: "center", gap: 10 }}>
-        <Text style={[styles.txt, { fontSize: 17, fontWeight: "600" }]}>
-          Rewards
-        </Text>
-        <Text style={[styles.txt, { fontSize: 15, fontFamily: ITALIC_FONT }]}>
-          +{rewards} trophies
-        </Text>
+
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-around",
+          width: "100%",
+          height: 130,
+        }}
+      >
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: Colors.dark.border_muted,
+            padding: 15,
+            borderRadius: 20,
+            alignItems: "center",
+            height: "100%",
+            gap: 10,
+            width: "30%",
+          }}
+        >
+          {showAnimation === "1" && (
+            <Text style={[styles.txt, { fontSize: 16, fontWeight: "600" }]}>
+              +{" "}
+              {newQuestions &&
+                Math.floor(
+                  (newQuestions / quizProgress.questions.length) * 100
+                )}{" "}
+              %
+            </Text>
+          )}
+          <Text style={[styles.txt, { fontSize: 16, fontWeight: "600" }]}>
+            {t("progress")}
+          </Text>
+          <LineDashed needMargin={true} margin={5} />
+          <CircularProgress
+            progress={value}
+            size={50}
+            strokeWidth={3}
+            fontSize={12}
+          />
+        </View>
+        <View
+          style={{
+            alignItems: "center",
+            gap: 10,
+            borderWidth: 1,
+            borderColor: Colors.dark.border_muted,
+            padding: 15,
+            borderRadius: 20,
+            width: "50%",
+            height: "100%",
+          }}
+        >
+          {showAnimation === "2" && (
+            <Text style={[styles.txt, { fontSize: 16, fontWeight: "600" }]}>
+              + {rewards}
+            </Text>
+          )}
+          <Text style={[styles.txt, { fontSize: 16, fontWeight: "600" }]}>
+            {t("rewards")}
+          </Text>
+          <LineDashed needMargin={true} margin={15} />
+          <View
+            style={{
+              width: "80%",
+              backgroundColor: Colors.dark.border,
+              borderRadius: 6,
+            }}
+          >
+            <ProgressBar
+              color={"#FFB11F"}
+              progress={rewardsValue}
+              total={quizProgress.rewards}
+              height={3}
+            />
+          </View>
+          <Text style={[styles.txt, { fontSize: 13 }]}>
+            {rewardsValue} / {quizProgress.rewards}
+          </Text>
+        </View>
       </View>
       <View
         style={{

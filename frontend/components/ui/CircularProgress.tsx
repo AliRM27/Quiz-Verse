@@ -36,9 +36,9 @@ const CircularProgress = ({
   useEffect(() => {
     Animated.timing(animatedValue, {
       toValue: progress,
-      duration: 1200, // animation speed
+      duration: 1300, // animation speed
       useNativeDriver: true,
-      easing: Easing.elastic(1),
+      easing: Easing.inOut(Easing.ease),
     }).start();
   }, [progress]);
 

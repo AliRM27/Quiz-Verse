@@ -27,7 +27,6 @@ export interface QuizType {
   company: string;
   progress: number;
   rewardsTotal: number;
-  total: number;
   questionsTotal: number;
   sections: {
     title: string;

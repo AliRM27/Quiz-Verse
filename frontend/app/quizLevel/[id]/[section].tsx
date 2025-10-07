@@ -62,6 +62,7 @@ export default function Index() {
 
   const [timeLeft, setTimeLeft] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
+  const [newQuestions, setNewQuestions] = useState<number>(0);
 
   useEffect(() => {
     if (!user || !currProgress) return;
@@ -213,6 +214,8 @@ export default function Index() {
 
       const deltaQuestions = pending.size;
 
+      setNewQuestions(deltaQuestions);
+
       // --- Compute total base reward from the number of NEW correct questions ---
       // reward per question is the same across the section, so:
       let rewardPerQ = 0;
@@ -304,6 +307,7 @@ export default function Index() {
         correctAnswers={correctAnswers}
         total={currSection.questions.length}
         rewards={rewards}
+        newQuestions={newQuestions}
       />
     );
   }
