@@ -28,5 +28,9 @@
   "enterYourNewUsername": "Enter your new username",
   "makeItBetter": "Make it better though",
   "change": "Change",
-  "changeLanguage": "Change Language"
+  "changeLanguage": "Change Language",
+  "Easy": "🐣 Easy",
+  "Medium": "💪 Medium",
+  "Hard": "🔥 Hard",
+  "Extreme": "☠️ Extreme"
 }

@@ -117,7 +117,12 @@ export default function Explore() {
             flex: 1,
           }}
         >
-          <SearchX width={60} height={60} color={Colors.dark.text_muted} />
+          <SearchX
+            width={60}
+            height={60}
+            color={Colors.dark.text_muted}
+            strokeWidth={1.3}
+          />
           <Text
             style={[styles.txt_muted, { fontSize: 16, textAlign: "center" }]}
           >

@@ -26,6 +26,7 @@ import ProgressBar from "./progressBar";
 import { PRICES } from "@/constants/Prices";
 import { updateUser, updateUserProgress } from "@/services/api";
 import LockOpen from "@/assets/svgs/lock-open.svg";
+import { languageMap } from "@/utils/i18n";
 
 const QuizModal: React.FC<QuizModalProps> = ({
   isVisible,
@@ -98,6 +99,8 @@ const QuizModal: React.FC<QuizModalProps> = ({
       };
     }
   }, [isVisible]);
+
+  if (!user) return null;
 
   return (
     <Modal
@@ -278,11 +281,12 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     style={[
                       defaultStyles.containerBackground,
                       {
-                        paddingVertical: WIDTH * (12 / myWidth),
+                        paddingHorizontal: 10,
+                        justifyContent: "flex-start",
                         backgroundColor: Colors.dark.bg,
                         width: "40%",
                         gap: WIDTH * (10 / myWidth),
-                        height: HEIGHT * (190 / myHeight),
+                        height: HEIGHT * (180 / myHeight),
                       },
                       selectedLevelIndex === index && {
                         borderColor: Colors.dark.text,
@@ -293,10 +297,20 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     }}
                   >
                     <Text
-                      style={[styles.txt, { fontSize: WIDTH * (19 / myWidth) }]}
+                      style={[
+                        styles.txt,
+                        {
+                          fontSize: WIDTH * (16 / myWidth),
+                          textAlign: "center",
+                          marginBottom: 15,
+                        },
+                        languageMap[user.language] &&
+                          lvl.difficulty === "Extreme" && {
+                            fontSize: WIDTH * (11 / myWidth),
+                          },
+                      ]}
                     >
-                      {lvl.difficulty[0].toUpperCase() +
-                        lvl.difficulty.slice(1).toLowerCase()}
+                      {t(lvl.difficulty)}
                     </Text>
                     <View
                       style={{ width: "100%", alignItems: "center", gap: 5 }}

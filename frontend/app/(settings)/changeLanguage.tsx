@@ -44,10 +44,14 @@ const ChangeLanguage = () => {
         <ArrBack />
       </Pressable>
       <Text style={[styles.txt, { fontSize: 30, fontWeight: 700 }]}>
-        {t("play")}
+        {t("changeLanguage")}
       </Text>
       {languages.map((language, index) => (
         <TouchableOpacity
+          style={[
+            styles.btn,
+            user.language === language && { backgroundColor: Colors.dark.text },
+          ]}
           disabled={language === user.language}
           onPress={async () => {
             setIsLoading(true);
@@ -69,7 +73,8 @@ const ChangeLanguage = () => {
             <Text
               style={[
                 styles.txt,
-                user.language === language && { color: "red" },
+                { fontSize: 20 },
+                user.language === language && { color: "black" },
               ]}
             >
               {language}
@@ -91,5 +96,13 @@ const styles = StyleSheet.create({
   txt_muted: {
     color: Colors.dark.text_muted,
     fontFamily: REGULAR_FONT,
+  },
+  btn: {
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
+    padding: 15,
+    width: "100%",
+    alignItems: "center",
+    borderRadius: 50,
   },
 });

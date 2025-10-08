@@ -17,7 +17,7 @@ import QuizLogo from "@/components/ui/QuizLogo";
 import Info from "@/components/ui/Info";
 import { myWidth, WIDTH } from "@/constants/Dimensions";
 import QuizModal from "@/components/animatinos/QuizModal";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { router } from "expo-router";
 import NextArr from "@/assets/svgs/nextArr.svg";
 import PrevArr from "@/assets/svgs/prevArr.svg";
@@ -30,9 +30,7 @@ export default function Profile() {
   const [currQuiz, setCurrQuiz] = useState(user?.lastPlayed[0]?.quizId);
   const [visible, setVisible] = useState<boolean>(false);
   const { t } = useTranslation();
-  const [categroyPressed, setCategoryPressed] = useState<string>(
-    t("uncompleted")
-  );
+  const [categroyPressed, setCategoryPressed] = useState<string>("");
   const [currIndex, setCurrIndex] = useState<number>(0);
   const [currLogoFile, setCurrLogoFile] = useState<string>(
     user?.lastPlayed[0]?.quizId.logoFile
@@ -45,6 +43,12 @@ export default function Profile() {
     });
     return map;
   }, [user?.progress]);
+
+  useEffect(() => {
+    if (user) {
+      setCategoryPressed(t("uncompleted"));
+    }
+  }, [user]);
 
   if (!user || loading)
     return (
