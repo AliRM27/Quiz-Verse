@@ -1,7 +1,7 @@
 import { Text, StyleSheet, View, Image } from "react-native";
 import { Colors } from "@/constants/Colors";
-import ProfilePic from "@/assets/svgs/profilePic.svg";
-import Trophy from "@/assets/svgs/currencyTropht.svg";
+import Gem from "@/assets/svgs/gem.svg";
+import Trophy from "@/assets/svgs/trophy.svg";
 import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
 import { layout } from "@/constants/Dimensions";
 import HomePageCards from "@/components/HomePageCards";
@@ -74,11 +74,20 @@ export default function HomeScreen() {
               />
             </View>
           </View>
-          <Text style={styles.txt}>{user?.name}</Text>
+          <Text style={styles.txt}>{user.name}</Text>
         </View>
         <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
-          <Text style={styles.txt}>T: {user.stars}</Text>
-          <Text style={styles.txt}>D: {0}</Text>
+          <View style={{ alignItems: "center", flexDirection: "row", gap: 5 }}>
+            <Trophy width={25} height={25} color={Colors.dark.secondary} />
+            <Text style={styles.txt}>
+              {user.stars}
+              {/* String(user.stars).slice(0, 1)}.{String(user.stars).slice(1) -> Adding a point to for better visualization of numbers*/}
+            </Text>
+          </View>
+          <View style={{ alignItems: "center", flexDirection: "row", gap: 5 }}>
+            <Gem width={25} height={25} color={Colors.dark.primary} />
+            <Text style={styles.txt}>{2000}</Text>
+          </View>
         </View>
       </View>
       <Carousel />

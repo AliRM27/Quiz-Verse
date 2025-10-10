@@ -304,7 +304,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                           textAlign: "center",
                           marginBottom: 15,
                         },
-                        languageMap[user.language] &&
+                        languageMap[user.language] === "ru" &&
                           lvl.difficulty === "Extreme" && {
                             fontSize: WIDTH * (11 / myWidth),
                           },
