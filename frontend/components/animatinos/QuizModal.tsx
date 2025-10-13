@@ -26,6 +26,7 @@ import ProgressBar from "./progressBar";
 import { PRICES } from "@/constants/Prices";
 import { updateUser, updateUserProgress } from "@/services/api";
 import LockOpen from "@/assets/svgs/lock-open.svg";
+import Lock from "@/assets/svgs/lock.svg";
 import { languageMap } from "@/utils/i18n";
 
 const QuizModal: React.FC<QuizModalProps> = ({
@@ -126,7 +127,13 @@ const QuizModal: React.FC<QuizModalProps> = ({
           <ScrollView
             horizontal={false}
             style={{ width: "100%" }}
-            contentContainerStyle={{ alignItems: "center", gap: 35 }}
+            contentContainerStyle={[
+              {
+                alignItems: "center",
+                gap: 35,
+              },
+              !isUnlocked && { height: "100%", paddingBottom: 70 },
+            ]}
             showsVerticalScrollIndicator={false}
           >
             <Animated.View style={isUnlocked && { opacity }}>
@@ -362,51 +369,62 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 ))}
               </View>
             ) : (
-              <TouchableOpacity
-                disabled={loading}
-                onPress={async () => {
-                  setLoading(true);
-                  if (!user) return;
-                  if (user?.stars >= PRICES.quizzes.single.price.trophies) {
-                    try {
-                      await updateUser({
-                        stars:
-                          user.stars - PRICES.quizzes.single.price.trophies,
-                      });
-                      await updateUserProgress({ quizId: quiz._id });
-                    } catch (err) {
-                      console.log(err);
-                    }
-                    try {
-                      await refreshUser();
-                    } catch (err) {
-                      console.log(err);
-                    }
-                  }
-                  setLoading(false);
-                }}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 15,
-                  paddingHorizontal: 20,
-                  paddingVertical: 15,
-                  borderRadius: 30,
-                  borderWidth: 1,
-                  borderColor: Colors.dark.border_muted,
-                  width: 200,
-                }}
+              <View
+                style={{ alignItems: "center", gap: 15, marginTop: "auto" }}
               >
-                {!loading ? (
-                  <>
-                    <LockOpen color={Colors.dark.text} />
-                    <Text style={[styles.txt]}>Unlock</Text>
-                  </>
-                ) : (
-                  <ActivityIndicator color={Colors.dark.text} />
+                {user.stars >= PRICES.quizzes.single.price.trophies && (
+                  <Text style={styles.txt}>Unlock now!</Text>
                 )}
-              </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  disabled={loading}
+                  onPress={async () => {
+                    setLoading(true);
+                    if (!user) return;
+                    if (user?.stars >= PRICES.quizzes.single.price.trophies) {
+                      try {
+                        await updateUser({
+                          stars:
+                            user.stars - PRICES.quizzes.single.price.trophies,
+                        });
+                        await updateUserProgress({ quizId: quiz._id });
+                        await refreshUser();
+                      } catch (err) {
+                        console.log(err);
+                      }
+                    }
+                    setLoading(false);
+                  }}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "#121212ff",
+                    gap: 15,
+                    paddingHorizontal: 20,
+                    paddingVertical: 15,
+                    borderRadius: 30,
+                    borderWidth: 1,
+                    borderColor: Colors.dark.border_muted,
+                    width: 200,
+                  }}
+                >
+                  {!loading ? (
+                    <>
+                      {user.stars >= PRICES.quizzes.single.price.trophies ? (
+                        <LockOpen color={Colors.dark.secondary} />
+                      ) : (
+                        <Lock color={Colors.dark.text} />
+                      )}
+                      <Text style={[styles.txt]}>
+                        {PRICES.quizzes.single.price.trophies}
+                      </Text>
+                    </>
+                  ) : (
+                    <ActivityIndicator color={Colors.dark.text} />
+                  )}
+                </TouchableOpacity>
+              </View>
             )}
           </ScrollView>
         </Animated.View>

@@ -16,11 +16,13 @@ import QuizLogo from "@/components/ui/QuizLogo";
 import { QuizType } from "@/types";
 import QuizModal from "@/components/animatinos/QuizModal";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const Collection = () => {
   const { user, loading } = useUser();
   const [currQuiz, setCurrQuiz] = useState(user?.unlockedQuizzes[0]?.quizId);
   const [visible, setVisible] = useState(false);
+  const { t } = useTranslation();
   if (loading || !user) {
     return;
   }
@@ -41,13 +43,12 @@ const Collection = () => {
         <ArrBack />
       </Pressable>
       <Text style={[styles.txt, { fontSize: 25, marginBottom: 40 }]}>
-        Your Quizzes
+        {t("yourQuizzes")}
       </Text>
       <FlatList
         numColumns={2}
         horizontal={false}
         data={user.unlockedQuizzes}
-        style={{ width: "100%" }}
         contentContainerStyle={{ alignItems: "center" }}
         keyExtractor={(item) => item._id}
         renderItem={({ item }: { item: QuizType }) => (

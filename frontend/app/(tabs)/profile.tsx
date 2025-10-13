@@ -184,12 +184,18 @@ export default function Profile() {
           </TouchableOpacity>
         </View>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <TouchableOpacity activeOpacity={0.6} style={styles.iconBackground}>
+          <TouchableOpacity
+            onPress={() => {
+              router.push("/(settings)/editProfile");
+            }}
+            activeOpacity={0.7}
+            style={styles.iconBackground}
+          >
             <EditIcon width={24} height={24} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => router.push("/(settings)")}
-            activeOpacity={0.6}
+            activeOpacity={0.7}
             style={styles.iconBackground}
           >
             <SettingsIcon width={24} height={24} />
@@ -475,10 +481,17 @@ export default function Profile() {
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
-                    gap: 20,
+                    gap: 35,
                   }}
                 >
-                  <View style={{ width: WIDTH * (120 / myWidth) }}>
+                  <View
+                    style={[
+                      { width: WIDTH * (120 / myWidth) },
+                      categroyPressed === t("uncompleted") && {
+                        width: WIDTH * (170 / myWidth),
+                      },
+                    ]}
+                  >
                     <Text style={[styles.txt]}>{t("progress")}</Text>
                     <View
                       style={{
@@ -550,17 +563,29 @@ export default function Profile() {
                     </View>
                   )}
                   {categroyPressed === t("perfect") && (
-                    <Text
-                      style={[
-                        styles.txt,
-                        {
-                          fontSize: 30,
-                          fontWeight: 800,
-                        },
-                      ]}
+                    <View
+                      style={{
+                        borderWidth: 4,
+                        borderColor: "#e31010ff",
+                        width: 50,
+                        height: 50,
+                        borderRadius: 50,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
                     >
-                      S
-                    </Text>
+                      <Text
+                        style={[
+                          styles.txt,
+                          {
+                            fontSize: 30,
+                            fontWeight: 800,
+                          },
+                        ]}
+                      >
+                        S
+                      </Text>
+                    </View>
                   )}
                 </View>
               </View>
@@ -637,12 +662,12 @@ const styles = StyleSheet.create({
     fontFamily: REGULAR_FONT,
   },
   categoryButton: {
-    borderWidth: 0,
+    borderWidth: 1,
     borderColor: Colors.dark.border,
-    backgroundColor: "#222222ff",
+    backgroundColor: Colors.dark.bg_dark,
     paddingVertical: 6,
     paddingHorizontal: 15,
-    borderRadius: 15,
+    borderRadius: 13,
   },
   categoryButtonText: {
     color: Colors.dark.text,

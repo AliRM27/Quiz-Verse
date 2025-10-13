@@ -98,7 +98,7 @@ export default function Explore() {
             setTimeout(() => Keyboard.dismiss(), 50);
           }}
           style={[
-            { position: "absolute", top: 12, right: 15 },
+            { position: "absolute", top: 13, right: 15 },
             !focused && { display: "none" },
           ]}
         >
@@ -259,6 +259,7 @@ const styles = StyleSheet.create({
   },
   input: {
     width: "100%",
+    height: 50,
     backgroundColor: Colors.dark.bg_light,
     borderRadius: 50,
     padding: 15,
