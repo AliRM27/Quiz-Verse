@@ -60,6 +60,16 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  firstLogIn: {
+    type: Date,
+    default: Date.now,
+  },
+  theme: {
+    cardColor: {
+      type: String,
+      default: "green",
+    },
+  },
 });
 
 const User = mongoose.model("User", userSchema);

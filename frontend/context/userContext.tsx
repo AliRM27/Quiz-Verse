@@ -12,7 +12,7 @@ import { router } from "expo-router";
 import { initI18n } from "@/utils/i18n";
 import { updateUser } from "@/services/api";
 
-type User = {
+export type User = {
   _id: string;
   googleId: string;
   name: string;
@@ -28,6 +28,8 @@ type User = {
   language: string;
   activeSession: string | null;
   lastActiveAt: any;
+  firstLogIn: string;
+  theme: { cardColor: string };
 };
 
 type UserContextType = {

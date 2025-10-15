@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   ScrollView,
   Platform,
+  Modal,
 } from "react-native";
 import { useUser } from "@/context/userContext";
 import { Colors } from "@/constants/Colors";
@@ -24,6 +25,7 @@ import PrevArr from "@/assets/svgs/prevArr.svg";
 import { useTranslation } from "react-i18next";
 import ProgressBar from "@/components/animatinos/progressBar";
 import BookDashed from "@/assets/svgs/book-dashed.svg";
+import ProfileCardModal from "@/components/ui/ProfileCardModal";
 
 export default function Profile() {
   const { user, loading } = useUser();
@@ -32,6 +34,7 @@ export default function Profile() {
   const { t } = useTranslation();
   const [categroyPressed, setCategoryPressed] = useState<string>("");
   const [currIndex, setCurrIndex] = useState<number>(0);
+  const [isVisible, setIsVisible] = useState<boolean>(false);
   const [currLogoFile, setCurrLogoFile] = useState<string>(
     user?.lastPlayed[0]?.quizId.logoFile
   );
@@ -99,10 +102,12 @@ export default function Profile() {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{
-        alignItems: "center",
-        paddingTop: 4,
-      }}
+      contentContainerStyle={[
+        {
+          alignItems: "center",
+          paddingTop: 4,
+        },
+      ]}
     >
       <View
         style={[
@@ -115,10 +120,14 @@ export default function Profile() {
         ]}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
-          <View
+          <TouchableOpacity
+            onPress={() => {
+              setIsVisible(true);
+            }}
+            activeOpacity={0.7}
             style={{
               borderWidth: 2,
-              borderColor: "#58d01cff",
+              borderColor: user.theme.cardColor,
               transform: [{ rotate: "45deg" }],
               padding: 3,
               borderRadius: 20,
@@ -144,7 +153,7 @@ export default function Profile() {
                 }}
               />
             </View>
-          </View>
+          </TouchableOpacity>
           <Text
             style={[
               styles.txt,
@@ -152,6 +161,7 @@ export default function Profile() {
                 fontSize: 18,
                 fontWeight: "600",
               },
+              user.name.length > 10 && { fontSize: 16 },
             ]}
           >
             {user.name}
@@ -642,6 +652,7 @@ export default function Profile() {
           )}
         />
       )}
+      {isVisible && <ProfileCardModal isVisible setIsVisible={setIsVisible} />}
     </ScrollView>
   );
 }

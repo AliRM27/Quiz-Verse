@@ -1,4 +1,4 @@
-import { Text, StyleSheet, View, Image } from "react-native";
+import { Text, StyleSheet, View, Image, TouchableOpacity } from "react-native";
 import { Colors } from "@/constants/Colors";
 import Gem from "@/assets/svgs/gem.svg";
 import Trophy from "@/assets/svgs/trophy.svg";
@@ -8,9 +8,12 @@ import HomePageCards from "@/components/HomePageCards";
 import { WIDTH, HEIGHT, myHeight, myWidth } from "@/constants/Dimensions";
 import Carousel from "@/components/animatinos/Carousel";
 import { useUser } from "@/context/userContext";
+import { useState } from "react";
+import ProfileCardModal from "@/components/ui/ProfileCardModal";
 
 export default function HomeScreen() {
   const { user, loading } = useUser();
+  const [isVisible, setIsVisible] = useState<boolean>(false);
 
   if (loading || !user) {
     return (
@@ -22,11 +25,13 @@ export default function HomeScreen() {
 
   return (
     <View
-      style={{
-        alignItems: "center",
-        gap: 40,
-        height: "100%",
-      }}
+      style={[
+        {
+          alignItems: "center",
+          gap: 40,
+          height: "100%",
+        },
+      ]}
     >
       <View
         style={{
@@ -44,10 +49,12 @@ export default function HomeScreen() {
             { gap: HEIGHT * (20 / myHeight), justifyContent: "center" },
           ]}
         >
-          <View
+          <TouchableOpacity
+            onPress={() => setIsVisible(true)}
+            activeOpacity={0.7}
             style={{
               borderWidth: 2,
-              borderColor: Colors.dark.primary,
+              borderColor: user.theme.cardColor,
               transform: [{ rotate: "45deg" }],
               padding: 3,
               borderRadius: 20,
@@ -73,8 +80,10 @@ export default function HomeScreen() {
                 }}
               />
             </View>
-          </View>
-          <Text style={styles.txt}>{user.name}</Text>
+          </TouchableOpacity>
+          <Text style={[styles.txt, user.name.length > 10 && { fontSize: 16 }]}>
+            {user.name}
+          </Text>
         </View>
         <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
           <View style={{ alignItems: "center", flexDirection: "row", gap: 5 }}>
@@ -98,6 +107,7 @@ export default function HomeScreen() {
       >
         <HomePageCards />
       </View>
+      {isVisible && <ProfileCardModal isVisible setIsVisible={setIsVisible} />}
     </View>
   );
 }

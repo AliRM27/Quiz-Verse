@@ -37,7 +37,7 @@ const ChnageUsername = () => {
     if (
       newName.trim() === "" ||
       newName.length < 3 ||
-      newName.length > 20 ||
+      newName.length > 12 ||
       !/^[a-zA-Z0-9_]+$/.test(newName)
     ) {
       setNewName("");
@@ -96,7 +96,11 @@ const ChnageUsername = () => {
         placeholder={t("enterYourNewUsername")}
         placeholderTextColor={Colors.dark.text_muted}
         value={newName}
-        onChangeText={(c) => setNewName(c)}
+        onChangeText={(c) => {
+          if (c.length <= 12) {
+            setNewName(c);
+          }
+        }}
         selectionColor={Colors.dark.text}
         autoFocus={true}
         autoCapitalize="none"

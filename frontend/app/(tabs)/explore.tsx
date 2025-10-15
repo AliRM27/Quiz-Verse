@@ -134,6 +134,7 @@ export default function Explore() {
       <FlatList
         data={quizzes}
         keyExtractor={(item) => item._id}
+        scrollsToTop={true}
         style={{ width: "100%", paddingHorizontal: 10 }}
         contentContainerStyle={{ gap: 20 }}
         renderItem={({ item }) => {

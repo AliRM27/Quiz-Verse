@@ -4,7 +4,10 @@ import {
   Pressable,
   StyleSheet,
   ActivityIndicator,
-  Image,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { layout } from "@/constants/Dimensions";
@@ -12,9 +15,17 @@ import { router } from "expo-router";
 import ArrBack from "@/assets/svgs/backArr.svg";
 import { REGULAR_FONT } from "@/constants/Styles";
 import { useUser } from "@/context/userContext";
+import { useTranslation } from "react-i18next";
+import { useState } from "react";
+import { updateUser } from "@/services/api";
+import ProfileCard from "@/components/ui/ProfileCard";
 
 const EditProfile = () => {
   const { user } = useUser();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [usernameValue, setUsernameValue] = useState<string>(user?.name || "");
+  const { t } = useTranslation();
+  const [error, setError] = useState<string>("");
 
   if (!user) {
     return (
@@ -30,132 +41,103 @@ const EditProfile = () => {
       </View>
     );
   }
+  const handleUsernameChange = async () => {
+    setError("");
+    if (
+      usernameValue.trim() === "" ||
+      usernameValue.length < 3 ||
+      usernameValue.length > 12 ||
+      !/^[a-zA-Z0-9_]+$/.test(usernameValue)
+    ) {
+      setUsernameValue("");
+      setError(
+        "Username must be 3-12 characters long and can only contain letters, numbers, and underscores."
+      );
+      return;
+    }
+    setLoading(true);
+    try {
+      await updateUser({ name: usernameValue });
+      user.name = usernameValue;
+      setError("Username changed successfully");
+    } catch (err) {
+      console.error("Failed to update username:", err);
+      setError("Failed to update username. Please try again.");
+    }
+    setLoading(false);
+  };
 
   return (
-    <View
-      style={{
-        backgroundColor: Colors.dark.bg_dark,
-        height: "100%",
-        paddingVertical: layout.paddingTop,
-        paddingHorizontal: 15,
-        gap: 20,
-        alignItems: "center",
-      }}
-    >
-      <Pressable
-        style={{ alignSelf: "flex-start" }}
-        onPress={() => router.back()}
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View
+        style={{
+          backgroundColor: Colors.dark.bg_dark,
+          height: "100%",
+          paddingVertical: layout.paddingTop,
+          paddingHorizontal: 15,
+          paddingBottom: 50,
+          gap: 5,
+          alignItems: "center",
+        }}
       >
-        <ArrBack />
-      </Pressable>
-      <Text style={[styles.text, { fontSize: 30, fontWeight: 700 }]}>
-        Edit Profile
-      </Text>
-      <View style={styles.card}>
-        <View style={styles.figure} />
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            paddingHorizontal: 10,
-            width: "100%",
-          }}
+        <Pressable
+          style={{ position: "absolute", top: 83, left: 20 }}
+          onPress={() => router.back()}
         >
-          <View style={{ gap: 5 }}>
-            <Text
-              style={[
-                styles.text,
-                { color: "#E39595", fontSize: 25, fontWeight: 700 },
-              ]}
-            >
-              {user.name}
-            </Text>
-            <Text
-              style={[
-                styles.text,
-                { color: "#E39595", fontSize: 17, fontWeight: 600 },
-              ]}
-            >
-              QUIZ MASTER
-            </Text>
-          </View>
-          <View
-            style={{
-              borderWidth: 2,
-              borderColor: "#E39595",
-              transform: [{ rotate: "45deg" }],
-              padding: 3,
-              borderRadius: 20,
+          <ArrBack />
+        </Pressable>
+        <Text style={[styles.text, { fontSize: 30, fontWeight: 700 }]}>
+          Edit Profile
+        </Text>
+        <ProfileCard
+          usernameValue={usernameValue}
+          user={user}
+          isEditable={true}
+        />
+        <View style={{ width: "100%", gap: 10, marginTop: 20 }}>
+          <Text style={[styles.text_muted, { marginLeft: 10 }]}>Username</Text>
+          <TextInput
+            style={styles.input}
+            cursorColor={Colors.dark.text}
+            selectionColor={Colors.dark.text}
+            value={usernameValue}
+            onChangeText={(c) => {
+              if (c.length <= 12) {
+                setUsernameValue(c);
+              }
             }}
-          >
-            <View
-              style={{
-                width: 50,
-                height: 50,
-                transform: [{ rotate: "0deg" }],
-                overflow: "hidden",
-                justifyContent: "center",
-                alignItems: "center",
-                borderRadius: 15,
-              }}
-            >
-              <Image
-                src={user?.profileImage}
-                width={60}
-                height={60}
-                style={{
-                  transform: [{ rotate: "-45deg" }],
-                }}
-              />
-            </View>
-          </View>
-        </View>
-        <View
-          style={{
-            marginTop: "auto",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              borderWidth: 1,
-              borderColor: "#E39595",
-              alignItems: "center",
-              paddingHorizontal: 10,
-              gap: 10,
-              borderRadius: 10,
-            }}
-          >
-            <Text style={[styles.text, { color: "#E39595", fontWeight: 600 }]}>
-              QV
-            </Text>
-            <View
-              style={{ height: 22, width: 22, backgroundColor: "#E39595" }}
-            />
-            <Text style={[styles.text, { color: "#E39595", fontWeight: 600 }]}>
-              1. Sept 2025
-            </Text>
-          </View>
-          <Text
-            style={[
-              styles.text,
-              {
-                color: "#E39595",
-                fontSize: 18,
-                fontWeight: 700,
-                textAlign: "center",
-              },
-            ]}
-          >
-            QUIZ {"\n"} VERSE
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="off"
+          />
+          <Text style={[styles.text_muted, { marginLeft: 10, marginTop: 10 }]}>
+            Title
           </Text>
+          <TextInput
+            style={styles.input}
+            cursorColor={Colors.dark.text}
+            selectionColor={Colors.dark.text}
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="off"
+          />
+          {<Text style={styles.text}>{error}</Text>}
         </View>
+        <TouchableOpacity
+          onPress={() => handleUsernameChange()}
+          activeOpacity={0.7}
+          style={[styles.button]}
+        >
+          {loading ? (
+            <ActivityIndicator color={Colors.dark.bg_dark} />
+          ) : (
+            <Text style={{ color: Colors.dark.bg_dark, fontSize: 20 }}>
+              {t("change")}
+            </Text>
+          )}
+        </TouchableOpacity>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -164,6 +146,10 @@ export default EditProfile;
 const styles = StyleSheet.create({
   text: {
     color: Colors.dark.text,
+    fontFamily: REGULAR_FONT,
+  },
+  text_muted: {
+    color: Colors.dark.text_muted,
     fontFamily: REGULAR_FONT,
   },
   card: {
@@ -184,5 +170,25 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 10,
     borderTopLeftRadius: 65,
     borderBottomRightRadius: 65,
+  },
+  input: {
+    paddingHorizontal: 20,
+    width: "100%",
+    color: Colors.dark.text,
+    fontSize: 18,
+    height: 55,
+    borderRadius: 35,
+    borderWidth: 1,
+    backgroundColor: Colors.dark.bg_light,
+  },
+  button: {
+    backgroundColor: Colors.dark.text,
+    width: "100%",
+    height: 55,
+    paddingVertical: 15,
+    marginTop: "auto",
+    borderRadius: 35,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
