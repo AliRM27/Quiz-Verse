@@ -30,6 +30,7 @@ export type User = {
   lastActiveAt: any;
   firstLogIn: string;
   theme: { cardColor: string };
+  gems: number;
 };
 
 type UserContextType = {

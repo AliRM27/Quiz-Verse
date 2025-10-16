@@ -76,10 +76,7 @@ export default function HomePageCards() {
           alignItems: "center",
         }}
       >
-        <ActivityIndicator size="large" color={Colors.dark.text} />
-        <Text style={{ marginTop: 16, color: Colors.dark.text }}>
-          Loading...
-        </Text>
+        <ActivityIndicator color={Colors.dark.text} />
       </View>
     );
   }

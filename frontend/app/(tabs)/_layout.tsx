@@ -16,6 +16,7 @@ import {
 import { HEIGHT, layout, myHeight } from "@/constants/Dimensions";
 import * as Haptics from "expo-haptics";
 import { useState } from "react";
+import { REGULAR_FONT } from "@/constants/Styles";
 
 export default function TabLayout() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -61,6 +62,7 @@ export default function TabLayout() {
                 fontWeight: "600",
                 color: Colors.dark.text,
                 marginBottom: 10,
+                fontFamily: REGULAR_FONT,
               }}
             >
               {featureName} Coming Soon!
@@ -68,13 +70,14 @@ export default function TabLayout() {
             <Text
               style={{
                 color: Colors.dark.text_muted,
+                fontFamily: REGULAR_FONT,
                 fontSize: 15,
                 textAlign: "center",
                 marginBottom: 25,
               }}
             >
               We’re working on this feature! Stay tuned for new tournaments,
-              community challenges, and the in-game shop in future updates.
+              community challenges, in-game shop and more in future updates.
             </Text>
             <TouchableOpacity
               activeOpacity={0.7}
@@ -94,6 +97,7 @@ export default function TabLayout() {
                   color: "white",
                   fontSize: 16,
                   fontWeight: "600",
+                  fontFamily: REGULAR_FONT,
                 }}
               >
                 Got it

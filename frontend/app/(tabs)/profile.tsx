@@ -166,7 +166,7 @@ export default function Profile() {
           >
             {user.name}
           </Text>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             activeOpacity={0.7}
             style={{
               borderWidth: 1,
@@ -191,7 +191,7 @@ export default function Profile() {
             >
               {user.level}
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
           <TouchableOpacity
@@ -609,9 +609,19 @@ export default function Profile() {
               color={Colors.dark.text_muted}
               fill={"transparent"}
             />
-            <Text style={styles.txt_muted}>
-              No {categroyPressed.toLowerCase()} quizzes
-            </Text>
+            {categroyPressed === t("uncompleted") && (
+              <Text style={styles.txt_muted}>
+                No {categroyPressed.toLowerCase()} quizzes
+              </Text>
+            )}
+            {categroyPressed === t("completed") && (
+              <Text style={styles.txt_muted}>
+                No {categroyPressed.toLowerCase()} quizzes
+              </Text>
+            )}
+            {categroyPressed === t("perfect") && (
+              <Text style={styles.txt_muted}>{t("noPerfectQuizzes")}</Text>
+            )}
           </View>
         )}
         <View
@@ -652,7 +662,7 @@ export default function Profile() {
           )}
         />
       )}
-      {isVisible && <ProfileCardModal isVisible setIsVisible={setIsVisible} />}
+      <ProfileCardModal isVisible={isVisible} setIsVisible={setIsVisible} />
     </ScrollView>
   );
 }

@@ -126,7 +126,7 @@ export default function Explore() {
           <Text
             style={[styles.txt_muted, { fontSize: 16, textAlign: "center" }]}
           >
-            No quizzes found {"\n"} try again
+            {t("noQuizzesFound")}
           </Text>
         </View>
       )}

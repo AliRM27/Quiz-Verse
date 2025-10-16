@@ -6,6 +6,7 @@ import {
   Switch,
   TouchableOpacity,
   Pressable,
+  Alert,
 } from "react-native";
 import { useState } from "react";
 import { REGULAR_FONT } from "@/constants/Styles";
@@ -44,6 +45,25 @@ const Settings = () => {
       </View>
     );
   }
+
+  const handleLogOut = () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to leave us? ):",
+      [
+        {
+          text: "No",
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          onPress: logout,
+          style: "destructive",
+        },
+      ],
+      { cancelable: true }
+    );
+  };
 
   return (
     <View
@@ -122,7 +142,7 @@ const Settings = () => {
             </View>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => logout()}
+            onPress={() => handleLogOut()}
             activeOpacity={0.7}
             style={{
               flexDirection: "row",

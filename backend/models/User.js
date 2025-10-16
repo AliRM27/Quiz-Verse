@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
   name: { type: String },
   profileImage: { type: String },
   stars: { type: Number, default: 0 }, // In-game currency
+  gems: { type: Number, default: 0 },
   level: { type: Number, default: 0 },
   unlockedQuizzes: [
     { quizId: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" } },

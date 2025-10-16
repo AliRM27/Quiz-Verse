@@ -8,11 +8,12 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import DailyQuiz from "@/assets/svgs/dailyQuiz.svg";
 import WeeklyEvent from "@/assets/svgs/weeklyEvent.svg";
 import Championship from "@/assets/svgs/championship.svg";
-import { defaultStyles } from "@/constants/Styles";
+import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
 import { Colors } from "@/constants/Colors";
 import { HEIGHT, myHeight, WIDTH, myWidth } from "@/constants/Dimensions";
 
@@ -47,6 +48,8 @@ export default function Carousel() {
   const scrollRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const autoScrollTimer = useRef<NodeJS.Timeout | null>(null);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [featureName, setFeatureName] = useState("");
 
   // Function to scroll to the next card
   const scrollToNext = () => {
@@ -82,38 +85,125 @@ export default function Carousel() {
     startAutoScroll(); // reset timer
   };
 
-  return (
-    <View
-      style={[
-        defaultStyles.containerBackground,
-        { height, width, padding: WIDTH * (10 / myWidth) },
-      ]}
-    >
-      <ScrollView
-        horizontal
-        pagingEnabled
-        ref={scrollRef}
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={handleScrollEnd}
-        style={{ width }}
-      >
-        {MODES.map((card, index) => (
-          <TouchableOpacity activeOpacity={0.7} key={index} style={styles.card}>
-            {card.svg}
-            <Text style={{ color: Colors.dark.text_muted }}>{card.time}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+  const handleComingSoon = (feature: string) => {
+    setFeatureName(feature);
+    setModalVisible(true);
+  };
 
-      <View style={styles.dotsContainer}>
-        {MODES.map((_, index) => (
+  return (
+    <>
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.7)",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <View
-            key={index}
-            style={[styles.dot, currentIndex === index && styles.activeDot]}
-          />
-        ))}
+            style={{
+              width: "80%",
+              backgroundColor: Colors.dark.bg,
+              borderRadius: 20,
+              paddingVertical: 25,
+              paddingHorizontal: 20,
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: Colors.dark.bg_light,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 22,
+                fontWeight: "600",
+                color: Colors.dark.text,
+                marginBottom: 10,
+                fontFamily: REGULAR_FONT,
+              }}
+            >
+              {featureName} Coming Soon!
+            </Text>
+            <Text
+              style={{
+                color: Colors.dark.text_muted,
+                fontFamily: REGULAR_FONT,
+                fontSize: 15,
+                textAlign: "center",
+                marginBottom: 25,
+              }}
+            >
+              We’re working on this feature! Stay tuned for new tournaments,
+              community challenges, in-game shop and more in future updates.
+            </Text>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => {
+                setModalVisible(false);
+              }}
+              style={{
+                backgroundColor: Colors.dark.highlight,
+                borderRadius: 12,
+                paddingVertical: 10,
+                paddingHorizontal: 30,
+              }}
+            >
+              <Text
+                style={{
+                  color: "white",
+                  fontSize: 16,
+                  fontWeight: "600",
+                  fontFamily: REGULAR_FONT,
+                }}
+              >
+                Got it
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      <View
+        style={[
+          defaultStyles.containerBackground,
+          { height, width, padding: WIDTH * (10 / myWidth) },
+        ]}
+      >
+        <ScrollView
+          horizontal
+          pagingEnabled
+          ref={scrollRef}
+          showsHorizontalScrollIndicator={false}
+          onMomentumScrollEnd={handleScrollEnd}
+          style={{ width }}
+        >
+          {MODES.map((card, index) => (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => handleComingSoon("Events")}
+              key={index}
+              style={styles.card}
+            >
+              {card.svg}
+              {/* <Text style={{ color: Colors.dark.text_muted }}>{card.time}</Text> */}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        <View style={styles.dotsContainer}>
+          {MODES.map((_, index) => (
+            <View
+              key={index}
+              style={[styles.dot, currentIndex === index && styles.activeDot]}
+            />
+          ))}
+        </View>
       </View>
-    </View>
+    </>
   );
 }
 
@@ -126,6 +216,7 @@ const styles = StyleSheet.create({
   card: {
     width,
     alignItems: "center",
+    justifyContent: "center",
   },
   dotsContainer: {
     flexDirection: "row",

@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
 
-const colors = ["#FF6B6B", "#4ECDC4", "#FFD93D", "#1A535C", "#FF9F1C"];
-
-export default function ColorPicker() {
-  const [selectedColor, setSelectedColor] = useState(colors[0]);
-
+export default function ColorPicker({
+  colors,
+  selectedColor,
+  setSelectedColor,
+}: {
+  colors: string[];
+  selectedColor: string;
+  setSelectedColor: any;
+}) {
   return (
     <View style={styles.container}>
       {colors.map((color) => (
@@ -15,7 +19,7 @@ export default function ColorPicker() {
             styles.colorCircle,
             {
               backgroundColor: color,
-              borderWidth: selectedColor === color ? 3 : 1,
+              borderWidth: selectedColor === color ? 3 : 0,
             },
           ]}
           onPress={() => setSelectedColor(color)}
@@ -30,12 +34,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     marginVertical: 20,
+    flexWrap: "wrap",
+    gap: 30,
   },
   colorCircle: {
-    width: 40,
-    height: 40,
+    width: 50,
+    height: 50,
     borderRadius: 20,
-    marginHorizontal: 8,
-    borderColor: "#333",
+    borderColor: "white",
   },
 });

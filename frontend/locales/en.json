@@ -32,5 +32,10 @@
   "Easy": "🐣 Easy",
   "Medium": "💪 Medium",
   "Hard": "🔥 Hard",
-  "Extreme": "☠️ Extreme"
+  "Extreme": "☠️ Extreme",
+  "noQuizzesFound": "No quizzes found.",
+  "editProfile": "Edit Profile",
+  "noPerfectQuizzes": "No perfect quizzes",
+  "noCompletedQuizzes": "No completed quizzes",
+  "noUncompletedQuizzes": "No uncompleted quizzes"
 }

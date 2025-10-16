@@ -140,7 +140,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
               <RotatingGradient>
                 <TouchableOpacity
                   disabled={!isUnlocked}
-                  activeOpacity={0.8}
+                  activeOpacity={0.6}
                   style={styles.logoContainer}
                   onPress={() => {
                     setIsVisible(false);

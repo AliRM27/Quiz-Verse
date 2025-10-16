@@ -1,9 +1,20 @@
 import { Colors } from "@/constants/Colors";
 import { REGULAR_FONT } from "@/constants/Styles";
 import { User } from "@/context/userContext";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Modal,
+  ActivityIndicator,
+  Platform,
+} from "react-native";
 import ColorPicker from "./ColorPicker";
 import Pencil from "@/assets/svgs/pencil.svg";
+import { useState } from "react";
+import { updateUser } from "@/services/api";
 
 const ProfileCard = ({
   usernameValue,
@@ -14,7 +25,17 @@ const ProfileCard = ({
   user: User;
   isEditable: boolean;
 }) => {
-  const cardColor = user.theme.cardColor;
+  const colors = [
+    "#FF6B6B",
+    "#4ECDC4",
+    "#FFD93D",
+    "#1A535C",
+    "#FF9F1A",
+    "green",
+  ];
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const [selectedColor, setSelectedColor] = useState(user.theme.cardColor);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const date: string[] = user.firstLogIn.split("T", 1)[0].split("-");
 
@@ -35,23 +56,133 @@ const ProfileCard = ({
 
   return (
     <View style={styles.card}>
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={isVisible}
+        onRequestClose={() => {
+          setIsVisible(false);
+        }}
+      >
+        <View
+          style={{
+            height: "100%",
+            justifyContent: "flex-end",
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: Colors.dark.bg_light,
+              width: "100%",
+              alignItems: "center",
+              padding: 20,
+              height: "50%",
+              gap: 10,
+              borderRadius: 50,
+            }}
+          >
+            <Text
+              style={[
+                styles.text,
+                { fontSize: 25, fontWeight: 600 },
+                Platform.OS === "android" && { fontWeight: "bold" },
+              ]}
+            >
+              Choose theme
+            </Text>
+            <ColorPicker
+              colors={colors}
+              selectedColor={selectedColor}
+              setSelectedColor={setSelectedColor}
+            />
+            <View
+              style={{
+                flexDirection: "row",
+                gap: 20,
+                marginTop: "auto",
+                paddingBottom: 20,
+              }}
+            >
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={[
+                  styles.button,
+                  {
+                    width: "45%",
+                    backgroundColor: Colors.dark.bg_light,
+                    borderWidth: 1,
+                    borderColor: Colors.dark.border,
+                  },
+                ]}
+                onPress={() => {
+                  setIsVisible(false);
+                  setSelectedColor(user.theme.cardColor);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.text,
+                    {
+                      color: Colors.dark.text,
+                      fontSize: 18,
+                      textAlign: "center",
+                    },
+                  ]}
+                >
+                  Close
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={[styles.button, { width: "45%" }]}
+                onPress={async () => {
+                  setIsVisible(false);
+                  if (user.theme.cardColor !== selectedColor) {
+                    user.theme.cardColor = selectedColor;
+                    try {
+                      await updateUser(user);
+                    } catch (err) {
+                      console.log(err);
+                    }
+                  }
+                }}
+              >
+                {isLoading ? (
+                  <ActivityIndicator />
+                ) : (
+                  <Text style={[styles.text, { color: "black", fontSize: 18 }]}>
+                    Save
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       <View
         style={[
           styles.figure,
-          { backgroundColor: cardColor, alignItems: "flex-end", padding: 10 },
+          {
+            backgroundColor: selectedColor,
+            alignItems: "flex-end",
+            padding: 10,
+          },
         ]}
       >
         {isEditable && (
           <TouchableOpacity
             activeOpacity={0.7}
+            onPress={() => {
+              setIsVisible(true);
+            }}
             style={{
-              borderWidth: 1,
-              backgroundColor: Colors.dark.bg_dark,
+              backgroundColor: "#D9D9D9",
               padding: 7,
               borderRadius: 15,
             }}
           >
-            <Pencil color={Colors.dark.text} width={20} height={20} />
+            <Pencil color={Colors.dark.bg_dark} width={20} height={20} />
           </TouchableOpacity>
         )}
       </View>
@@ -68,7 +199,7 @@ const ProfileCard = ({
             style={[
               styles.text,
               {
-                color: cardColor,
+                color: selectedColor,
                 fontSize: 25,
                 fontWeight: 700,
               },
@@ -81,7 +212,7 @@ const ProfileCard = ({
           <Text
             style={[
               styles.text,
-              { color: cardColor, fontSize: 17, fontWeight: 600 },
+              { color: selectedColor, fontSize: 17, fontWeight: 600 },
             ]}
           >
             QUIZ MASTER
@@ -90,7 +221,7 @@ const ProfileCard = ({
         <View
           style={{
             borderWidth: 2,
-            borderColor: cardColor,
+            borderColor: selectedColor,
             transform: [{ rotate: "45deg" }],
             padding: 3,
             borderRadius: 20,
@@ -119,6 +250,24 @@ const ProfileCard = ({
             />
           </View>
         </View>
+        {isEditable && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => {
+              setIsVisible(true);
+            }}
+            style={{
+              padding: 7,
+              borderRadius: 15,
+              position: "absolute",
+              zIndex: 1,
+              bottom: -15,
+              right: -13,
+            }}
+          >
+            <Pencil color={Colors.dark.bg_dark} width={20} height={20} />
+          </TouchableOpacity>
+        )}
       </View>
       <View
         style={{
@@ -133,18 +282,24 @@ const ProfileCard = ({
           style={{
             flexDirection: "row",
             borderWidth: 1,
-            borderColor: cardColor,
+            borderColor: selectedColor,
             alignItems: "center",
             paddingHorizontal: 10,
             gap: 10,
             borderRadius: 10,
           }}
         >
-          <Text style={[styles.text, { color: cardColor, fontWeight: 600 }]}>
+          <Text
+            style={[styles.text, { color: selectedColor, fontWeight: 600 }]}
+          >
             QV
           </Text>
-          <View style={{ height: 22, width: 22, backgroundColor: cardColor }} />
-          <Text style={[styles.text, { color: cardColor, fontWeight: 600 }]}>
+          <View
+            style={{ height: 22, width: 22, backgroundColor: selectedColor }}
+          />
+          <Text
+            style={[styles.text, { color: selectedColor, fontWeight: 600 }]}
+          >
             {date[2]} {month[date[1] as keyof typeof month]} {date[0]}
           </Text>
         </View>
@@ -152,7 +307,7 @@ const ProfileCard = ({
           style={[
             styles.text,
             {
-              color: cardColor,
+              color: selectedColor,
               fontSize: 18,
               fontWeight: 700,
               textAlign: "center",
@@ -209,10 +364,10 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: Colors.dark.text,
     width: "100%",
-    height: 55,
     paddingVertical: 15,
     marginTop: "auto",
     borderRadius: 35,
     alignItems: "center",
+    justifyContent: "center",
   },
 });

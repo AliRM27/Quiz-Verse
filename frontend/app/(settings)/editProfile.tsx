@@ -87,7 +87,7 @@ const EditProfile = () => {
           <ArrBack />
         </Pressable>
         <Text style={[styles.text, { fontSize: 30, fontWeight: 700 }]}>
-          Edit Profile
+          {t("editProfile")}
         </Text>
         <ProfileCard
           usernameValue={usernameValue}
@@ -95,7 +95,9 @@ const EditProfile = () => {
           isEditable={true}
         />
         <View style={{ width: "100%", gap: 10, marginTop: 20 }}>
-          <Text style={[styles.text_muted, { marginLeft: 10 }]}>Username</Text>
+          <Text style={[styles.text_muted, { marginLeft: 10 }]}>
+            {t("username")}
+          </Text>
           <TextInput
             style={styles.input}
             cursorColor={Colors.dark.text}
@@ -110,23 +112,17 @@ const EditProfile = () => {
             autoCorrect={false}
             autoComplete="off"
           />
-          <Text style={[styles.text_muted, { marginLeft: 10, marginTop: 10 }]}>
-            Title
-          </Text>
-          <TextInput
-            style={styles.input}
-            cursorColor={Colors.dark.text}
-            selectionColor={Colors.dark.text}
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete="off"
-          />
-          {<Text style={styles.text}>{error}</Text>}
+
+          <Text style={[styles.text, { textAlign: "center" }]}>{error}</Text>
         </View>
         <TouchableOpacity
+          disabled={user.name === usernameValue}
           onPress={() => handleUsernameChange()}
           activeOpacity={0.7}
-          style={[styles.button]}
+          style={[
+            styles.button,
+            user.name === usernameValue && { opacity: 0.5 },
+          ]}
         >
           {loading ? (
             <ActivityIndicator color={Colors.dark.bg_dark} />

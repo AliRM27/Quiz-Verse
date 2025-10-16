@@ -32,6 +32,7 @@ const ProfileCardModal = ({
     <Modal
       transparent={true}
       animationType="fade"
+      visible={isVisible}
       onRequestClose={() => {
         setIsVisible(false);
       }} // for Android back button

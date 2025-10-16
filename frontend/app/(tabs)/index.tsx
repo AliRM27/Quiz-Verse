@@ -1,4 +1,11 @@
-import { Text, StyleSheet, View, Image, TouchableOpacity } from "react-native";
+import {
+  Text,
+  StyleSheet,
+  View,
+  Image,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { Colors } from "@/constants/Colors";
 import Gem from "@/assets/svgs/gem.svg";
 import Trophy from "@/assets/svgs/trophy.svg";
@@ -18,7 +25,7 @@ export default function HomeScreen() {
   if (loading || !user) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ color: Colors.dark.text }}>Loading...</Text>
+        <ActivityIndicator />
       </View>
     );
   }
@@ -95,7 +102,7 @@ export default function HomeScreen() {
           </View>
           <View style={{ alignItems: "center", flexDirection: "row", gap: 5 }}>
             <Gem width={25} height={25} color={Colors.dark.primary} />
-            <Text style={styles.txt}>{2000}</Text>
+            <Text style={styles.txt}>{user.gems}</Text>
           </View>
         </View>
       </View>
@@ -107,7 +114,7 @@ export default function HomeScreen() {
       >
         <HomePageCards />
       </View>
-      {isVisible && <ProfileCardModal isVisible setIsVisible={setIsVisible} />}
+      <ProfileCardModal isVisible={isVisible} setIsVisible={setIsVisible} />
     </View>
   );
 }
