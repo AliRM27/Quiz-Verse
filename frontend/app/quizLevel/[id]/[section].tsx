@@ -49,9 +49,12 @@ export default function Index() {
   const { user, loading, refreshUser } = useUser();
   const [newCorrectIndexes, setNewCorrectIndexes] = useState(new Set<number>());
   const [rewards, setRewards] = useState<number>(0);
-  const [sessionRewardDelta, setSessionRewardDelta] = useState(0);
+  const [questionRewards, setQuestionRewards] = useState<number>(0);
+  const [streakRewards, setStreakRewards] = useState<number>(0);
+  const [timeRewards, setTimeRewards] = useState<number>(0);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [maxStreak, setMaxStreak] = useState(0);
+  const [mult, setMult] = useState<number>(0);
 
   // keep track of unlocked milestones
   const [unlockedStreaks, setUnlockedStreaks] = useState<Set<number>>(
@@ -163,7 +166,7 @@ export default function Index() {
 
       // update UI immediately for each question
       setRewards((p) => p + perQuestionReward);
-      setSessionRewardDelta((p) => p + perQuestionReward);
+      setQuestionRewards((p) => p + perQuestionReward);
 
       // update state-set for UI
       setNewCorrectIndexes((prev) => {
@@ -199,7 +202,7 @@ export default function Index() {
       // apply streak bonus to UI
       if (streakBonus > 0) {
         setRewards((p) => p + streakBonus);
-        setSessionRewardDelta((p) => p + streakBonus);
+        setStreakRewards((p) => p + streakBonus);
         setUnlockedStreaks(localMergedStreaks);
       }
 
@@ -250,34 +253,56 @@ export default function Index() {
 
       if (timeBonus > 0) {
         setRewards((p) => p + timeBonus);
-        setSessionRewardDelta((p) => p + timeBonus);
+        setTimeRewards((p) => p + timeBonus);
       }
 
       try {
-        if (deltaQuestions > 0 || totalRewardDelta > 0 || timeBonus > 0) {
+        const totalNewRewards = totalRewardDelta + timeBonus;
+
+        if (deltaQuestions > 0 || totalNewRewards > 0) {
           await updateUserProgress({
             quizId: id,
             difficulty: currSection.difficulty,
             updates: {
               questions: deltaQuestions,
-              rewards: totalRewardDelta + timeBonus,
+              rewards: totalNewRewards,
               answered: Array.from(pending),
               streaks: Array.from(localMergedStreaks),
-              timeBonuses: [...prevTimeBonuses, ...newTimeBonuses],
+              timeBonuses: Array.from(
+                new Set([...prevTimeBonuses, ...newTimeBonuses])
+              ),
+              streaksRewards: streakBonus,
+              timeRewards: timeBonus,
             },
           });
-          await updateUser({
-            stars: user.stars + totalRewardDelta + timeBonus,
-          });
+
+          // Update user stars once
+          if (totalNewRewards > 0) {
+            await updateUser({ stars: user.stars + totalNewRewards });
+          }
+          await refreshUser();
         }
 
         // --- Reset for next quiz ---
         setNewCorrectIndexes(new Set());
         newCorrectIndexesRef.current = new Set(); // reset local ref
         setCurrentStreak(0);
-        setSessionRewardDelta(0);
       } catch (err) {
         console.log(err);
+      }
+      switch (currSection.difficulty) {
+        case "Easy":
+          setMult(10);
+          break;
+        case "Medium":
+          setMult(15);
+          break;
+        case "Hard":
+          setMult(25);
+          break;
+        case "Extreme":
+          setMult(65);
+          break;
       }
       setShowResult(true);
     } else {
@@ -308,6 +333,10 @@ export default function Index() {
         total={currSection.questions.length}
         rewards={rewards}
         newQuestions={newQuestions}
+        questionRewards={questionRewards}
+        streak={streakRewards}
+        time={timeRewards}
+        mult={mult}
       />
     );
   }

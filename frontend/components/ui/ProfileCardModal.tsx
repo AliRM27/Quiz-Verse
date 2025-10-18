@@ -1,12 +1,9 @@
-import { Colors } from "@/constants/Colors";
 import {
   View,
-  Text,
   StyleSheet,
   Modal,
   ActivityIndicator,
   TouchableOpacity,
-  Pressable,
 } from "react-native";
 import ProfileCard from "./ProfileCard";
 import { useUser } from "@/context/userContext";
@@ -58,7 +55,7 @@ const ProfileCardModal = ({
               position: "absolute",
               top: -20,
               right: 20,
-              backgroundColor: "white",
+              backgroundColor: "#D9D9D9",
               padding: 5,
               borderRadius: 13,
             }}

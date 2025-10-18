@@ -1,5 +1,3 @@
-// utils/timeBonus.ts
-
 type Difficulty = "Easy" | "Medium" | "Hard" | "Extreme";
 
 const timeBonusThresholds: Record<
@@ -44,17 +42,6 @@ export function calculateNewTimeBonuses(
   const bonus = thresholds
     .filter((t) => newlyUnlocked.includes(t.limit))
     .reduce((sum, t) => sum + t.reward, 0);
-
-  // console.log(
-  //   "Time Taken:",
-  //   timeTaken,
-  //   "Difficulty:",
-  //   difficulty,
-  //   "Bonus:",
-  //   bonus,
-  //   "Newly Unlocked:",
-  //   newlyUnlocked
-  // );
 
   return { bonus, newlyUnlocked };
 }
@@ -104,17 +91,6 @@ export const calculateNewStreakRewards = (
       newlyUnlocked.push(threshold);
     }
   }
-
-  // console.log(
-  //   "Max Streak:",
-  //   maxStreak,
-  //   "Difficulty:",
-  //   difficulty,
-  //   "Bonus:",
-  //   bonus,
-  //   "Newly Unlocked:",
-  //   newlyUnlocked
-  // );
 
   return { bonus, newlyUnlocked };
 };

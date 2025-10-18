@@ -40,7 +40,7 @@ export const googleSignIn = async (req, res) => {
       await user.save();
     }
 
-    const SESSION_TIMEOUT = 5 * 60 * 1000; // 2 minutes
+    const SESSION_TIMEOUT = 2 * 60 * 1000; // 2 minutes
 
     if (
       user.activeSession &&

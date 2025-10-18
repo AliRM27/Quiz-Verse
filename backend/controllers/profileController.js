@@ -66,6 +66,8 @@ export const updateProgress = async (req, res) => {
             answered: [],
             streaks: [],
             timeBonuses: [], // ✅ NEW
+            timeRewards: 0,
+            streaksRewards: 0,
           },
           {
             difficulty: "Medium",
@@ -74,6 +76,8 @@ export const updateProgress = async (req, res) => {
             answered: [],
             streaks: [],
             timeBonuses: [], // ✅ NEW
+            timeRewards: 0,
+            streaksRewards: 0,
           },
           {
             difficulty: "Hard",
@@ -82,6 +86,8 @@ export const updateProgress = async (req, res) => {
             answered: [],
             streaks: [],
             timeBonuses: [], // ✅ NEW
+            timeRewards: 0,
+            streaksRewards: 0,
           },
           {
             difficulty: "Extreme",
@@ -90,6 +96,8 @@ export const updateProgress = async (req, res) => {
             answered: [],
             streaks: [],
             timeBonuses: [], // ✅ NEW
+            timeRewards: 0,
+            streaksRewards: 0,
           },
         ],
       };
@@ -127,7 +135,10 @@ export const updateProgress = async (req, res) => {
     // Increment questions and rewards
     if (updates.questions !== undefined) section.questions += updates.questions;
     if (updates.rewards !== undefined) section.rewards += updates.rewards;
-
+    if (updates.timeRewards !== undefined)
+      section.timeRewards += updates.timeRewards;
+    if (updates.streaksRewards !== undefined)
+      section.streaksRewards += updates.streaksRewards;
     // Merge new correct answers without duplicates
     if (updates.answered && Array.isArray(updates.answered)) {
       updates.answered.forEach((index) => {

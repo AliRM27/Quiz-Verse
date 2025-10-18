@@ -28,6 +28,7 @@ import { updateUser, updateUserProgress } from "@/services/api";
 import LockOpen from "@/assets/svgs/lock-open.svg";
 import Lock from "@/assets/svgs/lock.svg";
 import { languageMap } from "@/utils/i18n";
+import Trophy from "@/assets/svgs/trophy.svg";
 
 const QuizModal: React.FC<QuizModalProps> = ({
   isVisible,
@@ -400,7 +401,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     alignItems: "center",
                     justifyContent: "center",
                     backgroundColor: "#121212ff",
-                    gap: 15,
+                    gap: 20,
                     paddingHorizontal: 20,
                     paddingVertical: 15,
                     borderRadius: 30,
@@ -416,9 +417,22 @@ const QuizModal: React.FC<QuizModalProps> = ({
                       ) : (
                         <Lock color={Colors.dark.text} />
                       )}
-                      <Text style={[styles.txt]}>
-                        {PRICES.quizzes.single.price.trophies}
-                      </Text>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 5,
+                        }}
+                      >
+                        <Trophy
+                          color={Colors.dark.secondary}
+                          width={20}
+                          height={20}
+                        />
+                        <Text style={[styles.txt, { fontSize: 16 }]}>
+                          {PRICES.quizzes.single.price.trophies}
+                        </Text>
+                      </View>
                     </>
                   ) : (
                     <ActivityIndicator color={Colors.dark.text} />

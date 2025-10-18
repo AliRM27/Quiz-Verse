@@ -26,6 +26,7 @@ const EditProfile = () => {
   const [usernameValue, setUsernameValue] = useState<string>(user?.name || "");
   const { t } = useTranslation();
   const [error, setError] = useState<string>("");
+  const [isFocused, setIsFocused] = useState<boolean>(false);
 
   if (!user) {
     return (
@@ -68,7 +69,13 @@ const EditProfile = () => {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        Keyboard.dismiss();
+        setIsFocused(false);
+      }}
+      accessible={false}
+    >
       <View
         style={{
           backgroundColor: Colors.dark.bg_dark,
@@ -99,7 +106,11 @@ const EditProfile = () => {
             {t("username")}
           </Text>
           <TextInput
-            style={styles.input}
+            onFocus={() => setIsFocused(true)}
+            style={[
+              styles.input,
+              isFocused && { borderWidth: 1, borderColor: Colors.dark.text },
+            ]}
             cursorColor={Colors.dark.text}
             selectionColor={Colors.dark.text}
             value={usernameValue}
@@ -116,12 +127,12 @@ const EditProfile = () => {
           <Text style={[styles.text, { textAlign: "center" }]}>{error}</Text>
         </View>
         <TouchableOpacity
-          disabled={user.name === usernameValue}
+          disabled={user.name === usernameValue.trim()}
           onPress={() => handleUsernameChange()}
           activeOpacity={0.7}
           style={[
             styles.button,
-            user.name === usernameValue && { opacity: 0.5 },
+            user.name === usernameValue.trim() && { opacity: 0.5 },
           ]}
         >
           {loading ? (

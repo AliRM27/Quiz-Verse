@@ -42,7 +42,12 @@ const Collection = () => {
       >
         <ArrBack />
       </Pressable>
-      <Text style={[styles.txt, { fontSize: 25, marginBottom: 40 }]}>
+      <Text
+        style={[
+          styles.txt,
+          { fontSize: 25, marginBottom: 40, fontWeight: 600 },
+        ]}
+      >
         {t("yourQuizzes")}
       </Text>
       <FlatList

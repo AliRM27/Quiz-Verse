@@ -37,5 +37,8 @@
   "editProfile": "Profil bearbeiten",
   "noPerfectQuizzes": "Keine perfekte quizze",
   "noCompletedQuizzes": "No abgeschlossene quizze",
-  "noUncompletedQuizzes": "No unvollständige quizze"
+  "noUncompletedQuizzes": "No unvollständige quizze",
+  "logOutQuestion": "Sind Sie sicher, dass Sie uns verlassen möchten? ):",
+  "yes": "Ja",
+  "no": "Nein"
 }

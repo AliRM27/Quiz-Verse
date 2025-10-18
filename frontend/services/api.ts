@@ -6,13 +6,12 @@ import { Alert, DevSettings } from "react-native";
 
 export const api = axios.create({
   baseURL: API_URL,
-  timeout: 5000,
+  timeout: 15000,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Request interceptor
 api.interceptors.request.use(
   async (config) => {
     const token = await SecureStore.getItemAsync("token");
@@ -31,11 +30,23 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Optional: Response interceptor (e.g., handle token expiry)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const config = error.config;
+    if (error.code === "ECONNABORTED") {
+      // Only retry once
+      if (!config._retry) {
+        config._retry = true;
+        console.log("Timeout occurred, retrying request...");
+        return api(config);
+      }
+
+      Alert.alert(
+        "Request Timeout",
+        "The server took too long to respond. Please try again."
+      );
+    } else if (error.response?.status === 401) {
       router.replace("/(auth)");
       // Handle invalid/expired token, e.g., redirect to login
     } else if (error.response?.status === 403) {
@@ -96,6 +107,8 @@ export const updateUserProgress = async (update: {
     answered: number[];
     streaks: number[];
     timeBonuses: number[];
+    timeRewards: number;
+    streaksRewards: number;
   };
 }) => {
   try {

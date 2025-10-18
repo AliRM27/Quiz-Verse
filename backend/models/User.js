@@ -39,6 +39,8 @@ const userSchema = new mongoose.Schema({
           rewards: { type: Number, default: 0 }, // Trophies earned
           streaks: { type: [Number], default: [] }, // Longest correct answer streaks
           timeBonuses: { type: [Number], default: [] }, // ✅ NEW - Time-based bonuses earned
+          streaksRewards: { type: Number, default: 0 },
+          timeRewards: { type: Number, default: 0 },
         },
       ],
     },

@@ -106,7 +106,7 @@ export default function Explore() {
         </Pressable>
       </View>
 
-      {(isLoading || loading) && <></>}
+      {isLoading && <ActivityIndicator />}
 
       {!isLoading && !loading && quizzes?.length === 0 && (
         <View

@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   ScrollView,
   Platform,
-  Modal,
 } from "react-native";
 import { useUser } from "@/context/userContext";
 import { Colors } from "@/constants/Colors";
@@ -497,9 +496,9 @@ export default function Profile() {
                   <View
                     style={[
                       { width: WIDTH * (120 / myWidth) },
-                      categroyPressed === t("uncompleted") && {
-                        width: WIDTH * (170 / myWidth),
-                      },
+                      // categroyPressed === t("uncompleted") && {
+                      //   width: WIDTH * (170 / myWidth),
+                      // },
                     ]}
                   >
                     <Text style={[styles.txt]}>{t("progress")}</Text>

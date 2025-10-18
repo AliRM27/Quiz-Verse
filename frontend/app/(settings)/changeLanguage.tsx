@@ -48,6 +48,7 @@ const ChangeLanguage = () => {
       </Text>
       {languages.map((language, index) => (
         <TouchableOpacity
+          activeOpacity={0.7}
           style={[
             styles.btn,
             user.language === language && { backgroundColor: Colors.dark.text },

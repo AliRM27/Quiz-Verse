@@ -1,7 +1,7 @@
-import { View, Text, StyleSheet, Button, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { layout } from "@/constants/Dimensions";
-import { REGULAR_FONT, ITALIC_FONT } from "@/constants/Styles";
+import { REGULAR_FONT } from "@/constants/Styles";
 import { router } from "expo-router";
 import { useUser } from "@/context/userContext";
 import { QuizType } from "@/types";
@@ -13,7 +13,29 @@ import CircularProgress from "./ui/CircularProgress";
 import { LineDashed } from "./ui/Line";
 import ProgressBar from "./animatinos/progressBar";
 import { useTranslation } from "react-i18next";
-import { set } from "lodash";
+
+const RewardComponent = ({
+  name,
+  rewards,
+  total,
+  progress,
+}: {
+  name: string;
+  rewards: number;
+  total?: number;
+  progress: number;
+}) => {
+  return (
+    <View style={styles.rewardStatsText}>
+      <Text style={[styles.txt]}>
+        {name} rewards: +{rewards}
+      </Text>
+      <Text style={[styles.txt]}>
+        {progress} / {total}
+      </Text>
+    </View>
+  );
+};
 
 const Result = ({
   quiz,
@@ -22,13 +44,21 @@ const Result = ({
   total,
   rewards,
   newQuestions,
+  questionRewards,
+  streak,
+  time,
+  mult,
 }: {
   quiz: QuizType;
   selectedLevelIndex: string;
   correctAnswers: number;
   total: number;
   rewards: number;
-  newQuestions?: number;
+  newQuestions: number;
+  questionRewards: number;
+  streak: number;
+  time: number;
+  mult: number;
 }) => {
   const { refreshUser, user } = useUser();
   const { t } = useTranslation();
@@ -44,18 +74,18 @@ const Result = ({
   useEffect(() => {
     setValue(
       Math.floor(
-        (userProgress.questions / quizProgress.questions.length) * 100
+        ((userProgress.questions - newQuestions) /
+          quizProgress.questions.length) *
+          100
       ) || 0
     );
-    setRewardsValue(userProgress.rewards);
+    setRewardsValue(userProgress.rewards - rewards);
 
     if (newQuestions) {
       setTimeout(() => {
         setValue(
           Math.floor(
-            ((userProgress.questions + newQuestions) /
-              quizProgress.questions.length) *
-              100
+            (userProgress.questions / quizProgress.questions.length) * 100
           )
         );
         setShowAnimation("1");
@@ -63,10 +93,13 @@ const Result = ({
     }
 
     if (rewards > 0) {
-      setTimeout(() => {
-        setRewardsValue(userProgress.rewards + rewards || 0);
-        setShowAnimation("2");
-      }, 3500);
+      setTimeout(
+        () => {
+          setRewardsValue(userProgress.rewards || 0);
+          setShowAnimation("2");
+        },
+        newQuestions ? 3500 : 1500
+      );
     }
 
     setTimeout(() => {
@@ -86,17 +119,6 @@ const Result = ({
       }}
     >
       <View style={{ alignItems: "center" }}>
-        <Text style={[styles.txt, { fontSize: 20, fontWeight: "bold" }]}>
-          You did
-        </Text>
-        <Text
-          style={[
-            styles.txt,
-            { fontSize: 30, fontWeight: "800", marginTop: 10 },
-          ]}
-        >
-          PERFECT
-        </Text>
         <View
           style={{
             width: 150,
@@ -124,7 +146,7 @@ const Result = ({
           alignItems: "center",
           width: "100%",
           justifyContent: "space-evenly",
-          marginVertical: 20,
+          marginVertical: 10,
         }}
       >
         <View
@@ -166,7 +188,52 @@ const Result = ({
           <Wrong width={15} height={15} />
         </View>
       </View>
-
+      <View style={{ width: "100%", paddingHorizontal: 10 }}>
+        {[
+          {
+            type: "Questions",
+            rewards: questionRewards,
+            total: total * mult,
+            progress: userProgress.questions * mult,
+          },
+          {
+            type: "Streak",
+            rewards: streak,
+            total: 100,
+            progress: userProgress.streaksRewards,
+          },
+          {
+            type: "Time",
+            rewards: time,
+            total: 50,
+            progress: userProgress.timeRewards,
+          },
+          {
+            type: "Total",
+            rewards: rewards,
+            total: quizProgress.rewards,
+            progress: userProgress.rewards,
+          },
+        ].map(
+          (
+            r: {
+              type: string;
+              rewards: number;
+              total: number;
+              progress: any;
+            },
+            index
+          ) => (
+            <RewardComponent
+              key={index}
+              name={r.type}
+              rewards={r.rewards}
+              total={r.total}
+              progress={r.progress}
+            />
+          )
+        )}
+      </View>
       <View
         style={{
           flexDirection: "row",
@@ -311,5 +378,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 15,
     borderRadius: 50,
+  },
+  rewardStatsText: {
+    borderBottomWidth: 1,
+    borderColor: Colors.dark.border,
+    paddingVertical: 10,
+    fontSize: 18,
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 });

@@ -14,7 +14,7 @@ export default function Index() {
   useEffect(() => {
     const authCheck = async () => {
       if (!loading && user) {
-        const SESSION_TIMEOUT = 1 * 60 * 1000; // 5 minutes
+        const SESSION_TIMEOUT = 2 * 60 * 1000; // 2 minutes
         if (
           user.activeSession &&
           new Date().getTime() - new Date(user.lastActiveAt).getTime() >

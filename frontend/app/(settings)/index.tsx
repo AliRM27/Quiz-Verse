@@ -48,15 +48,15 @@ const Settings = () => {
 
   const handleLogOut = () => {
     Alert.alert(
-      "Logout",
-      "Are you sure you want to leave us? ):",
+      t("logOut"),
+      t("logOutQuestion"),
       [
         {
-          text: "No",
+          text: t("no"),
           style: "cancel",
         },
         {
-          text: "Yes",
+          text: t("yes"),
           onPress: logout,
           style: "destructive",
         },

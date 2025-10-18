@@ -37,5 +37,8 @@
   "editProfile": "Профиль",
   "noPerfectQuizzes": "Нет идеальных квизов",
   "noCompletedQuizzes": "Нет завершенных квизов",
-  "noUncompletedQuizzes": "Нет незавершенных квизов"
+  "noUncompletedQuizzes": "Нет незавершенных квизов",
+  "logOutQuestion": "Вы уверены, что хотите покинуть нас? ):",
+  "yes": "Да",
+  "no": "Нет"
 }
