@@ -15,6 +15,7 @@ import ColorPicker from "./ColorPicker";
 import Pencil from "@/assets/svgs/pencil.svg";
 import { useState } from "react";
 import { updateUser } from "@/services/api";
+import { useTranslation } from "react-i18next";
 
 const ProfileCard = ({
   usernameValue,
@@ -36,6 +37,7 @@ const ProfileCard = ({
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [selectedColor, setSelectedColor] = useState(user.theme.cardColor);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { t } = useTranslation();
 
   const date: string[] = user.firstLogIn.split("T", 1)[0].split("-");
 
@@ -56,110 +58,114 @@ const ProfileCard = ({
 
   return (
     <View style={styles.card}>
-      <Modal
-        transparent={true}
-        animationType="slide"
-        visible={isVisible}
-        onRequestClose={() => {
-          setIsVisible(false);
-        }}
-      >
-        <View
-          style={{
-            height: "100%",
-            justifyContent: "flex-end",
-            alignItems: "center",
+      {isEditable && (
+        <Modal
+          transparent={true}
+          animationType="slide"
+          visible={isVisible}
+          onRequestClose={() => {
+            setIsVisible(false);
           }}
         >
           <View
             style={{
-              backgroundColor: Colors.dark.bg_light,
-              width: "100%",
+              height: "100%",
+              justifyContent: "flex-end",
               alignItems: "center",
-              padding: 20,
-              height: "50%",
-              gap: 10,
-              borderRadius: 50,
             }}
           >
-            <Text
-              style={[
-                styles.text,
-                { fontSize: 25, fontWeight: 600 },
-                Platform.OS === "android" && { fontWeight: "bold" },
-              ]}
-            >
-              Choose theme
-            </Text>
-            <ColorPicker
-              colors={colors}
-              selectedColor={selectedColor}
-              setSelectedColor={setSelectedColor}
-            />
             <View
               style={{
-                flexDirection: "row",
-                gap: 20,
-                marginTop: "auto",
-                paddingBottom: 20,
+                backgroundColor: Colors.dark.bg_light,
+                width: "100%",
+                alignItems: "center",
+                padding: 20,
+                height: "50%",
+                gap: 10,
+                borderRadius: 50,
               }}
             >
-              <TouchableOpacity
-                activeOpacity={0.7}
+              <Text
                 style={[
-                  styles.button,
-                  {
-                    width: "45%",
-                    backgroundColor: Colors.dark.bg_light,
-                    borderWidth: 1,
-                    borderColor: Colors.dark.border,
-                  },
+                  styles.text,
+                  { fontSize: 25, fontWeight: 600 },
+                  Platform.OS === "android" && { fontWeight: "bold" },
                 ]}
-                onPress={() => {
-                  setIsVisible(false);
-                  setSelectedColor(user.theme.cardColor);
+              >
+                {t("chooseTheme")}
+              </Text>
+              <ColorPicker
+                colors={colors}
+                selectedColor={selectedColor}
+                setSelectedColor={setSelectedColor}
+              />
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: 20,
+                  marginTop: "auto",
+                  paddingBottom: 20,
                 }}
               >
-                <Text
+                <TouchableOpacity
+                  activeOpacity={0.7}
                   style={[
-                    styles.text,
+                    styles.button,
                     {
-                      color: Colors.dark.text,
-                      fontSize: 18,
-                      textAlign: "center",
+                      width: "45%",
+                      backgroundColor: Colors.dark.bg_light,
+                      borderWidth: 1,
+                      borderColor: Colors.dark.border,
                     },
                   ]}
+                  onPress={() => {
+                    setIsVisible(false);
+                    setSelectedColor(user.theme.cardColor);
+                  }}
                 >
-                  Close
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={[styles.button, { width: "45%" }]}
-                onPress={async () => {
-                  setIsVisible(false);
-                  if (user.theme.cardColor !== selectedColor) {
-                    user.theme.cardColor = selectedColor;
-                    try {
-                      await updateUser(user);
-                    } catch (err) {
-                      console.log(err);
-                    }
-                  }
-                }}
-              >
-                {isLoading ? (
-                  <ActivityIndicator />
-                ) : (
-                  <Text style={[styles.text, { color: "black", fontSize: 18 }]}>
-                    Save
+                  <Text
+                    style={[
+                      styles.text,
+                      {
+                        color: Colors.dark.text,
+                        fontSize: 18,
+                        textAlign: "center",
+                      },
+                    ]}
+                  >
+                    {t("close")}
                   </Text>
-                )}
-              </TouchableOpacity>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={[styles.button, { width: "45%" }]}
+                  onPress={async () => {
+                    setIsVisible(false);
+                    if (user.theme.cardColor !== selectedColor) {
+                      user.theme.cardColor = selectedColor;
+                      try {
+                        await updateUser(user);
+                      } catch (err) {
+                        console.log(err);
+                      }
+                    }
+                  }}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator />
+                  ) : (
+                    <Text
+                      style={[styles.text, { color: "black", fontSize: 18 }]}
+                    >
+                      {t("save")}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
+      )}
       <View
         style={[
           styles.figure,

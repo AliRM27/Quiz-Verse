@@ -85,6 +85,8 @@ export const calculateNewStreakRewards = (
   let bonus = 0;
   const newlyUnlocked: number[] = [];
 
+  console.log(unlocked, maxStreak);
+
   for (const { threshold, reward } of milestones) {
     if (maxStreak >= threshold && !unlocked.has(threshold)) {
       bonus += reward;

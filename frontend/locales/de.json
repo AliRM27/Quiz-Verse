@@ -40,5 +40,11 @@
   "noUncompletedQuizzes": "No unvollständige quizze",
   "logOutQuestion": "Sind Sie sicher, dass Sie uns verlassen möchten? ):",
   "yes": "Ja",
-  "no": "Nein"
+  "no": "Nein",
+  "unlockNow": "Jetzt freischalten!",
+  "question": "Frage",
+  "home": "Home",
+  "chooseTheme": "Thema auswählen",
+  "close": "Schließen",
+  "save": "Speichern"
 }

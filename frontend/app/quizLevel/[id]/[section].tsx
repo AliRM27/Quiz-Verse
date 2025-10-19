@@ -26,6 +26,7 @@ import Result from "@/components/Result";
 import { updateUserProgress, updateUser } from "@/services/api";
 import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
 import { languageMap } from "@/utils/i18n";
+import { useTranslation } from "react-i18next";
 import {
   calculateNewTimeBonuses,
   calculateNewStreakRewards,
@@ -46,8 +47,8 @@ export default function Index() {
     queryKey: ["quizLevel", id],
     queryFn: ({ queryKey }) => fetchQuiz(queryKey[1]),
   });
+  const { t } = useTranslation();
   const { user, loading, refreshUser } = useUser();
-  const [newCorrectIndexes, setNewCorrectIndexes] = useState(new Set<number>());
   const [rewards, setRewards] = useState<number>(0);
   const [questionRewards, setQuestionRewards] = useState<number>(0);
   const [streakRewards, setStreakRewards] = useState<number>(0);
@@ -71,14 +72,13 @@ export default function Index() {
     if (!user || !currProgress) return;
 
     const sectionProgress = currProgress.sections[Number(section)];
-    if (sectionProgress?.streaks) {
+    if (sectionProgress.streaks) {
       setUnlockedStreaks(new Set(sectionProgress.streaks));
     } else {
       setUnlockedStreaks(new Set());
     }
 
     newCorrectIndexesRef.current = new Set();
-    setNewCorrectIndexes(new Set());
   }, [user, section, id]);
 
   useEffect(() => {
@@ -169,12 +169,6 @@ export default function Index() {
       setQuestionRewards((p) => p + perQuestionReward);
 
       // update state-set for UI
-      setNewCorrectIndexes((prev) => {
-        if (prev.has(currQuestionIndex)) return prev;
-        const next = new Set(prev);
-        next.add(currQuestionIndex);
-        return next;
-      });
 
       // ALSO update the local ref immediately (so final calculations are accurate)
       newCorrectIndexesRef.current.add(currQuestionIndex);
@@ -260,12 +254,21 @@ export default function Index() {
         const totalNewRewards = totalRewardDelta + timeBonus;
 
         if (deltaQuestions > 0 || totalNewRewards > 0) {
+          const currSectionProgress = currProgress.sections[Number(section)];
+
+          // Prevent total rewards from exceeding the max for that difficulty
+          const maxPossible = currSectionProgress.maxRewards ?? Infinity; // depends on your schema
+          const newTotal = Math.min(
+            currSectionProgress.rewards + totalNewRewards,
+            maxPossible
+          );
+
           await updateUserProgress({
             quizId: id,
             difficulty: currSection.difficulty,
             updates: {
               questions: deltaQuestions,
-              rewards: totalNewRewards,
+              rewards: newTotal - currSectionProgress.rewards, // only the allowed increase
               answered: Array.from(pending),
               streaks: Array.from(localMergedStreaks),
               timeBonuses: Array.from(
@@ -276,15 +279,15 @@ export default function Index() {
             },
           });
 
-          // Update user stars once
-          if (totalNewRewards > 0) {
-            await updateUser({ stars: user.stars + totalNewRewards });
+          const finalRewardGain = newTotal - currSectionProgress.rewards;
+          if (finalRewardGain > 0) {
+            await updateUser({ stars: user.stars + finalRewardGain });
           }
           await refreshUser();
         }
 
         // --- Reset for next quiz ---
-        setNewCorrectIndexes(new Set());
+
         newCorrectIndexesRef.current = new Set(); // reset local ref
         setCurrentStreak(0);
       } catch (err) {
@@ -308,7 +311,6 @@ export default function Index() {
     } else {
       setCurrQuestionIndex((p) => p + 1);
     }
-
     setShortAnswer("");
     setSelectedAnswer(null);
   };
@@ -462,7 +464,7 @@ export default function Index() {
               },
             ]}
           >
-            Question {currQuestionIndex + 1}
+            {t("question")} {currQuestionIndex + 1}
           </Text>
           <Text
             style={[

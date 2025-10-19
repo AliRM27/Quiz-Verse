@@ -40,5 +40,11 @@
   "noUncompletedQuizzes": "No uncompleted quizzes",
   "logOutQuestion": "Are you sure you want to leave us? ):",
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+  "unlockNow": "Unclock Now!",
+  "question": "Question",
+  "home": "Home",
+  "chooseTheme": "Choose theme",
+  "close": "Close",
+  "save": "Save"
 }

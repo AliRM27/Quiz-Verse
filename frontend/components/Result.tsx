@@ -327,12 +327,7 @@ const Result = ({
       >
         <TouchableOpacity
           onPress={async () => {
-            try {
-              await refreshUser();
-              router.replace("/(tabs)");
-            } catch (e) {
-              console.log(e);
-            }
+            router.replace("/(tabs)");
           }}
           activeOpacity={0.7}
           style={[styles.button, { width: "50%" }]}
@@ -343,7 +338,6 @@ const Result = ({
         </TouchableOpacity>
         <TouchableOpacity
           onPress={async () => {
-            await refreshUser();
             router.replace({
               pathname: "/quizLevel/[id]/[section]",
               params: {

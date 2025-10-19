@@ -374,7 +374,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 style={{ alignItems: "center", gap: 15, marginTop: "auto" }}
               >
                 {user.stars >= PRICES.quizzes.single.price.trophies && (
-                  <Text style={styles.txt}>Unlock now!</Text>
+                  <Text style={styles.txt}>{t("unlockNow")}</Text>
                 )}
                 <TouchableOpacity
                   activeOpacity={0.7}

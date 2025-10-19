@@ -609,14 +609,10 @@ export default function Profile() {
               fill={"transparent"}
             />
             {categroyPressed === t("uncompleted") && (
-              <Text style={styles.txt_muted}>
-                No {categroyPressed.toLowerCase()} quizzes
-              </Text>
+              <Text style={styles.txt_muted}>{t("noUncompletedQuizzes")}</Text>
             )}
             {categroyPressed === t("completed") && (
-              <Text style={styles.txt_muted}>
-                No {categroyPressed.toLowerCase()} quizzes
-              </Text>
+              <Text style={styles.txt_muted}>{t("noCompletedQuizzes")}</Text>
             )}
             {categroyPressed === t("perfect") && (
               <Text style={styles.txt_muted}>{t("noPerfectQuizzes")}</Text>
