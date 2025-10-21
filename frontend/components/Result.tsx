@@ -13,23 +13,75 @@ import CircularProgress from "./ui/CircularProgress";
 import { LineDashed } from "./ui/Line";
 import ProgressBar from "./animatinos/progressBar";
 import { useTranslation } from "react-i18next";
+import { streakMilestones, timeBonusThresholds } from "@/utils/rewardsSystem";
 
 const RewardComponent = ({
   name,
   rewards,
   total,
   progress,
+  bonuses,
+  difficulty,
 }: {
   name: string;
   rewards: number;
-  total?: number;
+  total: number;
   progress: number;
+  bonuses: number[];
+  difficulty?: "Easy" | "Medium" | "Hard" | "Extreme";
 }) => {
+  let milestones: any[] = [];
+
+  if (name === "Streak") {
+    milestones = difficulty ? streakMilestones[difficulty] : [];
+  } else if (name === "Time")
+    milestones = difficulty ? timeBonusThresholds[difficulty] : [];
+
   return (
-    <View style={styles.rewardStatsText}>
+    <View style={styles.rewardStats}>
       <Text style={[styles.txt]}>
         {name} rewards: +{rewards}
       </Text>
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        {milestones.map((bonus, index) => {
+          let number = bonus.threshold | bonus.limit;
+
+          return (
+            <View
+              key={index}
+              style={[
+                {
+                  borderWidth: 1,
+                  borderColor: Colors.dark.border,
+                  borderRadius: 30,
+                  width: 36,
+                  height: 36,
+                  justifyContent: "center",
+                  alignItems: "center",
+                },
+                (number === bonuses[index] || number === bonuses[index]) && {
+                  borderColor: Colors.dark.text,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.txt,
+                  { fontSize: 12 },
+                  bonus.threshold && { fontSize: 15 },
+                  number !== bonuses[index] &&
+                    number !== bonuses[index] && {
+                      color: Colors.dark.border,
+                    },
+                ]}
+              >
+                {number}
+                {bonus.limit && "s"}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
       <Text style={[styles.txt]}>
         {progress} / {total}
       </Text>
@@ -113,7 +165,7 @@ const Result = ({
         backgroundColor: Colors.dark.bg,
         alignItems: "center",
         height: "100%",
-        paddingTop: layout.paddingTop,
+        paddingTop: 30,
         gap: 30,
         paddingBottom: 50,
       }}
@@ -121,8 +173,8 @@ const Result = ({
       <View style={{ alignItems: "center" }}>
         <View
           style={{
-            width: 150,
-            height: 150,
+            width: 100,
+            height: 100,
             borderRadius: 10,
             borderWidth: 1,
             borderColor: Colors.dark.border,
@@ -223,15 +275,37 @@ const Result = ({
               progress: any;
             },
             index
-          ) => (
-            <RewardComponent
-              key={index}
-              name={r.type}
-              rewards={r.rewards}
-              total={r.total}
-              progress={r.progress}
-            />
-          )
+          ) => {
+            let bonuses = [];
+            if (r.type === "Streak")
+              bonuses = userProgress.streaks.sort(
+                (a: number, b: number) => a - b
+              );
+            else if (r.type === "Time")
+              bonuses = userProgress.timeBonuses.sort(
+                (a: number, b: number) => b - a
+              );
+
+            return (
+              <RewardComponent
+                key={index}
+                name={r.type}
+                rewards={r.rewards}
+                total={r.total}
+                progress={r.progress}
+                bonuses={bonuses}
+                difficulty={
+                  r.type === "Streak" || r.type === "Time"
+                    ? (quizProgress.difficulty as
+                        | "Easy"
+                        | "Medium"
+                        | "Hard"
+                        | "Extreme")
+                    : undefined
+                }
+              />
+            );
+          }
         )}
       </View>
       <View
@@ -300,7 +374,7 @@ const Result = ({
           <View
             style={{
               width: "80%",
-              backgroundColor: Colors.dark.border,
+              backgroundColor: Colors.dark.border_muted,
               borderRadius: 6,
             }}
           >
@@ -373,12 +447,13 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 50,
   },
-  rewardStatsText: {
+  rewardStats: {
     borderBottomWidth: 1,
     borderColor: Colors.dark.border,
-    paddingVertical: 10,
+    paddingVertical: 15,
     fontSize: 18,
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
   },
 });

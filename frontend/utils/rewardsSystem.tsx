@@ -1,6 +1,6 @@
 type Difficulty = "Easy" | "Medium" | "Hard" | "Extreme";
 
-const timeBonusThresholds: Record<
+export const timeBonusThresholds: Record<
   Difficulty,
   { limit: number; reward: number }[]
 > = {
@@ -46,7 +46,7 @@ export function calculateNewTimeBonuses(
   return { bonus, newlyUnlocked };
 }
 
-const streakMilestones: Record<
+export const streakMilestones: Record<
   Difficulty,
   { threshold: number; reward: number }[]
 > = {
@@ -84,8 +84,6 @@ export const calculateNewStreakRewards = (
   const milestones = streakMilestones[difficulty] || [];
   let bonus = 0;
   const newlyUnlocked: number[] = [];
-
-  console.log(unlocked, maxStreak);
 
   for (const { threshold, reward } of milestones) {
     if (maxStreak >= threshold && !unlocked.has(threshold)) {

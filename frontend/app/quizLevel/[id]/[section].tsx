@@ -57,10 +57,7 @@ export default function Index() {
   const [maxStreak, setMaxStreak] = useState(0);
   const [mult, setMult] = useState<number>(0);
 
-  // keep track of unlocked milestones
-  const [unlockedStreaks, setUnlockedStreaks] = useState<Set<number>>(
-    new Set()
-  );
+  let unlockedStreaksVar: Set<number> = new Set();
 
   const newCorrectIndexesRef = useRef<Set<number>>(new Set());
 
@@ -69,17 +66,8 @@ export default function Index() {
   const [newQuestions, setNewQuestions] = useState<number>(0);
 
   useEffect(() => {
-    if (!user || !currProgress) return;
-
-    const sectionProgress = currProgress.sections[Number(section)];
-    if (sectionProgress.streaks) {
-      setUnlockedStreaks(new Set(sectionProgress.streaks));
-    } else {
-      setUnlockedStreaks(new Set());
-    }
-
     newCorrectIndexesRef.current = new Set();
-  }, [user, section, id]);
+  }, []);
 
   useEffect(() => {
     // Start timer at first question
@@ -122,6 +110,9 @@ export default function Index() {
     data.sections[Number(section)].questions[currQuestionIndex];
   const currProgress = user?.progress.find((q) => q.quizId._id === data._id);
   const prevAnswered = currProgress.sections[Number(section)].answered ?? [];
+  const sectionProgress = currProgress.sections[Number(section)];
+
+  unlockedStreaksVar = new Set(sectionProgress.streaks);
 
   const handleNextButton = async () => {
     let isCorrect: boolean;
@@ -186,18 +177,17 @@ export default function Index() {
       const { bonus: streakBonus, newlyUnlocked } = calculateNewStreakRewards(
         newMaxStreak,
         currSection.difficulty,
-        unlockedStreaks // should still be loaded from DB on quiz start
+        unlockedStreaksVar // should still be loaded from DB on quiz start
       );
 
       // merged streaks for DB (local)
-      const localMergedStreaks = new Set(unlockedStreaks);
+      const localMergedStreaks = new Set(unlockedStreaksVar);
       newlyUnlocked.forEach((t) => localMergedStreaks.add(t));
 
       // apply streak bonus to UI
       if (streakBonus > 0) {
         setRewards((p) => p + streakBonus);
         setStreakRewards((p) => p + streakBonus);
-        setUnlockedStreaks(localMergedStreaks);
       }
 
       // --- Prepare new answered questions from the local ref (robust) ---
