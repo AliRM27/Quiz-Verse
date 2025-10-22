@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { layout } from "@/constants/Dimensions";
-import { REGULAR_FONT } from "@/constants/Styles";
+import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
 import { router } from "expo-router";
 import { useUser } from "@/context/userContext";
 import { QuizType } from "@/types";
@@ -14,6 +14,7 @@ import { LineDashed } from "./ui/Line";
 import ProgressBar from "./animatinos/progressBar";
 import { useTranslation } from "react-i18next";
 import { streakMilestones, timeBonusThresholds } from "@/utils/rewardsSystem";
+import Trophy from "@/assets/svgs/trophy.svg";
 
 const RewardComponent = ({
   name,
@@ -39,9 +40,50 @@ const RewardComponent = ({
 
   return (
     <View style={styles.rewardStats}>
-      <Text style={[styles.txt]}>
-        {name} rewards: +{rewards}
-      </Text>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+        <Text style={[styles.txt]}>{name} rewards:</Text>
+        {progress === total && rewards === 0 ? (
+          <Text
+            style={[
+              {
+                fontFamily: ITALIC_FONT,
+                color: Colors.dark.secondary,
+              },
+            ]}
+          >
+            {" "}
+            Max
+          </Text>
+        ) : (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 5,
+            }}
+          >
+            <Text
+              style={[
+                {
+                  fontFamily: ITALIC_FONT,
+                  color: Colors.dark.text,
+                },
+                name === "Total" && {
+                  fontSize: 16,
+                  fontWeight: "600",
+                  color: Colors.dark.secondary,
+                  fontFamily: REGULAR_FONT,
+                },
+              ]}
+            >
+              {"+"}
+              {rewards}
+            </Text>
+            <Trophy color={Colors.dark.secondary} width={13} height={13} />
+          </View>
+        )}
+      </View>
       <View style={{ flexDirection: "row", gap: 10 }}>
         {milestones.map((bonus, index) => {
           let number = bonus.threshold | bonus.limit;
@@ -112,7 +154,7 @@ const Result = ({
   time: number;
   mult: number;
 }) => {
-  const { refreshUser, user } = useUser();
+  const { user } = useUser();
   const { t } = useTranslation();
   const [value, setValue] = useState<number>(0);
   const [rewardsValue, setRewardsValue] = useState<number>(0);
@@ -451,7 +493,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: Colors.dark.border,
     paddingVertical: 15,
-    fontSize: 18,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
