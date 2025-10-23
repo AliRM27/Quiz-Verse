@@ -8,11 +8,13 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { layout } from "@/constants/Dimensions";
-import { router } from "expo-router";
-import ArrBack from "@/assets/svgs/backArr.svg";
+import ArrBack from "@/components/ui/ArrBack";
 import { REGULAR_FONT } from "@/constants/Styles";
 import { useUser } from "@/context/userContext";
 import { useTranslation } from "react-i18next";
@@ -27,6 +29,7 @@ const EditProfile = () => {
   const { t } = useTranslation();
   const [error, setError] = useState<string>("");
   const [isFocused, setIsFocused] = useState<boolean>(false);
+  const [scrollEnabled, setScrollEnabled] = useState(false);
 
   if (!user) {
     return (
@@ -76,74 +79,86 @@ const EditProfile = () => {
       }}
       accessible={false}
     >
-      <View
-        style={{
-          backgroundColor: Colors.dark.bg_dark,
-          height: "100%",
-          paddingVertical: layout.paddingTop,
-          paddingHorizontal: 15,
-          paddingBottom: 50,
-          gap: 5,
-          alignItems: "center",
-        }}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
-        <Pressable
-          style={{ position: "absolute", top: 83, left: 20 }}
-          onPress={() => router.back()}
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            backgroundColor: Colors.dark.bg_dark,
+            paddingVertical: layout.paddingTop,
+            paddingHorizontal: 15,
+            paddingBottom: 50,
+            alignItems: "center",
+          }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          scrollEnabled={scrollEnabled}
         >
           <ArrBack />
-        </Pressable>
-        <Text style={[styles.text, { fontSize: 30, fontWeight: 700 }]}>
-          {t("editProfile")}
-        </Text>
-        <ProfileCard
-          usernameValue={usernameValue}
-          user={user}
-          isEditable={true}
-        />
-        <View style={{ width: "100%", gap: 10, marginTop: 20 }}>
-          <Text style={[styles.text_muted, { marginLeft: 10 }]}>
-            {t("username")}
+
+          <Text style={[styles.text, { fontSize: 25, fontWeight: 700 }]}>
+            {t("editProfile")}
           </Text>
-          <TextInput
-            onFocus={() => setIsFocused(true)}
-            style={[
-              styles.input,
-              isFocused && { borderWidth: 1, borderColor: Colors.dark.text },
-            ]}
-            cursorColor={Colors.dark.text}
-            selectionColor={Colors.dark.text}
-            value={usernameValue}
-            onChangeText={(c) => {
-              if (c.length <= 12) {
-                setUsernameValue(c);
-              }
-            }}
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoComplete="off"
+
+          <ProfileCard
+            usernameValue={usernameValue}
+            user={user}
+            isEditable={true}
           />
 
-          <Text style={[styles.text, { textAlign: "center" }]}>{error}</Text>
-        </View>
-        <TouchableOpacity
-          disabled={user.name === usernameValue.trim()}
-          onPress={() => handleUsernameChange()}
-          activeOpacity={0.7}
-          style={[
-            styles.button,
-            user.name === usernameValue.trim() && { opacity: 0.5 },
-          ]}
-        >
-          {loading ? (
-            <ActivityIndicator color={Colors.dark.bg_dark} />
-          ) : (
-            <Text style={{ color: Colors.dark.bg_dark, fontSize: 20 }}>
-              {t("change")}
+          <View style={{ width: "100%", gap: 10, marginTop: 20 }}>
+            <Text style={[styles.text_muted, { marginLeft: 10 }]}>
+              {t("username")}
             </Text>
-          )}
-        </TouchableOpacity>
-      </View>
+
+            <TextInput
+              onFocus={() => {
+                setIsFocused(true);
+                setScrollEnabled(true);
+              }}
+              onBlur={() => {
+                setIsFocused(false);
+                setScrollEnabled(false);
+              }}
+              style={[
+                styles.input,
+                isFocused && { borderWidth: 1, borderColor: Colors.dark.text },
+              ]}
+              cursorColor={Colors.dark.text}
+              selectionColor={Colors.dark.text}
+              value={usernameValue}
+              onChangeText={(c) => {
+                if (c.length <= 12) {
+                  setUsernameValue(c);
+                }
+              }}
+            />
+
+            <Text style={[styles.text, { textAlign: "center" }]}>{error}</Text>
+          </View>
+
+          <TouchableOpacity
+            disabled={user.name === usernameValue.trim()}
+            onPress={handleUsernameChange}
+            activeOpacity={0.7}
+            style={[
+              styles.button,
+              user.name === usernameValue.trim() && { opacity: 0.5 },
+            ]}
+          >
+            {loading ? (
+              <ActivityIndicator color={Colors.dark.bg_dark} />
+            ) : (
+              <Text style={{ color: Colors.dark.bg_dark, fontSize: 20 }}>
+                {t("change")}
+              </Text>
+            )}
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </TouchableWithoutFeedback>
   );
 };

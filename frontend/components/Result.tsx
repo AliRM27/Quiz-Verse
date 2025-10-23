@@ -1,4 +1,10 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
 import { Colors } from "@/constants/Colors";
 import { layout } from "@/constants/Dimensions";
 import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
@@ -8,7 +14,7 @@ import { QuizType } from "@/types";
 import QuizLogo from "./ui/QuizLogo";
 import Right from "@/assets/svgs/rightAnswers.svg";
 import Wrong from "@/assets/svgs/wrongAnswers.svg";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CircularProgress from "./ui/CircularProgress";
 import { LineDashed } from "./ui/Line";
 import ProgressBar from "./animatinos/progressBar";
@@ -39,7 +45,9 @@ const RewardComponent = ({
     milestones = difficulty ? timeBonusThresholds[difficulty] : [];
 
   return (
-    <View style={styles.rewardStats}>
+    <View
+      style={[styles.rewardStats, name === "Total" && { borderBottomWidth: 0 }]}
+    >
       <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
         <Text style={[styles.txt]}>{name} rewards:</Text>
         {progress === total && rewards === 0 ? (
@@ -87,6 +95,19 @@ const RewardComponent = ({
       <View style={{ flexDirection: "row", gap: 10 }}>
         {milestones.map((bonus, index) => {
           let number = bonus.threshold | bonus.limit;
+          let color = "";
+
+          switch (index) {
+            case 0:
+              color = "rgba(154, 81, 81, 1)";
+              break;
+            case 1:
+              color = "rgba(192, 192, 192, 1)";
+              break;
+            case 2:
+              color = Colors.dark.secondary;
+              break;
+          }
 
           return (
             <View
@@ -94,27 +115,25 @@ const RewardComponent = ({
               style={[
                 {
                   borderWidth: 1,
-                  borderColor: Colors.dark.border,
+                  borderColor: color,
                   borderRadius: 30,
-                  width: 36,
-                  height: 36,
+                  width: 35,
+                  height: 35,
                   justifyContent: "center",
                   alignItems: "center",
+                  opacity: 0.4,
                 },
+
                 (number === bonuses[index] || number === bonuses[index]) && {
-                  borderColor: Colors.dark.text,
+                  opacity: 1,
                 },
               ]}
             >
               <Text
                 style={[
                   styles.txt,
-                  { fontSize: 12 },
-                  bonus.threshold && { fontSize: 15 },
-                  number !== bonuses[index] &&
-                    number !== bonuses[index] && {
-                      color: Colors.dark.border,
-                    },
+                  { fontSize: 11 },
+                  bonus.threshold && { fontSize: 14 },
                 ]}
               >
                 {number}
@@ -159,6 +178,11 @@ const Result = ({
   const [value, setValue] = useState<number>(0);
   const [rewardsValue, setRewardsValue] = useState<number>(0);
   const [showAnimation, setShowAnimation] = useState<string>("");
+  const scrollViewRef = useRef<ScrollView | null>(null);
+
+  const scrollToBottom = () => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  };
 
   const userProgress = user?.progress.find((p) => p.quizId._id === quiz._id)
     .sections[Number(selectedLevelIndex)];
@@ -166,6 +190,7 @@ const Result = ({
   const quizProgress = quiz.sections[Number(selectedLevelIndex)];
 
   useEffect(() => {
+    scrollToBottom();
     setValue(
       Math.floor(
         ((userProgress.questions - newQuestions) /
@@ -282,7 +307,16 @@ const Result = ({
           <Wrong width={15} height={15} />
         </View>
       </View>
-      <View style={{ width: "100%", paddingHorizontal: 10 }}>
+      <ScrollView
+        ref={scrollViewRef}
+        style={{
+          width: "99%",
+          paddingHorizontal: 10,
+          borderWidth: 1,
+          borderColor: Colors.dark.border_muted,
+          borderRadius: 10,
+        }}
+      >
         {[
           {
             type: "Questions",
@@ -349,7 +383,7 @@ const Result = ({
             );
           }
         )}
-      </View>
+      </ScrollView>
       <View
         style={{
           flexDirection: "row",

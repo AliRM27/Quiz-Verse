@@ -51,26 +51,22 @@ export const streakMilestones: Record<
   { threshold: number; reward: number }[]
 > = {
   Easy: [
-    { threshold: 5, reward: 5 },
-    { threshold: 11, reward: 15 },
+    { threshold: 11, reward: 20 },
     { threshold: 17, reward: 30 },
     { threshold: 20, reward: 50 }, // all correct
   ],
   Medium: [
-    { threshold: 4, reward: 5 },
-    { threshold: 8, reward: 15 },
+    { threshold: 8, reward: 20 },
     { threshold: 12, reward: 30 },
     { threshold: 15, reward: 50 },
   ],
   Hard: [
-    { threshold: 3, reward: 5 },
-    { threshold: 6, reward: 15 },
+    { threshold: 6, reward: 20 },
     { threshold: 8, reward: 30 },
     { threshold: 10, reward: 50 },
   ],
   Extreme: [
-    { threshold: 2, reward: 5 },
-    { threshold: 3, reward: 15 },
+    { threshold: 3, reward: 20 },
     { threshold: 4, reward: 30 },
     { threshold: 5, reward: 50 },
   ],

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Pressable,
   Alert,
+  ScrollView,
 } from "react-native";
 import { useState } from "react";
 import { REGULAR_FONT } from "@/constants/Styles";
@@ -22,7 +23,7 @@ import Friends from "@/assets/svgs/friends.svg";
 import Gift from "@/assets/svgs/gift.svg";
 import Share from "@/assets/svgs/share.svg";
 import Bell from "@/assets/svgs/bell.svg";
-import Back from "@/assets/svgs/backArr.svg";
+import ArrBack from "@/components/ui/ArrBack";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 
@@ -66,19 +67,22 @@ const Settings = () => {
   };
 
   return (
-    <View
-      style={{
+    <ScrollView
+      contentContainerStyle={{
         backgroundColor: Colors.dark.bg_dark,
-        height: "100%",
-        paddingVertical: layout.paddingTop,
+        paddingBottom: 50,
+        paddingTop: layout.paddingTop,
         paddingHorizontal: 15,
         gap: 20,
       }}
     >
-      <Pressable onPress={() => router.back()}>
-        <Back />
-      </Pressable>
-      <Text style={[styles.txt, { fontSize: 25, fontWeight: 700 }]}>
+      <ArrBack />
+      <Text
+        style={[
+          styles.txt,
+          { fontSize: 25, fontWeight: 700, alignSelf: "center" },
+        ]}
+      >
         {t("settings")}
       </Text>
       <View style={{ gap: 20 }}>
@@ -315,7 +319,7 @@ const Settings = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 

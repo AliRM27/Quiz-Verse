@@ -6,21 +6,24 @@ import {
   Pressable,
   TouchableOpacity,
   ActivityIndicator,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { useState } from "react";
 import { Colors } from "@/constants/Colors";
 import { Auth, layout } from "@/constants/Dimensions";
-import ArrBack from "@/assets/svgs/backArr.svg";
-import { router } from "expo-router";
 import { useUser } from "@/context/userContext";
 import { updateUser } from "@/services/api";
 import { useTranslation } from "react-i18next";
+import { REGULAR_FONT } from "@/constants/Styles";
+import ArrBack from "@/components/ui/ArrBack";
 
 const ChnageUsername = () => {
-  const [newName, setNewName] = useState("");
+  const { user } = useUser();
+  const [newName, setNewName] = useState(user?.name || "");
   const [error, setError] = useState("");
   const [loading, setloading] = useState(false);
-  const { user } = useUser();
+  const [focused, setFocused] = useState<boolean>(false);
 
   const { t } = useTranslation();
 
@@ -59,85 +62,111 @@ const ChnageUsername = () => {
   };
 
   return (
-    <View
-      style={{
-        backgroundColor: Colors.dark.bg_dark,
-        height: "100%",
-        paddingVertical: layout.paddingTop,
-        paddingHorizontal: 15,
-        gap: 20,
-        alignItems: "center",
+    <TouchableWithoutFeedback
+      onPress={() => {
+        Keyboard.dismiss();
+        setFocused(false);
       }}
+      accessible={false}
     >
-      <Pressable
-        style={{ alignSelf: "flex-start" }}
-        onPress={() => router.back()}
+      <View
+        style={{
+          backgroundColor: Colors.dark.bg_dark,
+          height: "100%",
+          paddingVertical: layout.paddingTop,
+          paddingHorizontal: 15,
+          gap: 20,
+          alignItems: "center",
+        }}
       >
         <ArrBack />
-      </Pressable>
-      <Text
-        style={[
-          styles.txt,
-          { fontSize: 30, fontWeight: 700, textAlign: "center" },
-        ]}
-      >
-        {t("changeUsername")}
-      </Text>
-      <View style={{ alignItems: "center", gap: 5 }}>
-        <Text style={{ color: Colors.dark.text_muted, fontSize: 20 }}>
-          {t("enterYourNewUsername")}
+        <Text
+          style={[
+            styles.txt,
+            {
+              fontSize: 25,
+              fontWeight: 700,
+              textAlign: "center",
+              width: "80%",
+            },
+          ]}
+        >
+          {t("changeUsername")}
         </Text>
-        <Text style={{ color: Colors.dark.border, fontSize: 15 }}>
-          {t("makeItBetter")}
-        </Text>
-      </View>
-      <TextInput
-        style={styles.input}
-        placeholder={t("enterYourNewUsername")}
-        placeholderTextColor={Colors.dark.text_muted}
-        value={newName}
-        onChangeText={(c) => {
-          if (c.length <= 12) {
-            setNewName(c);
-          }
-        }}
-        selectionColor={Colors.dark.text}
-        autoFocus={true}
-        autoCapitalize="none"
-        autoCorrect={false}
-        autoComplete="off"
-      />
-      <Text style={{ color: Colors.dark.danger, fontSize: 14 }}>{error}</Text>
-      <TouchableOpacity
-        onPress={() => handleUsernameChange()}
-        activeOpacity={0.7}
-        style={[styles.button]}
-      >
-        {loading ? (
-          <ActivityIndicator color={Colors.dark.bg_dark} />
-        ) : (
-          <Text style={{ color: Colors.dark.bg_dark, fontSize: 20 }}>
-            {t("change")}
+        <View style={{ alignItems: "center", gap: 5 }}>
+          <Text
+            style={{
+              color: Colors.dark.text_muted,
+              fontSize: 20,
+              fontFamily: REGULAR_FONT,
+            }}
+          >
+            {t("enterYourNewUsername")}
           </Text>
-        )}
-      </TouchableOpacity>
-    </View>
+          <Text
+            style={{
+              color: Colors.dark.border,
+              fontSize: 15,
+              fontFamily: REGULAR_FONT,
+            }}
+          >
+            {t("makeItBetter")}
+          </Text>
+        </View>
+        <TextInput
+          onFocus={() => setFocused(true)}
+          style={[styles.input, focused && { borderColor: Colors.dark.text }]}
+          placeholder={" " + t("enterYourNewUsername")}
+          placeholderTextColor={Colors.dark.text_muted}
+          value={newName}
+          onChangeText={(c) => {
+            if (c.length <= 12) {
+              setNewName(c);
+            }
+          }}
+          selectionColor={Colors.dark.text}
+        />
+        <Text style={{ color: Colors.dark.danger, fontSize: 14 }}>{error}</Text>
+        <TouchableOpacity
+          onPress={() => handleUsernameChange()}
+          activeOpacity={0.7}
+          style={[styles.button]}
+        >
+          {loading ? (
+            <ActivityIndicator color={Colors.dark.bg_dark} />
+          ) : (
+            <Text
+              style={{
+                color: Colors.dark.bg_dark,
+                fontSize: 20,
+                fontFamily: REGULAR_FONT,
+              }}
+            >
+              {t("change")}
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
 export default ChnageUsername;
 
 const styles = StyleSheet.create({
-  txt: { color: Colors.dark.text },
+  txt: { color: Colors.dark.text, fontFamily: REGULAR_FONT },
   input: {
-    marginTop: 50,
-    width: Auth.width.button,
-    height: 55,
-    borderWidth: 1,
-    padding: 20,
-    borderRadius: 20,
-    borderColor: Colors.dark.text,
+    width: "100%",
+    height: 60,
+    backgroundColor: Colors.dark.bg_light,
+    borderRadius: 50,
+    padding: 15,
+    paddingLeft: 20,
     color: Colors.dark.text,
+    fontFamily: REGULAR_FONT,
+    borderWidth: 1,
+    borderColor: Colors.dark.bg_dark,
+    fontSize: 15,
   },
   button: {
     backgroundColor: Colors.dark.text,

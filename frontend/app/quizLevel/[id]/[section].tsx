@@ -64,6 +64,7 @@ export default function Index() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [newQuestions, setNewQuestions] = useState<number>(0);
+  const [questionLoading, setQuestionLoading] = useState<boolean>(false);
 
   useEffect(() => {
     newCorrectIndexesRef.current = new Set();
@@ -115,6 +116,7 @@ export default function Index() {
   unlockedStreaksVar = new Set(sectionProgress.streaks);
 
   const handleNextButton = async () => {
+    setQuestionLoading(true);
     let isCorrect: boolean;
 
     // --- Determine if the answer is correct ---
@@ -303,6 +305,7 @@ export default function Index() {
     }
     setShortAnswer("");
     setSelectedAnswer(null);
+    setQuestionLoading(false);
   };
 
   const handleUserLastPlayed = async () => {
@@ -629,12 +632,12 @@ export default function Index() {
             <Text style={[styles.txt, { fontSize: 20 }]}>2</Text>
           </View>
           <TouchableOpacity
-            activeOpacity={0.8}
+            activeOpacity={0.6}
             disabled={
               !(
                 currQuestionIndex <= currSection.questions.length - 1 &&
                 (selectedAnswer !== null || shortAnswer.trim() !== "")
-              )
+              ) || questionLoading
             }
             onPress={() => handleNextButton()}
           >
@@ -642,7 +645,7 @@ export default function Index() {
               size={80}
               strokeWidth={3}
               progress={currQuestionIndex + 1}
-              fontSize={23}
+              fontSize={18}
               percent={false}
               total={currSection.questions.length}
               arrow={

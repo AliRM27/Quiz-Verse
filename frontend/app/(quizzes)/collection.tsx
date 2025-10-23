@@ -11,12 +11,12 @@ import { Colors } from "@/constants/Colors";
 import { layout, myWidth, WIDTH } from "@/constants/Dimensions";
 import { useUser } from "@/context/userContext";
 import { router } from "expo-router";
-import ArrBack from "@/assets/svgs/backArr.svg";
 import QuizLogo from "@/components/ui/QuizLogo";
 import { QuizType } from "@/types";
 import QuizModal from "@/components/animatinos/QuizModal";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import ArrBack from "@/components/ui/ArrBack";
 
 const Collection = () => {
   const { user, loading } = useUser();
@@ -36,12 +36,7 @@ const Collection = () => {
         alignItems: "center",
       }}
     >
-      <Pressable
-        style={{ alignSelf: "flex-start" }}
-        onPress={() => router.back()}
-      >
-        <ArrBack />
-      </Pressable>
+      <ArrBack />
       <Text
         style={[
           styles.txt,

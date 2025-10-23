@@ -7,7 +7,7 @@ export const HEIGHT = Dimensions.get("screen").height;
 export const WIDTH = Dimensions.get("screen").width;
 
 export const layout = {
-  paddingTop: HEIGHT * (70 / myHeight),
+  paddingTop: HEIGHT * (50 / myHeight),
   paddingHorizontal: WIDTH * (30 / myWidth),
 };
 

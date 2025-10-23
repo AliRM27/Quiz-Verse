@@ -419,7 +419,12 @@ export default function Profile() {
         }}
       >
         <View
-          style={{ flexDirection: "row", gap: 20, justifyContent: "center" }}
+          style={{
+            flexDirection: "row",
+            gap: 20,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
         >
           {[t("uncompleted"), t("completed"), t("perfect")].map(
             (category, index) => (
@@ -447,7 +452,7 @@ export default function Profile() {
                     },
                     category === categroyPressed &&
                       Platform.OS === "android" && { fontWeight: 700 },
-                    { fontSize: 15 },
+                    { fontSize: 13 },
                   ]}
                 >
                   {category}
@@ -482,15 +487,29 @@ export default function Profile() {
               >
                 <QuizLogo name={filteredQuizzes[currIndex].quizId.logoFile} />
               </TouchableOpacity>
-              <View style={{ gap: 10 }}>
-                <Text style={[styles.txt, { fontWeight: 700, fontSize: 20 }]}>
+              <View
+                style={{
+                  gap: 10,
+                }}
+              >
+                <Text
+                  numberOfLines={2}
+                  style={[
+                    styles.txt,
+                    {
+                      fontWeight: 700,
+                      fontSize: 20,
+                      width: WIDTH * (200 / myWidth),
+                    },
+                  ]}
+                >
                   {filteredQuizzes[currIndex].quizId.title}
                 </Text>
                 <View
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
-                    gap: 35,
+                    gap: 25,
                   }}
                 >
                   <View

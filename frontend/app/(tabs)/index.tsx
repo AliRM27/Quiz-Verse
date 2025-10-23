@@ -94,15 +94,15 @@ export default function HomeScreen() {
         </View>
         <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
           <View style={{ alignItems: "center", flexDirection: "row", gap: 5 }}>
-            <Trophy width={25} height={25} color={Colors.dark.secondary} />
-            <Text style={styles.txt}>
+            <Trophy width={20} height={20} color={Colors.dark.secondary} />
+            <Text style={[styles.txt, { fontWeight: "400" }]}>
               {user.stars}
               {/* String(user.stars).slice(0, 1)}.{String(user.stars).slice(1) -> Adding a point to for better visualization of numbers*/}
             </Text>
           </View>
           <View style={{ alignItems: "center", flexDirection: "row", gap: 5 }}>
-            <Gem width={25} height={25} color={Colors.dark.primary} />
-            <Text style={styles.txt}>{user.gems}</Text>
+            <Gem width={20} height={20} color={Colors.dark.primary} />
+            <Text style={[styles.txt, { fontWeight: "400" }]}>{user.gems}</Text>
           </View>
         </View>
       </View>

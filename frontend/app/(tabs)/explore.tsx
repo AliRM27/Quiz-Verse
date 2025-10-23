@@ -20,8 +20,6 @@ import QuizLogo from "@/components/ui/QuizLogo";
 import { useUser } from "@/context/userContext";
 import { myWidth, WIDTH } from "@/constants/Dimensions";
 import Close from "@/assets/svgs/close.svg";
-import Add from "@/assets/svgs/add.svg";
-import { updateUserProgress } from "@/services/api";
 import { useTranslation } from "react-i18next";
 import ProgressBar from "@/components/animatinos/progressBar";
 import QuizModal from "@/components/animatinos/QuizModal";

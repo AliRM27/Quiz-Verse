@@ -5,7 +5,7 @@ const ProgressBar = ({
   progress,
   total,
   color,
-  height = 4,
+  height = 3,
 }: {
   progress: number;
   total: number;

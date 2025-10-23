@@ -82,7 +82,6 @@ export default function TabLayout() {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 setModalVisible(false);
               }}
               style={{

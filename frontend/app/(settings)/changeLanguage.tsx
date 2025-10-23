@@ -9,12 +9,12 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import ArrBack from "@/assets/svgs/backArr.svg";
 import { router } from "expo-router";
 import { useUser } from "@/context/userContext";
 import { useTranslation } from "react-i18next";
 import { updateUser } from "@/services/api";
 import { useState } from "react";
+import ArrBack from "@/components/ui/ArrBack";
 
 const ChangeLanguage = () => {
   const languages = ["English", "Deutsch", "Русский"];
@@ -37,52 +37,58 @@ const ChangeLanguage = () => {
         alignItems: "center",
       }}
     >
-      <Pressable
-        style={{ alignSelf: "flex-start" }}
-        onPress={() => router.back()}
-      >
-        <ArrBack />
-      </Pressable>
-      <Text style={[styles.txt, { fontSize: 30, fontWeight: 700 }]}>
+      <ArrBack />
+      <Text style={[styles.txt, { fontSize: 25, fontWeight: 700 }]}>
         {t("changeLanguage")}
       </Text>
-      {languages.map((language, index) => (
-        <TouchableOpacity
-          activeOpacity={0.7}
-          style={[
-            styles.btn,
-            user.language === language && { backgroundColor: Colors.dark.text },
-          ]}
-          disabled={language === user.language}
-          onPress={async () => {
-            setIsLoading(true);
-            try {
-              user.language = language;
-              await updateUser(user);
-              await refreshUser();
-              router.back();
-            } catch (err) {
-              console.log(err);
-            }
-            setIsLoading(false);
-          }}
-          key={index}
-        >
-          {isLoading && user.language === language ? (
-            <ActivityIndicator />
-          ) : (
-            <Text
-              style={[
-                styles.txt,
-                { fontSize: 20 },
-                user.language === language && { color: "black" },
-              ]}
-            >
-              {language}
-            </Text>
-          )}
-        </TouchableOpacity>
-      ))}
+      <View
+        style={{
+          width: "100%",
+          height: "100%",
+          gap: 15,
+          justifyContent: "center",
+        }}
+      >
+        {languages.map((language, index) => (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={[
+              styles.btn,
+              user.language === language && {
+                backgroundColor: Colors.dark.text,
+              },
+            ]}
+            disabled={language === user.language}
+            onPress={async () => {
+              setIsLoading(true);
+              try {
+                user.language = language;
+                await updateUser(user);
+                await refreshUser();
+                router.back();
+              } catch (err) {
+                console.log(err);
+              }
+              setIsLoading(false);
+            }}
+            key={index}
+          >
+            {isLoading && user.language === language ? (
+              <ActivityIndicator />
+            ) : (
+              <Text
+                style={[
+                  styles.txt,
+                  { fontSize: 20 },
+                  user.language === language && { color: "black" },
+                ]}
+              >
+                {language}
+              </Text>
+            )}
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 };

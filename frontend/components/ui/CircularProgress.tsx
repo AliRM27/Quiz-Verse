@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   text: {
     color: Colors.dark.text,
     fontSize: WIDTH < 700 ? WIDTH * (13 / myWidth) : 18,
-    fontWeight: "bold",
+    fontWeight: "600",
     textAlign: "center",
     fontFamily: REGULAR_FONT,
   },

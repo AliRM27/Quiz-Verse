@@ -200,7 +200,14 @@ const QuizModal: React.FC<QuizModalProps> = ({
                 ]}
               >
                 <Text
-                  style={[styles.txt, { fontSize: WIDTH * (15 / myWidth) }]}
+                  style={[
+                    styles.txt,
+                    {
+                      fontSize:
+                        WIDTH *
+                        ((t("progress").length > 11 ? 15 : 14) / myWidth),
+                    },
+                  ]}
                 >
                   {t("progress")}
                 </Text>
@@ -218,6 +225,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                     }
                     size={HEIGHT * (50 / myHeight)}
                     strokeWidth={3}
+                    fontSize={12}
                   />
                 </View>
               </View>
@@ -327,7 +335,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                       <View
                         style={{
                           width: "80%",
-                          backgroundColor: Colors.dark.border,
+                          backgroundColor: Colors.dark.border_muted,
                           borderRadius: 6,
                         }}
                       >
@@ -350,7 +358,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                       <View
                         style={{
                           width: "80%",
-                          backgroundColor: Colors.dark.border,
+                          backgroundColor: Colors.dark.border_muted,
                           borderRadius: 6,
                         }}
                       >

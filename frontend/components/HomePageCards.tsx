@@ -137,7 +137,6 @@ export default function HomePageCards() {
           { useNativeDriver: true }
         )}
         onMomentumScrollEnd={(event: any) => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           const index = Math.round(
             event.nativeEvent.contentOffset.x / ITEM_WIDTH
           );
@@ -181,6 +180,7 @@ export default function HomePageCards() {
                     setIsModalVisible((p) => !p);
                     return;
                   }
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setLastIndexRef(index);
                   scrollToCard(index);
                 }}
@@ -259,6 +259,7 @@ export default function HomePageCards() {
             }
             size={HEIGHT * (50 / myHeight)}
             strokeWidth={3}
+            fontSize={12}
           />
         </View>
         <View
@@ -299,6 +300,7 @@ export default function HomePageCards() {
               color="#FFB11F"
               total={quiz.rewardsTotal}
               progress={currentProgress?.rewardsTotal}
+              height={3}
             />
           </View>
           <Text style={[styles.txt_muted, { fontSize: 12 }]}>
