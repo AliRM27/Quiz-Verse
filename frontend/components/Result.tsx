@@ -476,7 +476,7 @@ const Result = ({
         }}
       >
         <TouchableOpacity
-          onPress={async () => {
+          onPress={() => {
             router.replace("/(tabs)");
           }}
           activeOpacity={0.7}
@@ -487,7 +487,7 @@ const Result = ({
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={async () => {
+          onPress={() => {
             router.replace({
               pathname: "/quizLevel/[id]/[section]",
               params: {

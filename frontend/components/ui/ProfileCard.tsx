@@ -256,7 +256,7 @@ const ProfileCard = ({
             />
           </View>
         </View>
-        {isEditable && (
+        {/* {isEditable && (
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => {
@@ -273,7 +273,7 @@ const ProfileCard = ({
           >
             <Pencil color={Colors.dark.bg_dark} width={20} height={20} />
           </TouchableOpacity>
-        )}
+        )} */}
       </View>
       <View
         style={{

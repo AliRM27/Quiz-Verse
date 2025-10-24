@@ -4,6 +4,7 @@ export const enum QUESTION_TYPES {
   MC = "Multiple Choice",
   TF = "True/False",
   SA = "Short Answer",
+  NUM = "Numeric",
 }
 
 export interface ButtonProps {

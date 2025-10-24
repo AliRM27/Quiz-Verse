@@ -31,6 +31,8 @@ import {
   calculateNewTimeBonuses,
   calculateNewStreakRewards,
 } from "@/utils/rewardsSystem";
+import SliderComponent from "@/components/ui/SliderComponent";
+import ArrBack from "@/components/ui/ArrBack";
 
 export default function Index() {
   const { id, section } = useLocalSearchParams<{
@@ -39,6 +41,7 @@ export default function Index() {
   }>();
   const [currQuestionIndex, setCurrQuestionIndex] = useState<number>(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [sliderValue, setSliderValue] = useState<number>(-1);
   const [pressedAnswer, setPressedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState<boolean>(false);
   const [correctAnswers, setCorrectAnswers] = useState<number>(0);
@@ -117,18 +120,36 @@ export default function Index() {
 
   const handleNextButton = async () => {
     setQuestionLoading(true);
-    let isCorrect: boolean;
+    let isCorrect: boolean = false;
 
     // --- Determine if the answer is correct ---
-    if (selectedAnswer !== null) {
+    if (currQuestion.type === "Numeric") {
+      if (sliderValue !== null) {
+        const userValue = sliderValue;
+        if (!isNaN(userValue) && currQuestion.numericAnswer !== undefined) {
+          const minAcceptable =
+            currQuestion.numericAnswer - (currQuestion.numericTolerance ?? 0);
+          const maxAcceptable =
+            currQuestion.numericAnswer + (currQuestion.numericTolerance ?? 0);
+          isCorrect = userValue >= minAcceptable && userValue <= maxAcceptable;
+        }
+      }
+    } else if (selectedAnswer !== null) {
       isCorrect = currQuestion.options[selectedAnswer].isCorrect;
     } else {
+      const normalize = (s: string) =>
+        s
+          .toLowerCase()
+          .trim()
+          .replace(/[.,!?]/g, "");
+
       isCorrect =
         currQuestion.options.find(
           (o: any) =>
             o.isCorrect &&
-            o.text[languageMap[user.language]].toLowerCase().trim() ===
-              shortAnswer.toLowerCase().trim()
+            (Object.values(o.text) as string[]).some(
+              (txt: string) => normalize(txt) === normalize(shortAnswer)
+            )
         ) !== undefined;
     }
 
@@ -306,6 +327,7 @@ export default function Index() {
     setShortAnswer("");
     setSelectedAnswer(null);
     setQuestionLoading(false);
+    setSliderValue(-1);
   };
 
   const handleUserLastPlayed = async () => {
@@ -349,6 +371,12 @@ export default function Index() {
         }}
       >
         <Pressable
+          style={{
+            position: "absolute",
+            top: 50,
+            left: 15,
+            padding: 5,
+          }}
           onPress={async () => {
             try {
               if (user.lastPlayed.length === 0) {
@@ -373,6 +401,7 @@ export default function Index() {
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "center",
+            marginTop: 30,
           }}
         >
           <View style={{ gap: 10 }}>
@@ -382,6 +411,7 @@ export default function Index() {
                 {
                   fontSize: 25,
                   fontWeight: "600",
+                  width: "90%",
                 },
               ]}
             >
@@ -501,7 +531,17 @@ export default function Index() {
               }}
             />
           )}
+          {currQuestion.type === QUESTION_TYPES.NUM && (
+            <SliderComponent
+              value={sliderValue}
+              setValue={setSliderValue}
+              min={currQuestion.range.min}
+              max={currQuestion.range.max}
+              step={currQuestion.range.step}
+            />
+          )}
           {currQuestion.type !== QUESTION_TYPES.SA &&
+            currQuestion.type !== QUESTION_TYPES.NUM &&
             currQuestion.options.map((o: any, index: number) => {
               if (currQuestion.type === QUESTION_TYPES.MC)
                 return (
@@ -636,7 +676,9 @@ export default function Index() {
             disabled={
               !(
                 currQuestionIndex <= currSection.questions.length - 1 &&
-                (selectedAnswer !== null || shortAnswer.trim() !== "")
+                (selectedAnswer !== null ||
+                  shortAnswer.trim() !== "" ||
+                  sliderValue !== -1)
               ) || questionLoading
             }
             onPress={() => handleNextButton()}
@@ -650,7 +692,8 @@ export default function Index() {
               total={currSection.questions.length}
               arrow={
                 (selectedAnswer !== null ? true : false) ||
-                shortAnswer.trim() !== ""
+                shortAnswer.trim() !== "" ||
+                sliderValue !== -1
               }
             />
           </TouchableOpacity>

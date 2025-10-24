@@ -150,15 +150,12 @@ export default function Explore() {
             ? Math.floor((rewards / item.rewardsTotal) * 100)
             : 0;
 
+          const isUnlocked = user.unlockedQuizzes.some(
+            (q) => q.quizId._id === item._id || q.quizId === item._id
+          );
+
           return (
             <View style={styles.card}>
-              {!user.unlockedQuizzes.some(
-                (q) => q.quizId._id === item._id || q.quizId === item._id
-              ) && (
-                <View style={{ position: "absolute", top: 10, right: 10 }}>
-                  <Lock color={Colors.dark.text_muted} />
-                </View>
-              )}
               {/* Left: Logo */}
               <TouchableOpacity
                 onPress={() => {
@@ -166,8 +163,25 @@ export default function Explore() {
                   setModalVisible(true);
                 }}
                 activeOpacity={0.7}
-                style={styles.logoWrapper}
+                style={[styles.logoWrapper, !isUnlocked && { opacity: 0.5 }]}
               >
+                {!isUnlocked && (
+                  <View
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: [{ translateX: -17 }, { translateY: -17 }], // adjust -12 to half of Lock's width/height
+                      zIndex: 1,
+                    }}
+                  >
+                    <Lock
+                      width={35}
+                      height={35}
+                      color={Colors.dark.text_muted}
+                    />
+                  </View>
+                )}
                 <QuizLogo name={item.logoFile} />
               </TouchableOpacity>
 

@@ -35,7 +35,6 @@ const quizSchema = new mongoose.Schema({
     {
       title: {
         type: String,
-        required: true,
         trim: true,
       },
       difficulty: {
@@ -54,17 +53,19 @@ const quizSchema = new mongoose.Schema({
             de: { type: String, required: true, trim: true },
             ru: { type: String, required: true, trim: true },
           },
-
-          reward: {
-            type: Number,
-            required: true,
-          },
           image: { type: String, trim: true }, // Optional image URL for the question
           video: { type: String, trim: true }, // Optional video URL for the question
           type: {
             type: String,
             required: true,
-            enum: ["Multiple Choice", "True/False", "Short Answer"],
+            enum: ["Multiple Choice", "True/False", "Short Answer", "Numeric"],
+          },
+          numericAnswer: { type: Number }, // For Numeric type questions
+          numericTolerance: { type: Number }, // Acceptable tolerance for Numeric answers
+          range: {
+            min: { type: Number },
+            max: { type: Number },
+            step: { type: Number },
           },
           options: [
             {
