@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import ArrowRight from "@/assets/svgs/rightArrow.svg";
-import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
+import { REGULAR_FONT } from "@/constants/Styles";
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 

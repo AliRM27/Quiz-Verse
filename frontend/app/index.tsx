@@ -2,25 +2,30 @@ import { Button } from "react-native";
 import { defaultStyles } from "@/constants/Styles";
 import Logo from "@/assets/svgs/logo.svg";
 import { BackgroundGradient } from "@/components/ui/gradients/background";
-import { act, useEffect } from "react";
+import { useEffect } from "react";
 import { router } from "expo-router";
 import { Colors } from "@/constants/Colors";
 import { useUser } from "@/context/userContext";
 import { updateUser } from "@/services/api";
 import * as SecureStore from "expo-secure-store";
+import * as SplashScreen from "expo-splash-screen";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function Index() {
   const { user, loading } = useUser();
   useEffect(() => {
-    const authCheck = async () => {
-      if (!loading && user) {
-        const SESSION_TIMEOUT = 2 * 60 * 1000; // 2 minutes
+    const run = async () => {
+      // Wait until user state finished loading
+      if (loading) return;
+
+      // If logged in
+      if (user) {
+        const SESSION_TIMEOUT = 2 * 60 * 1000; // 2 mins
         if (
           user.activeSession &&
-          new Date().getTime() - new Date(user.lastActiveAt).getTime() >
-            SESSION_TIMEOUT
+          Date.now() - new Date(user.lastActiveAt).getTime() > SESSION_TIMEOUT
         ) {
-          // Session is stale → clear it
           const sessionToken = generateSessionToken();
           user.activeSession = sessionToken;
           user.lastActiveAt = new Date();
@@ -30,11 +35,19 @@ export default function Index() {
             lastActiveAt: user.lastActiveAt,
           });
         }
+
+        // Navigate to app
         router.replace("/(tabs)");
+      } else {
+        // Not logged in → go to auth
+        router.replace("/(auth)");
       }
+
+      // Hide splash only after routing
+      await SplashScreen.hideAsync();
     };
 
-    authCheck();
+    run();
   }, [loading, user]);
 
   function generateSessionToken(length = 64) {
@@ -47,14 +60,5 @@ export default function Index() {
     return token;
   }
 
-  return (
-    <BackgroundGradient style={defaultStyles.container}>
-      <Logo width={250} height={250} />
-      <Button
-        color={Colors.dark.text}
-        title={"Go to Login"}
-        onPress={() => router.replace("/(auth)")}
-      />
-    </BackgroundGradient>
-  );
+  return null;
 }

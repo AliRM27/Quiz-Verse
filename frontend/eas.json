@@ -19,7 +19,12 @@
       }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "channel": "preview",
+      "developmentClient": true,
+      "ios": {
+        "buildConfiguration": "Debug"
+      }
     },
     "production": {
       "autoIncrement": true
