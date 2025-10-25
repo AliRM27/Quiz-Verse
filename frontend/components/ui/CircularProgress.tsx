@@ -1,7 +1,14 @@
 import { Colors } from "@/constants/Colors";
 import { myWidth, WIDTH } from "@/constants/Dimensions";
-import React, { useEffect, useRef } from "react";
-import { View, Text, StyleSheet, Animated, Easing } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  Easing,
+  TouchableOpacity,
+} from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import ArrowRight from "@/assets/svgs/rightArrow.svg";
 import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
@@ -17,6 +24,8 @@ const CircularProgress = ({
   total = 100,
   arrow = false,
   select = false,
+  showNumbers = false,
+  totalNum = 0,
 }: {
   size: number;
   strokeWidth: number;
@@ -26,11 +35,16 @@ const CircularProgress = ({
   total?: number;
   arrow?: boolean;
   select?: boolean;
+  showNumbers?: boolean;
+  totalNum?: number;
 }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
   const animatedValue = useRef(new Animated.Value(0)).current;
+
+  const [value, setValue] = useState<string>("");
+  const [changed, setChanged] = useState(false);
 
   // Animate when progress changes
   useEffect(() => {
@@ -40,6 +54,7 @@ const CircularProgress = ({
       useNativeDriver: true,
       easing: Easing.inOut(Easing.ease),
     }).start();
+    setValue(`${progress}${percent ? "%" : "/" + total}`);
   }, [progress]);
 
   const strokeDashoffset = animatedValue.interpolate({
@@ -49,7 +64,19 @@ const CircularProgress = ({
   });
 
   return (
-    <View style={[styles.container, { width: size, height: size }]}>
+    <TouchableOpacity
+      onPress={() => {
+        if (!changed) {
+          setValue(`${Math.floor((progress * totalNum) / 100)}/${totalNum}`);
+          setChanged(true);
+        } else {
+          setValue(`${progress}${percent ? "%" : "/" + total}`);
+          setChanged(false);
+        }
+      }}
+      disabled={!showNumbers}
+      style={[styles.container, { width: size, height: size }]}
+    >
       <Svg width={size + 1} height={size + 1}>
         {/* Background Circle */}
         <Circle
@@ -79,12 +106,12 @@ const CircularProgress = ({
         {arrow && <ArrowRight width={size / 2.5} height={size / 2.5} />}
         {select && <View />}
         {!select && !arrow && (
-          <Text
-            style={[styles.text, { fontSize }]}
-          >{`${progress}${percent ? "%" : "/" + total}`}</Text>
+          <Text style={[styles.text, { fontSize }]}>
+            {showNumbers ? value : `${progress}${percent ? "%" : "/" + total}`}
+          </Text>
         )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

@@ -21,7 +21,7 @@
   "other": "WEITERES",
   "shareQuizverse": "QuizVerse teilen",
   "friends": "Freunde",
-  "contactUs": "Kontakt",
+  "contactUs": "Kontaktiere uns",
   "notifications": "Benachrichtigungen",
   "aboutQuizverse": "Über QuizVerse",
   "changeUsername": "Benutzername ändern",
@@ -43,8 +43,14 @@
   "no": "Nein",
   "unlockNow": "Jetzt freischalten!",
   "question": "Frage",
-  "home": "Home",
+  "home": "Startseite",
+  "replay": "Wiederholen",
   "chooseTheme": "Thema auswählen",
   "close": "Schließen",
-  "save": "Speichern"
+  "save": "Speichern",
+  "Streak": "Serie",
+  "Total": "Gesamt",
+  "Time": "Zeit",
+  "Questions": "Fragen",
+  "max": "Max"
 }

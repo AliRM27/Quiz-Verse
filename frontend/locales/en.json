@@ -44,7 +44,13 @@
   "unlockNow": "Unclock Now!",
   "question": "Question",
   "home": "Home",
+  "replay": "Replay",
   "chooseTheme": "Choose theme",
   "close": "Close",
-  "save": "Save"
+  "save": "Save",
+  "Streak": "Streak",
+  "Total": "Total",
+  "Time": "Time",
+  "Questions": "Questions",
+  "max": "Max"
 }

@@ -8,6 +8,7 @@ import {
   Pressable,
   Alert,
   ScrollView,
+  Linking,
 } from "react-native";
 import { useState } from "react";
 import { REGULAR_FONT } from "@/constants/Styles";
@@ -227,6 +228,7 @@ const Settings = () => {
           }}
         >
           <TouchableOpacity
+            onPress={() => Linking.openURL("mailto:lotustudio.app@gmail.com")}
             activeOpacity={0.7}
             style={{
               flexDirection: "row",
@@ -299,6 +301,8 @@ const Settings = () => {
               flexDirection: "row",
               justifyContent: "space-between",
               padding: 15,
+              borderBottomWidth: 1,
+              borderColor: Colors.dark.border_muted,
             }}
           >
             <View
@@ -306,6 +310,66 @@ const Settings = () => {
             >
               <Info />
               <Text style={[styles.txt]}>{t("aboutQuizverse")}</Text>
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              <RightInd />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              Linking.openURL(
+                "https://docs.google.com/document/d/1v4swN4KlLyEM49lXd7YH0IjUCKYyA1ULJg9JNJotK2M/edit?usp=sharing"
+              )
+            }
+            activeOpacity={0.7}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              padding: 15,
+              borderBottomWidth: 1,
+              borderColor: Colors.dark.border_muted,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Info />
+              <Text style={[styles.txt]}>{"Privacy Policy"}</Text>
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              <RightInd />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              Linking.openURL(
+                "https://docs.google.com/document/d/1v62qmMl_fQtOHQry8fc0vtPh27lhO9YPm6MMZcq6E5Y/edit?usp=sharing"
+              )
+            }
+            activeOpacity={0.7}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              padding: 15,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Info />
+              <Text style={[styles.txt]}>{"Terms of Service"}</Text>
             </View>
             <View
               style={{

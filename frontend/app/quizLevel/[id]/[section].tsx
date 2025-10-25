@@ -32,7 +32,6 @@ import {
   calculateNewStreakRewards,
 } from "@/utils/rewardsSystem";
 import SliderComponent from "@/components/ui/SliderComponent";
-import ArrBack from "@/components/ui/ArrBack";
 
 export default function Index() {
   const { id, section } = useLocalSearchParams<{
@@ -63,6 +62,7 @@ export default function Index() {
   let unlockedStreaksVar: Set<number> = new Set();
 
   const newCorrectIndexesRef = useRef<Set<number>>(new Set());
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const [timeLeft, setTimeLeft] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -80,16 +80,17 @@ export default function Index() {
       setTimeLeft(0);
     }
 
-    // Update timer every second
-    let interval: NodeJS.Timeout | null = null;
-    if (startTime !== null) {
-      interval = setInterval(() => {
+    if (startTime !== null && intervalRef.current === null) {
+      intervalRef.current = setInterval(() => {
         setTimeLeft(Math.floor((Date.now() - startTime) / 1000));
       }, 1000);
     }
 
     return () => {
-      if (interval) clearInterval(interval);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
     };
   }, [currQuestionIndex, startTime]);
 
@@ -194,6 +195,10 @@ export default function Index() {
     const isLast = currQuestionIndex === currSection.questions.length - 1;
 
     if (isLast) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
       handleUserLastPlayed();
 
       // --- Calculate streak bonus using "answers-style" system ---
@@ -354,6 +359,8 @@ export default function Index() {
         streak={streakRewards}
         time={timeRewards}
         mult={mult}
+        timeNumber={timeLeft}
+        streakNumber={maxStreak}
       />
     );
   }

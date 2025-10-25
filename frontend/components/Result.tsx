@@ -29,6 +29,7 @@ const RewardComponent = ({
   progress,
   bonuses,
   difficulty,
+  mult,
 }: {
   name: string;
   rewards: number;
@@ -36,8 +37,10 @@ const RewardComponent = ({
   progress: number;
   bonuses: number[];
   difficulty?: "Easy" | "Medium" | "Hard" | "Extreme";
+  mult?: number;
 }) => {
   let milestones: any[] = [];
+  const { t } = useTranslation();
 
   if (name === "Streak") {
     milestones = difficulty ? streakMilestones[difficulty] : [];
@@ -49,7 +52,12 @@ const RewardComponent = ({
       style={[styles.rewardStats, name === "Total" && { borderBottomWidth: 0 }]}
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
-        <Text style={[styles.txt]}>{name} rewards:</Text>
+        <Text style={[styles.txt, { fontSize: 15, fontWeight: "600" }]}>
+          {t(name)}
+          {/* {number !== undefined &&
+            " (" + number + (name === "Time" ? "s" : "") + ") "} */}
+          :
+        </Text>
         {progress === total && rewards === 0 ? (
           <Text
             style={[
@@ -60,7 +68,7 @@ const RewardComponent = ({
             ]}
           >
             {" "}
-            Max
+            {t("max")}
           </Text>
         ) : (
           <View
@@ -142,6 +150,11 @@ const RewardComponent = ({
             </View>
           );
         })}
+        {/* {milestones.length === 0 && mult && (
+          <Text style={[styles.txt, { fontSize: 15 }]}>
+            {mult}x{rewards / mult}
+          </Text>
+        )} */}
       </View>
       <Text style={[styles.txt]}>
         {progress} / {total}
@@ -161,6 +174,8 @@ const Result = ({
   streak,
   time,
   mult,
+  timeNumber,
+  streakNumber,
 }: {
   quiz: QuizType;
   selectedLevelIndex: string;
@@ -172,6 +187,8 @@ const Result = ({
   streak: number;
   time: number;
   mult: number;
+  timeNumber: number;
+  streakNumber: number;
 }) => {
   const { user } = useUser();
   const { t } = useTranslation();
@@ -233,30 +250,43 @@ const Result = ({
         alignItems: "center",
         height: "100%",
         paddingTop: 30,
-        gap: 30,
+        gap: 20,
         paddingBottom: 50,
       }}
     >
       <View style={{ alignItems: "center" }}>
-        <View
-          style={{
-            width: 100,
-            height: 100,
-            borderRadius: 10,
-            borderWidth: 1,
-            borderColor: Colors.dark.border,
-            overflow: "hidden",
-            marginVertical: 30,
-          }}
-        >
-          <QuizLogo name={quiz.logoFile} />
+        <View style={{ alignItems: "center", flexDirection: "row", gap: 30 }}>
+          <View
+            style={{
+              width: 100,
+              height: 100,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: Colors.dark.border,
+              overflow: "hidden",
+              marginVertical: 30,
+            }}
+          >
+            <QuizLogo name={quiz.logoFile} />
+          </View>
+          <View style={{ gap: 10 }}>
+            <Text style={[styles.txt, { fontSize: 15, fontWeight: "600" }]}>
+              {t("Questions")}: {questionRewards / mult}
+            </Text>
+            <Text style={[styles.txt, { fontSize: 15, fontWeight: "600" }]}>
+              {t("Streak")}🔥: {streakNumber}
+            </Text>
+            <Text style={[styles.txt, { fontSize: 15, fontWeight: "600" }]}>
+              {t("Time")}⏱️: {timeNumber}s
+            </Text>
+          </View>
         </View>
 
         <Text style={[styles.txt, { fontSize: 25, fontWeight: "bold" }]}>
           {quiz.title}
         </Text>
         <Text style={[styles.txt_muted, { fontSize: 15, marginTop: 10 }]}>
-          {quizProgress.difficulty}{" "}
+          {t(quizProgress.difficulty)}
         </Text>
       </View>
       <View
@@ -307,6 +337,19 @@ const Result = ({
           <Wrong width={15} height={15} />
         </View>
       </View>
+      <Text
+        style={[
+          styles.txt,
+          {
+            alignSelf: "flex-start",
+            fontSize: 16,
+            fontWeight: "600",
+            marginLeft: 15,
+          },
+        ]}
+      >
+        {t("rewards")}
+      </Text>
       <ScrollView
         ref={scrollViewRef}
         style={{
@@ -379,6 +422,7 @@ const Result = ({
                         | "Extreme")
                     : undefined
                 }
+                mult={r.type === "Questions" ? mult : undefined}
               />
             );
           }
@@ -424,6 +468,8 @@ const Result = ({
             size={50}
             strokeWidth={3}
             fontSize={12}
+            showNumbers={true}
+            totalNum={quizProgress.questions.length}
           />
         </View>
         <View
@@ -480,10 +526,19 @@ const Result = ({
             router.replace("/(tabs)");
           }}
           activeOpacity={0.7}
-          style={[styles.button, { width: "50%" }]}
+          style={[styles.button, { minWidth: "40%" }]}
         >
-          <Text style={[styles.txt, { fontSize: 17, fontWeight: "600" }]}>
-            Home
+          <Text
+            style={[
+              styles.txt,
+              {
+                fontSize: 17,
+                fontWeight: "600",
+                color: Colors.dark.bg_dark,
+              },
+            ]}
+          >
+            {t("home")}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -497,10 +552,15 @@ const Result = ({
             });
           }}
           activeOpacity={0.7}
-          style={[styles.button, { width: "30%" }]}
+          style={[styles.button, { minWidth: "40%" }]}
         >
-          <Text style={[styles.txt, { fontSize: 17, fontWeight: "600" }]}>
-            Replay
+          <Text
+            style={[
+              styles.txt,
+              { fontSize: 17, fontWeight: "600", color: Colors.dark.bg_dark },
+            ]}
+          >
+            {t("replay")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -517,10 +577,10 @@ const styles = StyleSheet.create({
   },
   txt_muted: { color: Colors.dark.text_muted, fontFamily: REGULAR_FONT },
   button: {
-    backgroundColor: Colors.dark.bg_light,
+    backgroundColor: Colors.dark.text,
     alignItems: "center",
     justifyContent: "center",
-    padding: 15,
+    paddingVertical: 15,
     borderRadius: 50,
   },
   rewardStats: {

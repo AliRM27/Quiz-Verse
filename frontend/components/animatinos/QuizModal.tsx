@@ -290,7 +290,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
                   },
                 ]}
               >
-                {quiz.sections.map((lvl, index) => (
+                {quiz?.sections.map((lvl, index) => (
                   <TouchableOpacity
                     activeOpacity={0.7}
                     key={index}
