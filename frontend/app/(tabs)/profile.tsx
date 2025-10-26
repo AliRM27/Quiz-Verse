@@ -16,7 +16,6 @@ import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
 import QuizLogo from "@/components/ui/QuizLogo";
 import Info from "@/components/ui/Info";
 import { myWidth, WIDTH } from "@/constants/Dimensions";
-import QuizModal from "@/components/animatinos/QuizModal";
 import { useEffect, useMemo, useState } from "react";
 import { router } from "expo-router";
 import NextArr from "@/assets/svgs/nextArr.svg";
@@ -283,8 +282,12 @@ export default function Profile() {
                       <TouchableOpacity
                         activeOpacity={0.7}
                         onPress={() => {
-                          setCurrQuiz(quizId);
-                          setVisible((p) => !p);
+                          router.push({
+                            pathname: "/(quizzes)/quiz",
+                            params: {
+                              id: quizId._id,
+                            },
+                          });
                         }}
                         style={{
                           borderWidth: 1,
@@ -473,8 +476,12 @@ export default function Profile() {
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => {
-                  setCurrQuiz(filteredQuizzes[currIndex].quizId);
-                  setVisible((p) => !p);
+                  router.push({
+                    pathname: "/(quizzes)/quiz",
+                    params: {
+                      id: filteredQuizzes[currIndex].quizId._id,
+                    },
+                  });
                 }}
                 style={{
                   width: 150,
@@ -666,16 +673,6 @@ export default function Profile() {
           </TouchableOpacity>
         </View>
       </View>
-      {currQuiz && (
-        <QuizModal
-          quiz={currQuiz}
-          isVisible={visible}
-          setIsVisible={setVisible}
-          currentProgress={user?.progress.find(
-            (quizObj) => quizObj.quizId._id === currQuiz._id
-          )}
-        />
-      )}
       <ProfileCardModal isVisible={isVisible} setIsVisible={setIsVisible} />
     </ScrollView>
   );

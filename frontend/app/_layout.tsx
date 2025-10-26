@@ -14,6 +14,7 @@ import { UserProvider } from "@/context/userContext";
 import { useEffect } from "react";
 import { fetchUnlockedQuizzes } from "@/services/api";
 import { useUser } from "@/context/userContext";
+import { Colors } from "@/constants/Colors";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -54,6 +55,24 @@ export default function RootLayout() {
               <Stack.Screen name="index" />
               <Stack.Screen name="(settings)/index" />
               <Stack.Screen name="(quizzes)/collection" />
+              <Stack.Screen
+                name="(quizzes)/quiz"
+                options={{
+                  contentStyle: {
+                    backgroundColor: Colors.dark.bg,
+                    height: "100%",
+                  },
+                  presentation: "formSheet",
+                  gestureDirection: "vertical",
+                  animation: "slide_from_bottom",
+                  sheetGrabberVisible: true,
+                  sheetInitialDetentIndex: 0,
+                  sheetAllowedDetents: [1],
+                  sheetCornerRadius: 50,
+                  sheetExpandsWhenScrolledToEdge: true,
+                  sheetElevation: 24,
+                }}
+              />
               <Stack.Screen
                 name="quizLevel/[id]/[section]"
                 options={{ animation: "none" }}

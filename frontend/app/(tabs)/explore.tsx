@@ -22,10 +22,10 @@ import { myWidth, WIDTH } from "@/constants/Dimensions";
 import Close from "@/assets/svgs/close.svg";
 import { useTranslation } from "react-i18next";
 import ProgressBar from "@/components/animatinos/progressBar";
-import QuizModal from "@/components/animatinos/QuizModal";
 import Lock from "@/assets/svgs/lock.svg";
 import Binoculars from "@/assets/svgs/binoculars.svg";
 import SearchX from "@/assets/svgs/search-x.svg";
+import { router } from "expo-router";
 
 export default function Explore() {
   const [focused, setFocused] = useState(false);
@@ -159,8 +159,12 @@ export default function Explore() {
               {/* Left: Logo */}
               <TouchableOpacity
                 onPress={() => {
-                  setCurrQuiz(item);
-                  setModalVisible(true);
+                  router.push({
+                    pathname: "/(quizzes)/quiz",
+                    params: {
+                      id: item._id,
+                    },
+                  });
                 }}
                 activeOpacity={0.7}
                 style={[styles.logoWrapper, !isUnlocked && { opacity: 0.5 }]}
@@ -246,19 +250,6 @@ export default function Explore() {
           );
         }}
       />
-      {currQuiz && (
-        <QuizModal
-          quiz={currQuiz}
-          isVisible={modalVisible}
-          setIsVisible={setModalVisible}
-          currentProgress={user.progress.find(
-            (p) => p.quizId._id === currQuiz._id
-          )}
-          isUnlocked={user.unlockedQuizzes.some(
-            (q) => q.quizId._id === currQuiz._id
-          )}
-        />
-      )}
     </View>
   );
 }

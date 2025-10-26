@@ -13,7 +13,6 @@ import { useUser } from "@/context/userContext";
 import { router } from "expo-router";
 import QuizLogo from "@/components/ui/QuizLogo";
 import { QuizType } from "@/types";
-import QuizModal from "@/components/animatinos/QuizModal";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import ArrBack from "@/components/ui/ArrBack";
@@ -54,8 +53,12 @@ const Collection = () => {
         renderItem={({ item }: { item: QuizType }) => (
           <TouchableOpacity
             onPress={() => {
-              setCurrQuiz(item.quizId);
-              setVisible(true);
+              router.push({
+                pathname: "/(quizzes)/quiz",
+                params: {
+                  id: item.quizId._id,
+                },
+              });
             }}
             activeOpacity={0.7}
             style={{
@@ -76,16 +79,6 @@ const Collection = () => {
         //   <Text style={styles.txt}>Unlock Quizzes</Text>
         // )}
       />
-      {currQuiz && (
-        <QuizModal
-          quiz={currQuiz}
-          isVisible={visible}
-          setIsVisible={setVisible}
-          currentProgress={user?.progress.find(
-            (quizObj) => quizObj.quizId._id === currQuiz._id
-          )}
-        />
-      )}
     </View>
   );
 };

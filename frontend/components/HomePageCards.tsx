@@ -13,7 +13,6 @@ import { defaultStyles } from "@/constants/Styles";
 import CircularProgress from "@/components/ui/CircularProgress";
 import { LineDashed } from "@/components/ui/Line";
 import * as Haptics from "expo-haptics";
-import QuizModal from "./animatinos/QuizModal";
 import RotatingGradient from "./ui/gradients/GlowingView";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUnlockedQuizzes } from "@/services/api";
@@ -23,6 +22,7 @@ import { REGULAR_FONT } from "@/constants/Styles";
 import Info from "./ui/Info";
 import { useTranslation } from "react-i18next";
 import ProgressBar from "./animatinos/progressBar";
+import { router } from "expo-router";
 
 const ITEM_WIDTH = HEIGHT * (150 / myHeight);
 const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
@@ -177,7 +177,12 @@ export default function HomePageCards() {
                 onPress={() => {
                   if (index === currentIndex) {
                     setLastIndexRef(index);
-                    setIsModalVisible((p) => !p);
+                    router.push({
+                      pathname: "/(quizzes)/quiz",
+                      params: {
+                        id: quiz._id,
+                      },
+                    });
                     return;
                   }
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -308,12 +313,6 @@ export default function HomePageCards() {
           </Text>
         </View>
       </View>
-      <QuizModal
-        isVisible={isModalVisible}
-        setIsVisible={setIsModalVisible}
-        quiz={quiz}
-        currentProgress={currentProgress}
-      />
     </View>
   );
 }
