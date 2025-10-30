@@ -17,6 +17,7 @@ import { updateUser } from "@/services/api";
 import { useTranslation } from "react-i18next";
 import { REGULAR_FONT } from "@/constants/Styles";
 import ArrBack from "@/components/ui/ArrBack";
+import * as Haptics from "expo-haptics";
 
 const ChnageUsername = () => {
   const { user } = useUser();
@@ -24,6 +25,7 @@ const ChnageUsername = () => {
   const [error, setError] = useState("");
   const [loading, setloading] = useState(false);
   const [focused, setFocused] = useState<boolean>(false);
+  const [success, setSuccess] = useState<boolean>(false);
 
   const { t } = useTranslation();
 
@@ -47,16 +49,20 @@ const ChnageUsername = () => {
       setError(
         "Username must be 3-20 characters long and can only contain letters, numbers, and underscores."
       );
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       return;
     }
     setloading(true);
     try {
-      const res = await updateUser({ name: newName });
+      await updateUser({ name: newName });
       user.name = newName;
-      setError("Username changed successfully");
+      setError("");
+      setSuccess(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       console.error("Failed to update username:", err);
       setError("Failed to update username. Please try again.");
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
     setloading(false);
   };
@@ -125,12 +131,22 @@ const ChnageUsername = () => {
             }
           }}
           selectionColor={Colors.dark.text}
+          autoCorrect={false}
         />
         <Text style={{ color: Colors.dark.danger, fontSize: 14 }}>{error}</Text>
+        {success && (
+          <Text style={[styles.txt, { fontSize: 20 }]}>
+            Username chnaged successfully
+          </Text>
+        )}
         <TouchableOpacity
+          disabled={newName.trim() === user.name}
           onPress={() => handleUsernameChange()}
           activeOpacity={0.7}
-          style={[styles.button]}
+          style={[
+            styles.button,
+            newName.trim() === user.name && { opacity: 0.5 },
+          ]}
         >
           {loading ? (
             <ActivityIndicator color={Colors.dark.bg_dark} />

@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from "react-native";
 import Slider from "@react-native-community/slider";
 import { Colors } from "@/constants/Colors";
 import { REGULAR_FONT } from "@/constants/Styles";
+import * as Haptics from "expo-haptics";
 
 const SliderComponent = ({
   value,
@@ -16,6 +17,11 @@ const SliderComponent = ({
   max: number;
   step: number;
 }) => {
+  const handleValueChange = (newValue: number) => {
+    setValue(newValue);
+    Haptics.selectionAsync();
+  };
+
   return (
     <View style={{ width: "100%", alignItems: "center", gap: 50 }}>
       <Slider
@@ -27,7 +33,7 @@ const SliderComponent = ({
         minimumTrackTintColor={Colors.dark.text}
         maximumTrackTintColor={Colors.dark.border}
         thumbTintColor={Colors.dark.text}
-        onValueChange={setValue}
+        onValueChange={handleValueChange}
       />
       <Text style={styles.text}>{value === -1 ? min : value}</Text>
     </View>

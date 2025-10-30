@@ -16,6 +16,7 @@ import Pencil from "@/assets/svgs/pencil.svg";
 import { useState } from "react";
 import { updateUser } from "@/services/api";
 import { useTranslation } from "react-i18next";
+import * as Haptics from "expo-haptics";
 
 const ProfileCard = ({
   usernameValue,
@@ -140,15 +141,21 @@ const ProfileCard = ({
                   activeOpacity={0.7}
                   style={[styles.button, { width: "45%" }]}
                   onPress={async () => {
-                    setIsVisible(false);
+                    setIsLoading(true);
                     if (user.theme.cardColor !== selectedColor) {
-                      user.theme.cardColor = selectedColor;
                       try {
+                        user.theme.cardColor = selectedColor;
                         await updateUser(user);
+                        Haptics.notificationAsync(
+                          Haptics.NotificationFeedbackType.Success
+                        );
                       } catch (err) {
                         console.log(err);
+                      } finally {
+                        setIsVisible(false);
                       }
                     }
+                    setIsLoading(false);
                   }}
                 >
                   {isLoading ? (

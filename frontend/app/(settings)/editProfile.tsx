@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { updateUser } from "@/services/api";
 import ProfileCard from "@/components/ui/ProfileCard";
+import * as Haptics from "expo-haptics";
 
 const EditProfile = () => {
   const { user } = useUser();
@@ -57,6 +58,7 @@ const EditProfile = () => {
       setError(
         "Username must be 3-12 characters long and can only contain letters, numbers, and underscores."
       );
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       return;
     }
     setLoading(true);
@@ -64,9 +66,11 @@ const EditProfile = () => {
       await updateUser({ name: usernameValue });
       user.name = usernameValue;
       setError("Username changed successfully");
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       console.error("Failed to update username:", err);
       setError("Failed to update username. Please try again.");
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
     setLoading(false);
   };
@@ -135,6 +139,7 @@ const EditProfile = () => {
                   setUsernameValue(c);
                 }
               }}
+              autoCorrect={false}
             />
 
             <Text style={[styles.text, { textAlign: "center" }]}>{error}</Text>

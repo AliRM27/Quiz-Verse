@@ -32,6 +32,7 @@ import {
   calculateNewStreakRewards,
 } from "@/utils/rewardsSystem";
 import SliderComponent from "@/components/ui/SliderComponent";
+import * as Haptics from "expo-haptics";
 
 export default function Index() {
   const { id, section } = useLocalSearchParams<{
@@ -326,6 +327,7 @@ export default function Index() {
           break;
       }
       setShowResult(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } else {
       setCurrQuestionIndex((p) => p + 1);
     }
