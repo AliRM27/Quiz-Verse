@@ -1,14 +1,81 @@
 <!DOCTYPE html>
 <html>
   <body>
-    <h2>Test SVG Upload</h2>
+    <h2>Logo Upload</h2>
     <form
-      action="http://localhost:7777/api/upload-logo"
+      action="https://ps7c2bnr-7777.euw.devtunnels.ms/api/upload-logo"
       method="POST"
       enctype="multipart/form-data"
+      id="uploadForm"
     >
-      <input type="file" name="logo" accept=".svg" />
+      <label>
+        Quiz Name:
+        <input
+          type="text"
+          name="quizName"
+          id="quizName"
+          placeholder="e.g. minecraft"
+          required
+        />
+      </label>
+      <br /><br />
+      <input
+        id="logoFile"
+        type="file"
+        name="logo"
+        accept=".jpg,.jpeg,.png,.webp"
+        required
+      />
+      <br /><br />
       <button type="submit" style="border-color: bisque">Upload</button>
+    </form>
+
+    <p id="status"></p>
+    <p id="uploadedInfo"></p>
+
+    <h2>Create Quiz</h2>
+    <form
+      action="https://ps7c2bnr-7777.euw.devtunnels.ms/api/admin/quizzes/create"
+      method="POST"
+      enctype="application/json"
+    >
+      <input type="text" name="title" placeholder="Quiz title" required /><br />
+      <input
+        type="text"
+        name="logoFile"
+        placeholder="minecraft"
+        required
+      /><br />
+      <input
+        type="text"
+        name="description"
+        placeholder="Short description"
+      /><br />
+      <input
+        type="text"
+        name="category"
+        placeholder="Category ID"
+        required
+      /><br />
+      <input
+        type="number"
+        name="rewardsTotal"
+        placeholder="500"
+        required
+      /><br />
+      <input
+        type="number"
+        name="questionsTotal"
+        placeholder="20"
+        required
+      /><br />
+      <input
+        type="text"
+        name="company"
+        placeholder="QuizVerse"
+        required
+      /><br />
+      <button type="submit">Create</button>
     </form>
   </body>
 </html>

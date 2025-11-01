@@ -27,6 +27,8 @@ import LockOpen from "@/assets/svgs/lock-open.svg";
 import Lock from "@/assets/svgs/lock.svg";
 import { languageMap } from "@/utils/i18n";
 import Trophy from "@/assets/svgs/trophy.svg";
+import { fetchQuiz } from "@/services/api";
+import { useQuery } from "@tanstack/react-query";
 
 const Quiz = () => {
   const { id } = useLocalSearchParams();
@@ -36,6 +38,11 @@ const Quiz = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedLevelIndex, setSelectedLevelIndex] = useState(0);
   const [ready, setReady] = useState(false);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["quizzes", id],
+    queryFn: ({ queryKey }) => fetchQuiz(queryKey[1]),
+  });
 
   useEffect(() => {
     requestAnimationFrame(() => setReady(true));
@@ -69,7 +76,7 @@ const Quiz = () => {
 
   if (!user) return null;
 
-  if (!ready) {
+  if (!ready || isLoading) {
     return (
       <View
         style={{
@@ -83,9 +90,8 @@ const Quiz = () => {
       </View>
     );
   }
-  const quiz: QuizType = user.unlockedQuizzes.find(
-    (q) => q.quizId._id === id
-  )?.quizId;
+
+  const quiz: QuizType = data;
   const currentProgress = user.progress.find((p) => p.quizId._id === id);
   const isUnlocked = Boolean(currentProgress);
 
@@ -142,6 +148,7 @@ const Quiz = () => {
           paddingBottom: 100,
         }}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={isUnlocked}
       >
         <View
           style={[

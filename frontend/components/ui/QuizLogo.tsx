@@ -1,12 +1,8 @@
-// QuizLogo.tsx
-import { memo, useEffect, useState } from "react";
-import { SvgXml } from "react-native-svg";
-import { View, ActivityIndicator } from "react-native";
+import { Image, View, ActivityIndicator } from "react-native";
+import { memo, useState } from "react";
 import { Colors } from "@/constants/Colors";
-import { svgCache } from "@/utils/svgCache";
 import { API_URL } from "@/services/config";
 
-// Optional: memoized loader to prevent re-renders
 const Loader = () => (
   <View
     style={{
@@ -23,43 +19,20 @@ const Loader = () => (
   </View>
 );
 
-const QuizLogo = ({ name }: { name: string }) => {
-  const [svgXmlData, setSvgXmlData] = useState<string | null>(
-    svgCache[name] ?? null
+const QuizLogo = memo(({ name }: { name: string }) => {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <View style={{ flex: 1, borderRadius: 10, overflow: "hidden" }}>
+      {!loaded && <Loader />}
+      <Image
+        source={{ uri: `${API_URL}logos/${name}.jpg` }}
+        style={{ width: "100%", height: "100%" }}
+        onLoad={() => setLoaded(true)}
+        resizeMode="cover"
+      />
+    </View>
   );
+});
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadSvg = async () => {
-      if (svgCache[name]) {
-        setSvgXmlData(svgCache[name]);
-        return;
-      }
-
-      try {
-        const res = await fetch(`${API_URL}logos/${name}`);
-        const svgText = await res.text();
-
-        if (isMounted) {
-          svgCache[name] = svgText;
-          setSvgXmlData(svgText);
-        }
-      } catch (err) {
-        console.error(`Error fetching SVG (${name}):`, err);
-      }
-    };
-
-    loadSvg();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [name]);
-
-  if (!svgXmlData) return <Loader />;
-
-  return <SvgXml xml={svgXmlData} width="100%" height="100%" />;
-};
-
-export default memo(QuizLogo);
+export default QuizLogo;

@@ -58,10 +58,36 @@ export const searchQuizzes = async (req, res) => {
 };
 
 export const createQuiz = async (req, res) => {
-  const newQuiz = new Quiz(req.body);
   try {
+    const {
+      title,
+      logoFile,
+      description,
+      category,
+      rewardsTotal,
+      questionsTotal,
+      company,
+    } = req.body;
+
+    if (!title || !logoFile || !category)
+      return res.status(400).json({ error: "Missing required fields" });
+
+    const newQuiz = new Quiz({
+      title,
+      logoFile,
+      description,
+      category,
+      rewardsTotal,
+      questionsTotal,
+      company,
+      sections: [],
+    });
+
     await newQuiz.save();
-    res.status(201).json({ success: true });
+
+    res
+      .status(201)
+      .json({ message: "Quiz created successfully", quiz: newQuiz });
   } catch (error) {
     res.status(400).json({ message: "Error creating quiz", error });
   }
