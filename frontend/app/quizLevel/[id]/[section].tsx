@@ -413,25 +413,23 @@ export default function Index() {
             marginTop: 30,
           }}
         >
-          <View style={{ gap: 10 }}>
-            <Text
-              style={[
-                styles.txt,
-                {
-                  fontSize: 25,
-                  fontWeight: "600",
-                  width: "90%",
-                },
-              ]}
-            >
-              {data.title}
-            </Text>
-          </View>
+          <Text
+            style={[
+              styles.txt,
+              {
+                fontSize: 25,
+                fontWeight: "600",
+                width: "70%",
+              },
+            ]}
+          >
+            {data.title}
+          </Text>
           <View
             style={{
               alignItems: "center",
               gap: 10,
-              width: "20%",
+              width: "25%",
             }}
           >
             <View
