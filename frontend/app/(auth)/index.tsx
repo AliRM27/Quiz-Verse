@@ -99,8 +99,12 @@ export default function Index() {
 
   return (
     <BackgroundGradient style={[defaultStyles.page, { gap: Auth.gap.screen }]}>
-      <View style={{ gap: Auth.gap.txt }}>
-        <Text style={defaultStyles.title}>Welcome to QuizVerse</Text>
+      <View style={{ gap: Auth.gap.txt, paddingTop: 40 }}>
+        <Text
+          style={[defaultStyles.title, { textAlign: "center", fontSize: 25 }]}
+        >
+          Welcome to QuizVerse
+        </Text>
         <Text style={styles.txt}>
           Choose your favorite way to sign in and you’ll be in before you know
           it.
@@ -162,5 +166,6 @@ const styles = StyleSheet.create({
     color: Colors.dark.text_muted,
     fontSize: 15,
     fontFamily: REGULAR_FONT,
+    textAlign: "center",
   },
 });

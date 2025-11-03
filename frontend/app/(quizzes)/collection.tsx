@@ -2,7 +2,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Pressable,
   FlatList,
   TouchableOpacity,
 } from "react-native";
@@ -13,14 +12,11 @@ import { useUser } from "@/context/userContext";
 import { router } from "expo-router";
 import QuizLogo from "@/components/ui/QuizLogo";
 import { QuizType } from "@/types";
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import ArrBack from "@/components/ui/ArrBack";
 
 const Collection = () => {
   const { user, loading } = useUser();
-  const [currQuiz, setCurrQuiz] = useState(user?.unlockedQuizzes[0]?.quizId);
-  const [visible, setVisible] = useState(false);
   const { t } = useTranslation();
   if (loading || !user) {
     return;

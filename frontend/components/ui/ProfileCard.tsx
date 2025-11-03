@@ -17,6 +17,7 @@ import { useState } from "react";
 import { updateUser } from "@/services/api";
 import { useTranslation } from "react-i18next";
 import * as Haptics from "expo-haptics";
+import Loader from "./Loader";
 
 const ProfileCard = ({
   usernameValue,
@@ -139,7 +140,11 @@ const ProfileCard = ({
                 </TouchableOpacity>
                 <TouchableOpacity
                   activeOpacity={0.7}
-                  style={[styles.button, { width: "45%" }]}
+                  style={[
+                    styles.button,
+                    { width: "45%" },
+                    isLoading && { paddingVertical: 5 },
+                  ]}
                   onPress={async () => {
                     setIsLoading(true);
                     if (user.theme.cardColor !== selectedColor) {
@@ -159,7 +164,7 @@ const ProfileCard = ({
                   }}
                 >
                   {isLoading ? (
-                    <ActivityIndicator />
+                    <Loader black={true} />
                   ) : (
                     <Text
                       style={[styles.text, { color: "black", fontSize: 18 }]}

@@ -5,7 +5,6 @@ import {
   Animated,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
 } from "react-native";
 import { useState, useRef, useEffect } from "react";
 import { Colors } from "@/constants/Colors";
@@ -29,6 +28,8 @@ import { languageMap } from "@/utils/i18n";
 import Trophy from "@/assets/svgs/trophy.svg";
 import { fetchQuiz } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
+import Loader from "@/components/ui/Loader";
+import * as Haptics from "expo-haptics";
 
 const Quiz = () => {
   const { id } = useLocalSearchParams();
@@ -86,7 +87,7 @@ const Quiz = () => {
           alignItems: "center",
         }}
       >
-        <ActivityIndicator />
+        <Loader />
       </View>
     );
   }
@@ -365,6 +366,7 @@ const Quiz = () => {
                     });
                     await updateUserProgress({ quizId: quiz._id });
                     await refreshUser();
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
                   } catch (err) {
                     console.log(err);
                   }
@@ -410,7 +412,7 @@ const Quiz = () => {
                   </View>
                 </>
               ) : (
-                <ActivityIndicator color={Colors.dark.text} />
+                <Loader />
               )}
             </TouchableOpacity>
           </View>

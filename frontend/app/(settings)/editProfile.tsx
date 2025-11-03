@@ -22,6 +22,7 @@ import { useState } from "react";
 import { updateUser } from "@/services/api";
 import ProfileCard from "@/components/ui/ProfileCard";
 import * as Haptics from "expo-haptics";
+import Loader from "@/components/ui/Loader";
 
 const EditProfile = () => {
   const { user } = useUser();
@@ -155,7 +156,7 @@ const EditProfile = () => {
             ]}
           >
             {loading ? (
-              <ActivityIndicator color={Colors.dark.bg_dark} />
+              <Loader black={true} />
             ) : (
               <Text style={{ color: Colors.dark.bg_dark, fontSize: 20 }}>
                 {t("change")}

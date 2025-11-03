@@ -75,7 +75,7 @@ export default function RootLayout() {
               />
               <Stack.Screen
                 name="quizLevel/[id]/[section]"
-                options={{ animation: "none" }}
+                options={{ animation: "none", gestureEnabled: false }}
               />
               <Stack.Screen
                 name="(auth)/index"

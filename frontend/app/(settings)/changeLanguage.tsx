@@ -1,20 +1,15 @@
 import { Colors } from "@/constants/Colors";
 import { layout } from "@/constants/Dimensions";
 import { REGULAR_FONT } from "@/constants/Styles";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { useUser } from "@/context/userContext";
 import { useTranslation } from "react-i18next";
 import { updateUser } from "@/services/api";
 import { useState } from "react";
 import ArrBack from "@/components/ui/ArrBack";
+import Loader from "@/components/ui/Loader";
+import * as Haptics from "expo-haptics";
 
 const ChangeLanguage = () => {
   const languages = ["English", "Deutsch", "Русский"];
@@ -65,6 +60,9 @@ const ChangeLanguage = () => {
                 user.language = language;
                 await updateUser(user);
                 await refreshUser();
+                Haptics.notificationAsync(
+                  Haptics.NotificationFeedbackType.Success
+                );
                 router.back();
               } catch (err) {
                 console.log(err);
@@ -74,7 +72,7 @@ const ChangeLanguage = () => {
             key={index}
           >
             {isLoading && user.language === language ? (
-              <ActivityIndicator />
+              <Loader black={true} width={30} height={30} />
             ) : (
               <Text
                 style={[

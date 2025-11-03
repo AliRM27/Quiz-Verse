@@ -4,7 +4,6 @@ import {
   Text,
   Image,
   StyleSheet,
-  ActivityIndicator,
   ScrollView,
   Platform,
 } from "react-native";
@@ -24,11 +23,10 @@ import { useTranslation } from "react-i18next";
 import ProgressBar from "@/components/animatinos/progressBar";
 import BookDashed from "@/assets/svgs/book-dashed.svg";
 import ProfileCardModal from "@/components/ui/ProfileCardModal";
+import Loader from "@/components/ui/Loader";
 
 export default function Profile() {
   const { user, loading } = useUser();
-  const [currQuiz, setCurrQuiz] = useState(user?.lastPlayed[0]?.quizId);
-  const [visible, setVisible] = useState<boolean>(false);
   const { t } = useTranslation();
   const [categroyPressed, setCategoryPressed] = useState<string>("");
   const [currIndex, setCurrIndex] = useState<number>(0);
@@ -54,7 +52,7 @@ export default function Profile() {
   if (!user || loading)
     return (
       <View style={{ justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
+        <Loader />
       </View>
     );
 

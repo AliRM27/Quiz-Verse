@@ -455,8 +455,6 @@ const QuizModal: React.FC<QuizModalProps> = ({
   );
 };
 
-export default QuizModal;
-
 const styles = StyleSheet.create({
   modalBackground: {
     height: "100%",

@@ -23,7 +23,7 @@ export default function TabLayout() {
   const [featureName, setFeatureName] = useState("");
 
   const handleComingSoon = (feature: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics.selectionAsync();
     setFeatureName(feature);
     setModalVisible(true);
   };
@@ -126,7 +126,7 @@ export default function TabLayout() {
             <Pressable
               {...props}
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                Haptics.selectionAsync();
                 props.onPress?.();
               }}
               style={{

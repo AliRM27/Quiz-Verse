@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { REGULAR_FONT } from "@/constants/Styles";
 import ArrBack from "@/components/ui/ArrBack";
 import * as Haptics from "expo-haptics";
+import Loader from "@/components/ui/Loader";
 
 const ChnageUsername = () => {
   const { user } = useUser();
@@ -149,7 +150,7 @@ const ChnageUsername = () => {
           ]}
         >
           {loading ? (
-            <ActivityIndicator color={Colors.dark.bg_dark} />
+            <Loader black={true} />
           ) : (
             <Text
               style={{
@@ -192,5 +193,6 @@ const styles = StyleSheet.create({
     marginTop: "auto",
     borderRadius: 20,
     alignItems: "center",
+    justifyContent: "center",
   },
 });

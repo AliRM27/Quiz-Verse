@@ -5,7 +5,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ActivityIndicator,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { WIDTH, HEIGHT, myHeight, myWidth } from "@/constants/Dimensions";
@@ -23,6 +22,7 @@ import Info from "./ui/Info";
 import { useTranslation } from "react-i18next";
 import ProgressBar from "./animatinos/progressBar";
 import { router } from "expo-router";
+import Loader from "./ui/Loader";
 
 const ITEM_WIDTH = HEIGHT * (150 / myHeight);
 const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
@@ -32,7 +32,6 @@ export default function HomePageCards() {
   const { user, loading, lastIndexCard, setLastIndexRef } = useUser();
   const flatListRef = useRef<Animated.FlatList<any>>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const scrollToCard = useCallback((index: number) => {
     flatListRef.current?.scrollToIndex({
       index,
@@ -66,7 +65,6 @@ export default function HomePageCards() {
       setCurrentIndex(lastIndexCard); // sync local state
     }
   }, []);
-
   if (loading || isLoading) {
     return (
       <View
@@ -76,7 +74,7 @@ export default function HomePageCards() {
           alignItems: "center",
         }}
       >
-        <ActivityIndicator color={Colors.dark.text} />
+        <Loader />
       </View>
     );
   }
@@ -84,8 +82,6 @@ export default function HomePageCards() {
   if (!user) {
     return null;
   }
-
-  // If user or quiz is missing, show nothing (should not happen if loading is handled)
 
   if (error) {
     return (
@@ -185,7 +181,7 @@ export default function HomePageCards() {
                     });
                     return;
                   }
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  Haptics.selectionAsync();
                   setLastIndexRef(index);
                   scrollToCard(index);
                 }}

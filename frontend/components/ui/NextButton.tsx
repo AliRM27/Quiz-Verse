@@ -1,12 +1,8 @@
 import { ButtonProps } from "@/types";
-import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
+import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { Auth } from "@/constants/Dimensions";
+import Loader from "./Loader";
 
 export default function NextButton({ onPress, loading }: ButtonProps) {
   return (
@@ -16,7 +12,7 @@ export default function NextButton({ onPress, loading }: ButtonProps) {
       onPress={onPress}
     >
       {loading ? (
-        <ActivityIndicator />
+        <Loader black={true} />
       ) : (
         <Text style={{ fontSize: 17, color: Colors.dark.text }}>
           Next {"->"}

@@ -21,6 +21,7 @@ import ProgressBar from "./animatinos/progressBar";
 import { useTranslation } from "react-i18next";
 import { streakMilestones, timeBonusThresholds } from "@/utils/rewardsSystem";
 import Trophy from "@/assets/svgs/trophy.svg";
+import Loader from "./ui/Loader";
 
 const RewardComponent = ({
   name,
@@ -190,12 +191,13 @@ const Result = ({
   timeNumber: number;
   streakNumber: number;
 }) => {
-  const { user } = useUser();
+  const { user, refreshUser } = useUser();
   const { t } = useTranslation();
   const [value, setValue] = useState<number>(0);
   const [rewardsValue, setRewardsValue] = useState<number>(0);
   const [showAnimation, setShowAnimation] = useState<string>("");
   const scrollViewRef = useRef<ScrollView | null>(null);
+  const [loading, setloading] = useState(false);
 
   const scrollToBottom = () => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -522,7 +524,13 @@ const Result = ({
         }}
       >
         <TouchableOpacity
-          onPress={() => {
+          onPress={async () => {
+            try {
+              await refreshUser();
+            } catch (err) {
+              console.log(err);
+              return;
+            }
             router.replace("/(tabs)");
           }}
           activeOpacity={0.7}
@@ -542,7 +550,13 @@ const Result = ({
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => {
+          onPress={async () => {
+            try {
+              await refreshUser();
+            } catch (err) {
+              console.log(err);
+              return;
+            }
             router.replace({
               pathname: "/quizLevel/[id]/[section]",
               params: {

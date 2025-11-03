@@ -1,7 +1,6 @@
 import {
   View,
   Text,
-  ActivityIndicator,
   Pressable,
   StyleSheet,
   TextInput,
@@ -33,6 +32,7 @@ import {
 } from "@/utils/rewardsSystem";
 import SliderComponent from "@/components/ui/SliderComponent";
 import * as Haptics from "expo-haptics";
+import Loader from "@/components/ui/Loader";
 
 export default function Index() {
   const { id, section } = useLocalSearchParams<{
@@ -106,7 +106,7 @@ export default function Index() {
           backgroundColor: Colors.dark.bg_dark,
         }}
       >
-        <ActivityIndicator size={40} color={Colors.dark.text} />
+        <Loader width={50} height={50} />
       </View>
     );
   }
@@ -397,7 +397,7 @@ export default function Index() {
                 await updateUser({ lastPlayed: user?.lastPlayed });
               }
               await refreshUser();
-              router.replace("/(tabs)");
+              router.back();
             } catch (err) {
               console.log(err);
             }

@@ -26,14 +26,13 @@ import Lock from "@/assets/svgs/lock.svg";
 import Binoculars from "@/assets/svgs/binoculars.svg";
 import SearchX from "@/assets/svgs/search-x.svg";
 import { router } from "expo-router";
+import Loader from "@/components/ui/Loader";
 
 export default function Explore() {
   const [focused, setFocused] = useState(false);
   const [query, setQuery] = useState("");
   const [input, setInput] = useState("");
   const { user, loading, refreshUser } = useUser();
-  const [loadingUpdate, setLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
   const { t } = useTranslation();
 
   const debouncedSetSearch = useMemo(
@@ -56,8 +55,6 @@ export default function Explore() {
     queryKey: ["searchQuizzes", query],
     queryFn: () => searchQuizzes(query),
   });
-
-  const [currQuiz, setCurrQuiz] = useState(quizzes ? quizzes[0] : null);
 
   if (!user) {
     return (
@@ -104,7 +101,7 @@ export default function Explore() {
         </Pressable>
       </View>
 
-      {isLoading && <ActivityIndicator />}
+      {isLoading && <Loader width={50} height={50} />}
 
       {!isLoading && !loading && quizzes?.length === 0 && (
         <View
