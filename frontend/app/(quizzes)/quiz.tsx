@@ -286,6 +286,7 @@ const Quiz = () => {
                 ]}
                 onPress={() => {
                   setSelectedLevelIndex(index);
+                  Haptics.selectionAsync();
                 }}
               >
                 <Text

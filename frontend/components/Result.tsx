@@ -531,7 +531,7 @@ const Result = ({
               console.log(err);
               return;
             }
-            router.replace("/(tabs)");
+            router.back();
           }}
           activeOpacity={0.7}
           style={[styles.button, { minWidth: "40%" }]}
