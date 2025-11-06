@@ -4,7 +4,7 @@ import { Colors } from "@/constants/Colors";
 import { Auth } from "@/constants/Dimensions";
 import Loader from "./Loader";
 
-export default function NextButton({ onPress, loading }: ButtonProps) {
+export default function NextButton({ onPress, loading, title }: ButtonProps) {
   return (
     <TouchableOpacity
       activeOpacity={0.8}
@@ -15,7 +15,7 @@ export default function NextButton({ onPress, loading }: ButtonProps) {
         <Loader black={true} />
       ) : (
         <Text style={{ fontSize: 17, color: Colors.dark.text }}>
-          Next {"->"}
+          {title || "Next ->"}
         </Text>
       )}
     </TouchableOpacity>

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
+import * as Haptics from "expo-haptics";
 
 export default function ColorPicker({
   colors,
@@ -22,7 +22,10 @@ export default function ColorPicker({
               borderWidth: selectedColor === color ? 3 : 0,
             },
           ]}
-          onPress={() => setSelectedColor(color)}
+          onPress={() => {
+            setSelectedColor(color);
+            Haptics.selectionAsync();
+          }}
         />
       ))}
     </View>

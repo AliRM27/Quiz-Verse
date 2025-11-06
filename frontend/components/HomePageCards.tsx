@@ -304,7 +304,7 @@ export default function HomePageCards() {
               height={3}
             />
           </View>
-          <Text style={[styles.txt_muted, { fontSize: 12 }]}>
+          <Text style={[styles.txt, { fontSize: 12 }]}>
             {currentProgress?.rewardsTotal} / {quiz.rewardsTotal}
           </Text>
         </View>

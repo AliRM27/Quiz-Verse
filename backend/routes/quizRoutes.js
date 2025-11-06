@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.get("/search", searchQuizzes);
 router.get("/", getAllQuizzes);
-router.get("/:id", getQuizById);
 router.get("/unlocked/:userId", getUnlockedQuizzes);
+router.get("/:id", getQuizById);
 
 export default router;

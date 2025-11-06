@@ -55,6 +55,10 @@ export default function RootLayout() {
                 name="(auth)/createUsername"
                 options={{ gestureEnabled: false }}
               />
+              <Stack.Screen
+                name="(auth)/welcome"
+                options={{ gestureEnabled: false, animation: "fade" }}
+              />
               <Stack.Screen name="index" />
               <Stack.Screen name="(settings)/index" />
               <Stack.Screen name="(quizzes)/collection" />

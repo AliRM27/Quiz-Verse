@@ -324,7 +324,7 @@ export default function Profile() {
                       </Text>
                     </View>
                     <View style={{ width: "80%", gap: 15 }}>
-                      <View style={{ gap: 3 }}>
+                      <View style={{ gap: 5 }}>
                         <Text style={[styles.txt, { fontSize: 12 }]}>
                           {t("progress")}
                         </Text>
@@ -351,7 +351,7 @@ export default function Profile() {
                           %
                         </Text>
                       </View>
-                      <View style={{ gap: 3 }}>
+                      <View style={{ gap: 5 }}>
                         <Text style={[styles.txt, { fontSize: 12 }]}>
                           {t("rewards")}
                         </Text>
@@ -539,7 +539,7 @@ export default function Profile() {
                         progress={currentProgressList.questionsCompleted}
                       />
                     </View>
-                    <Text style={[styles.txt_muted, { fontSize: 10 }]}>
+                    <Text style={[styles.txt, { fontSize: 10 }]}>
                       {Math.floor(
                         (currentProgressList.questionsCompleted /
                           filteredQuizzes[currIndex].quizId.questionsTotal) *
@@ -564,7 +564,7 @@ export default function Profile() {
                         progress={currentProgressList.rewardsTotal}
                       />
                     </View>
-                    <Text style={[styles.txt_muted, { fontSize: 10 }]}>
+                    <Text style={[styles.txt, { fontSize: 10 }]}>
                       {currentProgressList.rewardsTotal} /{" "}
                       {filteredQuizzes[currIndex].quizId.rewardsTotal}
                     </Text>

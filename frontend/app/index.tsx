@@ -36,8 +36,9 @@ export default function Index() {
           });
         }
 
-        // Navigate to app
-        router.replace("/(tabs)");
+        const isNewUser = !user.name || user.name.trim() === "";
+
+        router.replace(isNewUser ? "/(auth)/welcome" : "/(tabs)");
       } else {
         // Not logged in → go to auth
         router.replace("/(auth)");

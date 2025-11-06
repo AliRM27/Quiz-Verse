@@ -8,7 +8,6 @@ import {
   Image,
   TouchableOpacity,
   Modal,
-  ActivityIndicator,
   Platform,
 } from "react-native";
 import ColorPicker from "./ColorPicker";

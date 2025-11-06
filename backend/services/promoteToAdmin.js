@@ -1,10 +1,8 @@
 import mongoose from "mongoose";
 import User from "../models/User.js"; // adjust path
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
 export async function promoteUserToAdmin(email) {
-  await mongoose.connect(MONGODB_URI);
+  await mongoose.connect(process.env.MONGO_URI);
 
   const user = await User.findOneAndUpdate(
     { email },

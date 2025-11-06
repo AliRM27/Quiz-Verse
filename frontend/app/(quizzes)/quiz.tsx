@@ -246,7 +246,7 @@ const Quiz = () => {
                 total={quiz.rewardsTotal}
               />
             </View>
-            <Text style={[styles.txt_muted, { fontSize: 12 }]}>
+            <Text style={[styles.txt, { fontSize: 12 }]}>
               {currentProgress ? currentProgress.rewardsTotal : 0} /{" "}
               {quiz.rewardsTotal}
             </Text>

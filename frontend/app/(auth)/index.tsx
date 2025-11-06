@@ -76,7 +76,7 @@ export default function Index() {
       initI18n(res?.data.user.language);
 
       if (res?.data.user?.name === "") {
-        router.replace("/(auth)/createUsername");
+        router.replace("/(auth)/welcome");
       } else {
         router.replace("/(tabs)");
       }

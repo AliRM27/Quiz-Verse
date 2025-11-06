@@ -82,8 +82,7 @@ const Settings = () => {
       <ScrollView
         contentContainerStyle={{
           backgroundColor: Colors.dark.bg_dark,
-          paddingBottom: 50,
-
+          paddingBottom: 100,
           paddingHorizontal: 15,
           gap: 20,
         }}
