@@ -1,7 +1,6 @@
 import { ButtonProps } from "@/types";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
-import { Auth } from "@/constants/Dimensions";
 import Loader from "./Loader";
 
 export default function NextButton({ onPress, loading, title }: ButtonProps) {
@@ -25,8 +24,8 @@ export default function NextButton({ onPress, loading, title }: ButtonProps) {
 const styles = StyleSheet.create({
   container: {
     padding: 12,
-    backgroundColor: Colors.dark.bg_light,
-    width: Auth.width.button,
+    backgroundColor: Colors.dark.bg,
+    width: "100%",
     height: 60,
     borderRadius: 20,
     gap: 20,

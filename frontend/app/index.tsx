@@ -1,10 +1,5 @@
-import { Button } from "react-native";
-import { defaultStyles } from "@/constants/Styles";
-import Logo from "@/assets/svgs/logo.svg";
-import { BackgroundGradient } from "@/components/ui/gradients/background";
 import { useEffect } from "react";
 import { router } from "expo-router";
-import { Colors } from "@/constants/Colors";
 import { useUser } from "@/context/userContext";
 import { updateUser } from "@/services/api";
 import * as SecureStore from "expo-secure-store";

@@ -1,7 +1,14 @@
-import { useMemo, useState, useEffect } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { useMemo, useState, useEffect, useRef } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Animated,
+  Easing,
+} from "react-native";
 import { BackgroundGradient } from "@/components/ui/gradients/background";
-import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
+import { REGULAR_FONT } from "@/constants/Styles";
 import { Colors } from "@/constants/Colors";
 import NextButton from "@/components/ui/NextButton";
 import { useUser } from "@/context/userContext";
@@ -37,28 +44,56 @@ const createSlides = () => [
 export default function Welcome() {
   const slides = useMemo(() => createSlides(), []);
   const [step, setStep] = useState(0);
-  const stepLabels = useMemo(
-    () => ["Step 1", "Step 2", "Step 3", "Step 4"],
-    []
-  );
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const translateAnim = useRef(new Animated.Value(0)).current;
+  // const stepLabels = useMemo(
+  //   () => ["Step 1", "Step 2", "Step 3", "Step 4"],
+  //   []
+  // );
   const { user, loading } = useUser();
 
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/(auth)");
-    } else if (
-      !loading &&
-      user &&
-      user.name &&
-      user.name.trim().length > 0
-    ) {
+    } else if (!loading && user && user.name && user.name.trim().length > 0) {
       router.replace("/(tabs)");
     }
   }, [loading, user]);
 
   const handleNext = () => {
     if (step < slides.length - 1) {
-      setStep((prev) => prev + 1);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 250,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateAnim, {
+          toValue: -20,
+          duration: 250,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setStep((prev) => prev + 1);
+        fadeAnim.setValue(0);
+        translateAnim.setValue(20);
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 250,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateAnim, {
+            toValue: 0,
+            duration: 250,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+        ]).start();
+      });
       return;
     }
     router.replace("/(auth)/createUsername");
@@ -82,7 +117,7 @@ export default function Welcome() {
   const currentSlide = slides[step];
 
   return (
-    <BackgroundGradient style={[defaultStyles.page, styles.container]}>
+    <BackgroundGradient style={styles.container}>
       <View style={styles.progressContainer}>
         {slides.map((_, index) => (
           <View
@@ -95,17 +130,19 @@ export default function Welcome() {
         ))}
       </View>
 
-      <View style={styles.illustrationWrapper}>
-        <View style={styles.placeholder}>
-          <Text style={styles.placeholderText}>{stepLabels[step]}</Text>
-        </View>
-      </View>
-
-      <View style={styles.textBlock}>
+      <Animated.View
+        style={[
+          styles.textBlock,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: translateAnim }],
+          },
+        ]}
+      >
         <Text style={styles.title}>{currentSlide.title}</Text>
         <Text style={styles.headline}>{currentSlide.headline}</Text>
         <Text style={styles.description}>{currentSlide.description}</Text>
-      </View>
+      </Animated.View>
 
       <NextButton
         onPress={handleNext}
@@ -118,17 +155,21 @@ export default function Welcome() {
 const styles = StyleSheet.create({
   container: {
     justifyContent: "space-between",
-    paddingVertical: 40,
+    paddingTop: 150,
+    paddingBottom: 40,
     paddingHorizontal: 24,
+    alignItems: "center",
   },
   progressContainer: {
+    position: "absolute",
+    top: 80,
     flexDirection: "row",
     gap: 8,
     alignSelf: "center",
   },
   progressDot: {
-    width: 10,
-    height: 10,
+    width: 70,
+    height: 6,
     borderRadius: 5,
     backgroundColor: Colors.dark.border_muted,
   },
