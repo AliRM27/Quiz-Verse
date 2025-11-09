@@ -68,7 +68,13 @@ const Settings = () => {
   };
 
   return (
-    <View style={{ paddingTop: layout.paddingTop, gap: 20 }}>
+    <View
+      style={{
+        paddingTop: layout.paddingTop,
+        gap: 20,
+        backgroundColor: Colors.dark.bg_dark,
+      }}
+    >
       <ArrBack />
       <Text
         style={[
@@ -81,7 +87,6 @@ const Settings = () => {
 
       <ScrollView
         contentContainerStyle={{
-          backgroundColor: Colors.dark.bg_dark,
           paddingBottom: 100,
           paddingHorizontal: 15,
           gap: 20,

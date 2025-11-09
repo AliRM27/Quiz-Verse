@@ -75,8 +75,16 @@ export default function Index() {
 
       initI18n(res?.data.user.language);
 
-      if (res?.data.user?.name === "") {
+      const loggedInUser = res?.data.user;
+      const hasUsername =
+        loggedInUser?.name && loggedInUser.name.trim().length > 0;
+      const hasUnlocked =
+        (loggedInUser?.unlockedQuizzes?.length ?? 0) > 0;
+
+      if (!hasUsername) {
         router.replace("/(auth)/welcome");
+      } else if (!hasUnlocked) {
+        router.replace("/(auth)/pickQuiz");
       } else {
         router.replace("/(tabs)");
       }

@@ -10,7 +10,7 @@ import { useState } from "react";
 import { updateUser } from "@/services/api";
 
 export default function createUsername() {
-  const { user } = useUser();
+  const { user, refreshUser } = useUser();
   const [val, setVal] = useState("");
   const [error, setError] = useState("");
   const [loading, setloading] = useState(false);
@@ -45,8 +45,8 @@ export default function createUsername() {
     setloading(true);
     try {
       await updateUser({ name: val });
-      user.name = val;
-      router.replace("/(tabs)");
+      await refreshUser();
+      router.replace("/(auth)/pickQuiz");
     } catch (err) {
       console.error("Failed to update username:", err);
       setError("Failed to update username. Please try again.");

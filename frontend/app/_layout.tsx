@@ -50,14 +50,21 @@ export default function RootLayout() {
           <UserProvider>
             <StatusBar style="light" />
             <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(tabs)" options={{ animation: "none" }} />
+              <Stack.Screen
+                name="(tabs)"
+                options={{ animation: "none", gestureEnabled: false }}
+              />
               <Stack.Screen
                 name="(auth)/createUsername"
-                options={{ gestureEnabled: false }}
+                options={{ gestureEnabled: false, animation: "fade" }}
               />
               <Stack.Screen
                 name="(auth)/welcome"
                 options={{ gestureEnabled: false, animation: "fade" }}
+              />
+              <Stack.Screen
+                name="(auth)/pickQuiz"
+                options={{ gestureEnabled: false }}
               />
               <Stack.Screen name="index" />
               <Stack.Screen name="(settings)/index" />

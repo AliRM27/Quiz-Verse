@@ -13,31 +13,48 @@ import { Colors } from "@/constants/Colors";
 import NextButton from "@/components/ui/NextButton";
 import { useUser } from "@/context/userContext";
 import { router } from "expo-router";
+import * as Haptics from "expo-haptics";
+import BookIcon from "@/assets/svgs/book-dashed.svg";
+import ChampionshipIcon from "@/assets/svgs/championship.svg";
+import TrophyIcon from "@/assets/svgs/trophy.svg";
+import ProfileIcon from "@/assets/svgs/profilePic.svg";
 
 const createSlides = () => [
   {
-    title: "Welcome to QuizVerse",
-    headline: "The quiz adventure built for superfans.",
+    title: "Discover Your Worlds",
+    headline: "Curated trivia journeys built for superfans.",
     description:
-      "Jump into hand-crafted trivia journeys curated around the worlds you love. Each quiz is designed to test knowledge, unlock moments, and keep you coming back.",
+      "Follow fandom-focused quiz collections packed with lore drops, easter eggs, and narrative beats. Every season adds fresh adventures to master.",
+    Icon: BookIcon,
+    accent: "#6A7EFC",
+    meta: "Curated Collections",
   },
   {
-    title: "Master Every Difficulty",
-    headline: "Four stages, from warm-up to extreme.",
+    title: "Climb Every Difficulty",
+    headline: "Four stages unlock as you prove yourself.",
     description:
-      "Start easy, then climb through Medium, Hard, and Extreme. Every section offers new question types, twists, and bragging rights when you conquer them all.",
+      "Start on Easy, then unlock Medium, Hard, and Extreme tiers loaded with emoji puzzles, numeric inputs, and other twists that keep you guessing.",
+    Icon: ChampionshipIcon,
+    accent: Colors.dark.secondary,
+    meta: "Easy → Extreme",
   },
   {
-    title: "Collect Trophies & Bonuses",
-    headline: "Precision and speed matter.",
+    title: "Stack Rewards & Bonuses",
+    headline: "Finish faster, answer smarter, earn more.",
     description:
-      "Earn trophies for every correct answer, stack time bonuses for quick thinking, and unlock streak rewards when you stay flawless through the toughest challenges.",
+      "Collect trophies per question, chase streak badges for flawless runs, and beat the clock for time bonuses that supercharge your totals.",
+    Icon: TrophyIcon,
+    accent: Colors.dark.primary,
+    meta: "Trophies · Streaks · Time",
   },
   {
-    title: "Build Your Quiz Legacy",
-    headline: "Track progress, customize, and grow.",
+    title: "Claim Your Starter Quiz",
+    headline: "Pick a free unlock to begin your legacy.",
     description:
-      "Watch your profile level up as you complete collections, unlock unique cosmetics, and secure a spot among the most dedicated QuizVerse players.",
+      "After setting a username, you’ll pick one premium quiz to unlock forever — the perfect launch pad before exploring the full shop.",
+    Icon: ProfileIcon,
+    accent: Colors.dark.highlight,
+    meta: "Free Unlock",
   },
 ];
 
@@ -46,10 +63,7 @@ export default function Welcome() {
   const [step, setStep] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const translateAnim = useRef(new Animated.Value(0)).current;
-  // const stepLabels = useMemo(
-  //   () => ["Step 1", "Step 2", "Step 3", "Step 4"],
-  //   []
-  // );
+  const progressAnim = useRef(new Animated.Value(1 / slides.length)).current;
   const { user, loading } = useUser();
 
   useEffect(() => {
@@ -60,7 +74,17 @@ export default function Welcome() {
     }
   }, [loading, user]);
 
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: (step + 1) / slides.length,
+      duration: 350,
+      easing: Easing.out(Easing.quad),
+      useNativeDriver: false,
+    }).start();
+  }, [progressAnim, step, slides.length]);
+
   const handleNext = () => {
+    Haptics.selectionAsync();
     if (step < slides.length - 1) {
       Animated.parallel([
         Animated.timing(fadeAnim, {
@@ -115,19 +139,22 @@ export default function Welcome() {
   }
 
   const currentSlide = slides[step];
+  const CurrentIcon = currentSlide.Icon;
 
   return (
     <BackgroundGradient style={styles.container}>
-      <View style={styles.progressContainer}>
-        {slides.map((_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.progressDot,
-              index === step && styles.progressDotActive,
-            ]}
-          />
-        ))}
+      <View style={styles.progressTrack}>
+        <Animated.View
+          style={[
+            styles.progressFill,
+            {
+              width: progressAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: ["0%", "100%"],
+              }),
+            },
+          ]}
+        />
       </View>
 
       <Animated.View
@@ -139,6 +166,19 @@ export default function Welcome() {
           },
         ]}
       >
+        <View style={styles.metaRow}>
+          <View style={styles.iconMeta}>
+            <View
+              style={[styles.iconBadge, { backgroundColor: currentSlide.accent }]}
+            >
+              <CurrentIcon width={28} height={28} color={Colors.dark.bg_dark} />
+            </View>
+            <Text style={styles.metaText}>{currentSlide.meta}</Text>
+          </View>
+          <Text style={styles.stepText}>
+            Step {step + 1} / {slides.length}
+          </Text>
+        </View>
         <Text style={styles.title}>{currentSlide.title}</Text>
         <Text style={styles.headline}>{currentSlide.headline}</Text>
         <Text style={styles.description}>{currentSlide.description}</Text>
@@ -155,74 +195,76 @@ export default function Welcome() {
 const styles = StyleSheet.create({
   container: {
     justifyContent: "space-between",
-    paddingTop: 150,
+    paddingTop: 120,
     paddingBottom: 40,
     paddingHorizontal: 24,
-    alignItems: "center",
+    gap: 40,
   },
-  progressContainer: {
-    position: "absolute",
-    top: 80,
-    flexDirection: "row",
-    gap: 8,
-    alignSelf: "center",
-  },
-  progressDot: {
-    width: 70,
-    height: 6,
-    borderRadius: 5,
-    backgroundColor: Colors.dark.border_muted,
-  },
-  progressDotActive: {
-    backgroundColor: Colors.dark.text,
-  },
-  illustrationWrapper: {
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
+  progressTrack: {
     width: "100%",
-  },
-  illustration: {
-    width: "80%",
-    height: "100%",
-  },
-  placeholder: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
+    height: 6,
+    borderRadius: 999,
     backgroundColor: Colors.dark.bg_light,
-    borderWidth: 1,
-    borderColor: Colors.dark.border_muted,
-    alignItems: "center",
-    justifyContent: "center",
+    overflow: "hidden",
   },
-  placeholderText: {
-    fontSize: 26,
-    color: Colors.dark.text,
-    fontFamily: REGULAR_FONT,
+  progressFill: {
+    height: "100%",
+    borderRadius: 999,
+    backgroundColor: Colors.dark.text,
   },
   textBlock: {
     gap: 16,
-    marginBottom: 40,
+  },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  iconMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  iconBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: Colors.dark.bg,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 25,
+    shadowOffset: { width: 0, height: 10 },
+  },
+  metaText: {
+    fontSize: 13,
+    color: Colors.dark.text_muted,
+    fontFamily: REGULAR_FONT,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  stepText: {
+    fontSize: 13,
+    color: Colors.dark.text_muted,
+    letterSpacing: 1,
   },
   title: {
-    fontSize: 28,
+    fontSize: 30,
     color: Colors.dark.text,
     fontFamily: REGULAR_FONT,
     fontWeight: "600",
-    textAlign: "center",
   },
   headline: {
     fontSize: 20,
     color: Colors.dark.text,
     fontFamily: REGULAR_FONT,
-    textAlign: "center",
   },
   description: {
     fontSize: 15,
     color: Colors.dark.text_muted,
     fontFamily: REGULAR_FONT,
-    textAlign: "center",
     lineHeight: 22,
   },
 });

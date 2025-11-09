@@ -31,9 +31,17 @@ export default function Index() {
           });
         }
 
-        const isNewUser = !user.name || user.name.trim() === "";
+        const needsUsername = !user.name || user.name.trim() === "";
+        const needsStarterQuiz =
+          !needsUsername && (user.unlockedQuizzes?.length ?? 0) === 0;
 
-        router.replace(isNewUser ? "/(auth)/welcome" : "/(tabs)");
+        if (needsUsername) {
+          router.replace("/(auth)/welcome");
+        } else if (needsStarterQuiz) {
+          router.replace("/(auth)/pickQuiz");
+        } else {
+          router.replace("/(tabs)");
+        }
       } else {
         // Not logged in → go to auth
         router.replace("/(auth)");

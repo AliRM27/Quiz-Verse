@@ -12,6 +12,7 @@ export interface ButtonProps {
   Logo?: any;
   onPress: () => void;
   loading?: boolean;
+  disabled?: boolean;
 }
 
 export interface GradientProps {
