@@ -143,6 +143,9 @@ export default function Welcome() {
 
   return (
     <BackgroundGradient style={styles.container}>
+      <Text style={styles.stepText}>
+        Step {step + 1} / {slides.length}
+      </Text>
       <View style={styles.progressTrack}>
         <Animated.View
           style={[
@@ -155,8 +158,20 @@ export default function Welcome() {
             },
           ]}
         />
+        <View style={styles.metaRow}>
+          <View style={styles.iconMeta}>
+            <View
+              style={[
+                styles.iconBadge,
+                { backgroundColor: currentSlide.accent },
+              ]}
+            >
+              <CurrentIcon width={28} height={28} color={Colors.dark.bg_dark} />
+            </View>
+            <Text style={styles.metaText}>{currentSlide.meta}</Text>
+          </View>
+        </View>
       </View>
-
       <Animated.View
         style={[
           styles.textBlock,
@@ -166,19 +181,6 @@ export default function Welcome() {
           },
         ]}
       >
-        <View style={styles.metaRow}>
-          <View style={styles.iconMeta}>
-            <View
-              style={[styles.iconBadge, { backgroundColor: currentSlide.accent }]}
-            >
-              <CurrentIcon width={28} height={28} color={Colors.dark.bg_dark} />
-            </View>
-            <Text style={styles.metaText}>{currentSlide.meta}</Text>
-          </View>
-          <Text style={styles.stepText}>
-            Step {step + 1} / {slides.length}
-          </Text>
-        </View>
         <Text style={styles.title}>{currentSlide.title}</Text>
         <Text style={styles.headline}>{currentSlide.headline}</Text>
         <Text style={styles.description}>{currentSlide.description}</Text>
@@ -205,7 +207,7 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 999,
     backgroundColor: Colors.dark.bg_light,
-    overflow: "hidden",
+    gap: 30,
   },
   progressFill: {
     height: "100%",
@@ -246,6 +248,9 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   stepText: {
+    position: "absolute",
+    top: 70,
+    right: 30,
     fontSize: 13,
     color: Colors.dark.text_muted,
     letterSpacing: 1,

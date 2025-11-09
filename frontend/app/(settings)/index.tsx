@@ -29,7 +29,7 @@ import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 
 const Settings = () => {
-  const { user, logout } = useUser();
+  const { user, logout, deleteAccount } = useUser();
   const [state, setState] = useState(false);
   const { t } = useTranslation();
 
@@ -67,6 +67,25 @@ const Settings = () => {
     );
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      t("logOut"),
+      t("logOutQuestion"),
+      [
+        {
+          text: t("no"),
+          style: "cancel",
+        },
+        {
+          text: t("yes"),
+          onPress: deleteAccount,
+          style: "destructive",
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   return (
     <View
       style={{
@@ -79,7 +98,12 @@ const Settings = () => {
       <Text
         style={[
           styles.txt,
-          { fontSize: 25, fontWeight: 700, alignSelf: "center" },
+          {
+            fontSize: 25,
+            fontWeight: 700,
+            alignSelf: "center",
+            textAlign: "center",
+          },
         ]}
       >
         {t("settings")}
@@ -92,305 +116,312 @@ const Settings = () => {
           gap: 20,
         }}
       >
-        <View style={{ gap: 20 }}>
-          <Text style={[styles.txt_muted, { fontSize: 10 }]}>
-            {t("account")}
-          </Text>
-          <View
+        <Text style={[styles.txt_muted, { fontSize: 10 }]}>{t("account")}</Text>
+        <View
+          style={{
+            backgroundColor: Colors.dark.bg_light,
+            borderRadius: 10,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => router.push("/(settings)/chageUsername")}
+            activeOpacity={0.7}
             style={{
-              backgroundColor: Colors.dark.bg_light,
-              borderRadius: 10,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              borderBottomWidth: 1,
+              borderColor: Colors.dark.border_muted,
+              padding: 15,
             }}
           >
-            <TouchableOpacity
-              onPress={() => router.push("/(settings)/chageUsername")}
-              activeOpacity={0.7}
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                borderBottomWidth: 1,
-                borderColor: Colors.dark.border_muted,
-                padding: 15,
-              }}
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <Person />
-                <Text style={[styles.txt]}>{t("username")}</Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <Text style={[styles.txt_muted]}>{user.name}</Text>
-                <RightInd />
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => router.push("/(settings)/changeLanguage")}
-              activeOpacity={0.7}
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                padding: 15,
-                borderBottomWidth: 1,
-                borderColor: Colors.dark.border_muted,
-              }}
-            >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <Global stroke={"#999999"} color={"transparent"} />
-                <Text style={[styles.txt]}>{t("language")}</Text>
-              </View>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <Text style={styles.txt_muted}>{user.language}</Text>
-                <RightInd />
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => handleLogOut()}
-              activeOpacity={0.7}
+              <Person />
+              <Text style={[styles.txt]}>{t("username")}</Text>
+            </View>
+            <View
               style={{
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 10,
-                padding: 15,
               }}
             >
-              <LogOut />
-              <Text style={{ color: "#FF383C" }}>{t("logOut")}</Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={[styles.txt_muted, { fontSize: 10, marginTop: 10 }]}>
-            {t("social")}
-          </Text>
-          <View
+              <Text style={[styles.txt_muted]}>{user.name}</Text>
+              <RightInd />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push("/(settings)/changeLanguage")}
+            activeOpacity={0.7}
             style={{
-              backgroundColor: Colors.dark.bg_light,
-              borderRadius: 10,
-            }}
-          >
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                borderBottomWidth: 1,
-                borderColor: Colors.dark.border_muted,
-                padding: 15,
-              }}
-            >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <Share />
-                <Text style={[styles.txt]}>{t("shareQuizverse")}</Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <Gift />
-                <RightInd />
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                padding: 15,
-              }}
-            >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <Friends />
-                <Text style={[styles.txt]}>{t("friends")}</Text>
-              </View>
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <Text style={styles.txt_muted}>Coming Soon !</Text>
-                <RightInd />
-              </View>
-            </TouchableOpacity>
-          </View>
-          <Text style={[styles.txt_muted, { fontSize: 10, marginTop: 10 }]}>
-            {t("helpSupport")}
-          </Text>
-          <View
-            style={{
-              backgroundColor: Colors.dark.bg_light,
-              borderRadius: 10,
-            }}
-          >
-            <TouchableOpacity
-              onPress={() => Linking.openURL("mailto:lotustudio.app@gmail.com")}
-              activeOpacity={0.7}
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                padding: 15,
-              }}
-            >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <Info />
-                <Text style={[styles.txt]}>{t("contactUs")}</Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <RightInd />
-              </View>
-            </TouchableOpacity>
-          </View>
-          <Text style={[styles.txt_muted, { fontSize: 10, marginTop: 10 }]}>
-            {t("other")}
-          </Text>
-          <View
-            style={{
-              backgroundColor: Colors.dark.bg_light,
-              borderRadius: 10,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              padding: 15,
+              borderBottomWidth: 1,
+              borderColor: Colors.dark.border_muted,
             }}
           >
             <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                padding: 15,
-              }}
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <Bell />
-                <Text style={[styles.txt]}>{t("notifications")}</Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <Switch value={state} onChange={() => setState((p) => !p)} />
-              </View>
+              <Global stroke={"#999999"} color={"transparent"} />
+              <Text style={[styles.txt]}>{t("language")}</Text>
             </View>
-          </View>
-          <Text style={[styles.txt_muted, { fontSize: 10, marginTop: 10 }]}>
-            QUIZVERSE
-          </Text>
-          <View
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Text style={styles.txt_muted}>{user.language}</Text>
+              <RightInd />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => handleLogOut()}
+            activeOpacity={0.7}
             style={{
-              backgroundColor: Colors.dark.bg_light,
-              borderRadius: 10,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+              padding: 15,
             }}
           >
-            <TouchableOpacity
-              activeOpacity={0.7}
+            <LogOut />
+            <Text style={{ color: "#FF383C" }}>{t("logOut")}</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={[styles.txt_muted, { fontSize: 10, marginTop: 10 }]}>
+          {t("social")}
+        </Text>
+        <View
+          style={{
+            backgroundColor: Colors.dark.bg_light,
+            borderRadius: 10,
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              borderBottomWidth: 1,
+              borderColor: Colors.dark.border_muted,
+              padding: 15,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Share />
+              <Text style={[styles.txt]}>{t("shareQuizverse")}</Text>
+            </View>
+            <View
               style={{
                 flexDirection: "row",
-                justifyContent: "space-between",
-                padding: 15,
-                borderBottomWidth: 1,
-                borderColor: Colors.dark.border_muted,
+                alignItems: "center",
+                gap: 10,
               }}
             >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <Info />
-                <Text style={[styles.txt]}>{t("aboutQuizverse")}</Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <RightInd />
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() =>
-                Linking.openURL(
-                  "https://docs.google.com/document/d/1v4swN4KlLyEM49lXd7YH0IjUCKYyA1ULJg9JNJotK2M/edit?usp=sharing"
-                )
-              }
-              activeOpacity={0.7}
+              <Gift />
+              <RightInd />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              padding: 15,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Friends />
+              <Text style={[styles.txt]}>{t("friends")}</Text>
+            </View>
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Text style={styles.txt_muted}>Coming Soon !</Text>
+              <RightInd />
+            </View>
+          </TouchableOpacity>
+        </View>
+        <Text style={[styles.txt_muted, { fontSize: 10, marginTop: 10 }]}>
+          {t("helpSupport")}
+        </Text>
+        <View
+          style={{
+            backgroundColor: Colors.dark.bg_light,
+            borderRadius: 10,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => Linking.openURL("mailto:lotustudio.app@gmail.com")}
+            activeOpacity={0.7}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              padding: 15,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Info />
+              <Text style={[styles.txt]}>{t("contactUs")}</Text>
+            </View>
+            <View
               style={{
                 flexDirection: "row",
-                justifyContent: "space-between",
-                padding: 15,
-                borderBottomWidth: 1,
-                borderColor: Colors.dark.border_muted,
+                alignItems: "center",
+                gap: 10,
               }}
             >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <Info />
-                <Text style={[styles.txt]}>{"Privacy Policy"}</Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <RightInd />
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() =>
-                Linking.openURL(
-                  "https://docs.google.com/document/d/1v62qmMl_fQtOHQry8fc0vtPh27lhO9YPm6MMZcq6E5Y/edit?usp=sharing"
-                )
-              }
-              activeOpacity={0.7}
+              <RightInd />
+            </View>
+          </TouchableOpacity>
+        </View>
+        <Text style={[styles.txt_muted, { fontSize: 10, marginTop: 10 }]}>
+          {t("other")}
+        </Text>
+        <View
+          style={{
+            backgroundColor: Colors.dark.bg_light,
+            borderRadius: 10,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              padding: 15,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Bell />
+              <Text style={[styles.txt]}>{t("notifications")}</Text>
+            </View>
+            <View
               style={{
                 flexDirection: "row",
-                justifyContent: "space-between",
-                padding: 15,
+                alignItems: "center",
+                gap: 10,
               }}
             >
-              <View
-                style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-              >
-                <Info />
-                <Text style={[styles.txt]}>{"Terms of Service"}</Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <RightInd />
-              </View>
-            </TouchableOpacity>
+              <Switch value={state} onChange={() => setState((p) => !p)} />
+            </View>
           </View>
         </View>
+        <Text style={[styles.txt_muted, { fontSize: 10, marginTop: 10 }]}>
+          QUIZVERSE
+        </Text>
+        <View
+          style={{
+            backgroundColor: Colors.dark.bg_light,
+            borderRadius: 10,
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              padding: 15,
+              borderBottomWidth: 1,
+              borderColor: Colors.dark.border_muted,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Info />
+              <Text style={[styles.txt]}>{t("aboutQuizverse")}</Text>
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              <RightInd />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              Linking.openURL(
+                "https://docs.google.com/document/d/1v4swN4KlLyEM49lXd7YH0IjUCKYyA1ULJg9JNJotK2M/edit?usp=sharing"
+              )
+            }
+            activeOpacity={0.7}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              padding: 15,
+              borderBottomWidth: 1,
+              borderColor: Colors.dark.border_muted,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Info />
+              <Text style={[styles.txt]}>{"Privacy Policy"}</Text>
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              <RightInd />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              Linking.openURL(
+                "https://docs.google.com/document/d/1v62qmMl_fQtOHQry8fc0vtPh27lhO9YPm6MMZcq6E5Y/edit?usp=sharing"
+              )
+            }
+            activeOpacity={0.7}
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              padding: 15,
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
+            >
+              <Info />
+              <Text style={[styles.txt]}>{"Terms of Service"}</Text>
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
+              <RightInd />
+            </View>
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity
+          onPress={() => handleDeleteAccount()}
+          activeOpacity={0.7}
+          style={{ paddingTop: 30 }}
+        >
+          <Text
+            style={[styles.txt, { color: "#ae0003ff", alignSelf: "center" }]}
+          >
+            Delete Account
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );

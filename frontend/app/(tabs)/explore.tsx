@@ -172,15 +172,11 @@ export default function Explore() {
                       position: "absolute",
                       top: "50%",
                       left: "50%",
-                      transform: [{ translateX: -17 }, { translateY: -17 }], // adjust -12 to half of Lock's width/height
+                      transform: [{ translateX: -17 }, { translateY: -17 }],
                       zIndex: 1,
                     }}
                   >
-                    <Lock
-                      width={35}
-                      height={35}
-                      color={Colors.dark.text_muted}
-                    />
+                    <Lock width={35} height={35} color={Colors.dark.text} />
                   </View>
                 )}
                 <QuizLogo name={item.logoFile} />

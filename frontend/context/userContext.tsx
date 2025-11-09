@@ -7,7 +7,7 @@ import React, {
   useMemo,
 } from "react";
 import * as SecureStore from "expo-secure-store";
-import { fetchUser, deleteUser } from "@/services/api"; // Adjust the import path as necessary
+import { fetchUser, deleteUser } from "@/services/api";
 import { router } from "expo-router";
 import { initI18n } from "@/utils/i18n";
 import { updateUser } from "@/services/api";
