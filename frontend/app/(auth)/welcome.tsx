@@ -17,17 +17,17 @@ import * as Haptics from "expo-haptics";
 import BookIcon from "@/assets/svgs/book-dashed.svg";
 import ChampionshipIcon from "@/assets/svgs/championship.svg";
 import TrophyIcon from "@/assets/svgs/trophy.svg";
-import ProfileIcon from "@/assets/svgs/profilePic.svg";
+import Bow from "@/assets/svgs/bow-arrow.svg";
 
 const createSlides = () => [
   {
-    title: "Discover Your Worlds",
-    headline: "Curated trivia journeys built for superfans.",
+    title: "Play Quizzes You Love",
+    headline: "Fan-made trivia, quick rewards, zero fluff.",
     description:
-      "Follow fandom-focused quiz collections packed with lore drops, easter eggs, and narrative beats. Every season adds fresh adventures to master.",
-    Icon: BookIcon,
+      "Pick a universe, dive into handcrafted questions, earn trophies, and keep exploring—all inside one focused, mobile-native experience.",
+    Icon: Bow,
     accent: "#6A7EFC",
-    meta: "Curated Collections",
+    meta: "Instant Gameplay",
   },
   {
     title: "Climb Every Difficulty",
@@ -35,7 +35,8 @@ const createSlides = () => [
     description:
       "Start on Easy, then unlock Medium, Hard, and Extreme tiers loaded with emoji puzzles, numeric inputs, and other twists that keep you guessing.",
     Icon: ChampionshipIcon,
-    accent: Colors.dark.secondary,
+    emojiSequence: ["🐣", "💪", "🔥", "☠️"],
+    accent: Colors.dark.info,
     meta: "Easy → Extreme",
   },
   {
@@ -44,7 +45,7 @@ const createSlides = () => [
     description:
       "Collect trophies per question, chase streak badges for flawless runs, and beat the clock for time bonuses that supercharge your totals.",
     Icon: TrophyIcon,
-    accent: Colors.dark.primary,
+    accent: Colors.dark.secondary,
     meta: "Trophies · Streaks · Time",
   },
   {
@@ -52,8 +53,8 @@ const createSlides = () => [
     headline: "Pick a free unlock to begin your legacy.",
     description:
       "After setting a username, you’ll pick one premium quiz to unlock forever — the perfect launch pad before exploring the full shop.",
-    Icon: ProfileIcon,
-    accent: Colors.dark.highlight,
+    Icon: BookIcon,
+    accent: Colors.dark.primary,
     meta: "Free Unlock",
   },
 ];
@@ -63,7 +64,6 @@ export default function Welcome() {
   const [step, setStep] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const translateAnim = useRef(new Animated.Value(0)).current;
-  const progressAnim = useRef(new Animated.Value(1 / slides.length)).current;
   const { user, loading } = useUser();
 
   useEffect(() => {
@@ -73,15 +73,6 @@ export default function Welcome() {
       router.replace("/(tabs)");
     }
   }, [loading, user]);
-
-  useEffect(() => {
-    Animated.timing(progressAnim, {
-      toValue: (step + 1) / slides.length,
-      duration: 350,
-      easing: Easing.out(Easing.quad),
-      useNativeDriver: false,
-    }).start();
-  }, [progressAnim, step, slides.length]);
 
   const handleNext = () => {
     Haptics.selectionAsync();
@@ -140,25 +131,33 @@ export default function Welcome() {
 
   const currentSlide = slides[step];
   const CurrentIcon = currentSlide.Icon;
+  const showEmojiTicker =
+    currentSlide.emojiSequence && currentSlide.emojiSequence.length > 0;
 
   return (
     <BackgroundGradient style={styles.container}>
-      <Text style={styles.stepText}>
-        Step {step + 1} / {slides.length}
-      </Text>
-      <View style={styles.progressTrack}>
+      <View style={{ gap: 100 }}>
+        <View style={styles.progressContainer}>
+          {slides.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.progressSegment,
+                index <= step && styles.progressSegmentActive,
+              ]}
+            />
+          ))}
+        </View>
+
         <Animated.View
           style={[
-            styles.progressFill,
+            styles.textBlock,
             {
-              width: progressAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: ["0%", "100%"],
-              }),
+              opacity: fadeAnim,
+              transform: [{ translateY: translateAnim }],
             },
           ]}
-        />
-        <View style={styles.metaRow}>
+        >
           <View style={styles.iconMeta}>
             <View
               style={[
@@ -166,26 +165,23 @@ export default function Welcome() {
                 { backgroundColor: currentSlide.accent },
               ]}
             >
-              <CurrentIcon width={28} height={28} color={Colors.dark.bg_dark} />
+              {showEmojiTicker ? (
+                <AnimatedEmojiTicker emojis={currentSlide.emojiSequence!} />
+              ) : (
+                <CurrentIcon
+                  width={28}
+                  height={28}
+                  color={Colors.dark.bg_dark}
+                />
+              )}
             </View>
             <Text style={styles.metaText}>{currentSlide.meta}</Text>
           </View>
-        </View>
+          <Text style={styles.title}>{currentSlide.title}</Text>
+          <Text style={styles.headline}>{currentSlide.headline}</Text>
+          <Text style={styles.description}>{currentSlide.description}</Text>
+        </Animated.View>
       </View>
-      <Animated.View
-        style={[
-          styles.textBlock,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: translateAnim }],
-          },
-        ]}
-      >
-        <Text style={styles.title}>{currentSlide.title}</Text>
-        <Text style={styles.headline}>{currentSlide.headline}</Text>
-        <Text style={styles.description}>{currentSlide.description}</Text>
-      </Animated.View>
-
       <NextButton
         onPress={handleNext}
         title={step === slides.length - 1 ? "Choose my username" : "Next"}
@@ -194,24 +190,66 @@ export default function Welcome() {
   );
 }
 
+const AnimatedEmojiTicker = ({ emojis }: { emojis: string[] }) => {
+  const [index, setIndex] = useState(0);
+  const opacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (emojis.length === 0) return;
+
+    const cycle = () => {
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }).start(() => {
+        setIndex((prev) => (prev + 1) % emojis.length);
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 300,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }).start();
+      });
+    };
+
+    const interval = setInterval(cycle, 2000);
+    return () => {
+      clearInterval(interval);
+      opacity.stopAnimation();
+      opacity.setValue(1);
+    };
+  }, [emojis, opacity]);
+
+  if (!emojis.length) return null;
+
+  return (
+    <Animated.Text style={[styles.emojiTicker, { opacity }]}>
+      {emojis[index]}
+    </Animated.Text>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     justifyContent: "space-between",
-    paddingTop: 120,
+    paddingTop: 80,
     paddingBottom: 40,
     paddingHorizontal: 24,
-    gap: 40,
   },
-  progressTrack: {
+  progressContainer: {
+    flexDirection: "row",
     width: "100%",
+    gap: 8,
+  },
+  progressSegment: {
+    flex: 1,
     height: 6,
     borderRadius: 999,
     backgroundColor: Colors.dark.bg_light,
-    gap: 30,
   },
-  progressFill: {
-    height: "100%",
-    borderRadius: 999,
+  progressSegmentActive: {
     backgroundColor: Colors.dark.text,
   },
   textBlock: {
@@ -226,6 +264,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    paddingBottom: 40,
   },
   iconBadge: {
     width: 56,
@@ -240,17 +279,19 @@ const styles = StyleSheet.create({
     shadowRadius: 25,
     shadowOffset: { width: 0, height: 10 },
   },
+  emojiTicker: {
+    fontSize: 28,
+    color: Colors.dark.bg_dark,
+    textAlign: "center",
+  },
   metaText: {
-    fontSize: 13,
+    fontSize: 15,
     color: Colors.dark.text_muted,
     fontFamily: REGULAR_FONT,
     letterSpacing: 1,
     textTransform: "uppercase",
   },
   stepText: {
-    position: "absolute",
-    top: 70,
-    right: 30,
     fontSize: 13,
     color: Colors.dark.text_muted,
     letterSpacing: 1,

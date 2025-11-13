@@ -414,12 +414,12 @@ const Settings = () => {
         <TouchableOpacity
           onPress={() => handleDeleteAccount()}
           activeOpacity={0.7}
-          style={{ paddingTop: 30 }}
+          style={{ paddingTop: 25 }}
         >
           <Text
             style={[styles.txt, { color: "#ae0003ff", alignSelf: "center" }]}
           >
-            Delete Account
+            {t("deleteAccount")}
           </Text>
         </TouchableOpacity>
       </ScrollView>

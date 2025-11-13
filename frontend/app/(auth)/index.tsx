@@ -49,7 +49,16 @@ export default function Index() {
     setErrorMsg("");
 
     try {
-      await GoogleSignin.hasPlayServices();
+      await GoogleSignin.hasPlayServices({
+        showPlayServicesUpdateDialog: true,
+      });
+
+      // 🔑 Force the chooser on Android – if there’s a cached account, clear it first
+      const currentlySignedIn = await GoogleSignin.getCurrentUser();
+      if (currentlySignedIn) {
+        await GoogleSignin.signOut(); // or await GoogleSignin.revokeAccess();
+      }
+
       const userInfo = await GoogleSignin.signIn();
 
       // If no userInfo or no idToken, treat it as cancelled or failed
@@ -78,8 +87,7 @@ export default function Index() {
       const loggedInUser = res?.data.user;
       const hasUsername =
         loggedInUser?.name && loggedInUser.name.trim().length > 0;
-      const hasUnlocked =
-        (loggedInUser?.unlockedQuizzes?.length ?? 0) > 0;
+      const hasUnlocked = (loggedInUser?.unlockedQuizzes?.length ?? 0) > 0;
 
       if (!hasUsername) {
         router.replace("/(auth)/welcome");

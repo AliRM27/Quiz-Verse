@@ -2,6 +2,7 @@ import { ButtonProps } from "@/types";
 import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
 import Loader from "./Loader";
+import { REGULAR_FONT } from "@/constants/Styles";
 
 export default function NextButton({
   onPress,
@@ -36,7 +37,7 @@ export default function NextButton({
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: Colors.dark.bg,
+    backgroundColor: Colors.dark.text,
     width: "100%",
     height: 56,
     borderRadius: 18,
@@ -51,6 +52,8 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 17,
-    color: Colors.dark.text,
+    fontFamily: REGULAR_FONT,
+    fontWeight: 500,
+    color: "black",
   },
 });
