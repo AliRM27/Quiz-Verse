@@ -52,11 +52,7 @@ export default function RootLayout() {
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen
                 name="(tabs)"
-                options={{ animation: "none", gestureEnabled: false }}
-              />
-              <Stack.Screen
-                name="(auth)/createUsername"
-                options={{ gestureEnabled: false, animation: "fade" }}
+                options={{ animation: "fade", gestureEnabled: false }}
               />
               <Stack.Screen
                 name="(auth)/welcome"
@@ -64,7 +60,7 @@ export default function RootLayout() {
               />
               <Stack.Screen
                 name="(auth)/pickQuiz"
-                options={{ gestureEnabled: false }}
+                options={{ gestureEnabled: false, animation: "fade" }}
               />
               <Stack.Screen name="index" />
               <Stack.Screen name="(settings)/index" />

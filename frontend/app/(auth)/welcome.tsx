@@ -6,6 +6,10 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { BackgroundGradient } from "@/components/ui/gradients/background";
 import { REGULAR_FONT } from "@/constants/Styles";
@@ -15,9 +19,10 @@ import { useUser } from "@/context/userContext";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import BookIcon from "@/assets/svgs/book-dashed.svg";
-import ChampionshipIcon from "@/assets/svgs/championship.svg";
 import TrophyIcon from "@/assets/svgs/trophy.svg";
 import Bow from "@/assets/svgs/bow-arrow.svg";
+import { updateUser } from "@/services/api";
+import Level from "@/assets/svgs/gauge.svg";
 
 const createSlides = () => [
   {
@@ -34,8 +39,7 @@ const createSlides = () => [
     headline: "Four stages unlock as you prove yourself.",
     description:
       "Start on Easy, then unlock Medium, Hard, and Extreme tiers loaded with emoji puzzles, numeric inputs, and other twists that keep you guessing.",
-    Icon: ChampionshipIcon,
-    emojiSequence: ["🐣", "💪", "🔥", "☠️"],
+    Icon: Level,
     accent: Colors.dark.info,
     meta: "Easy → Extreme",
   },
@@ -52,10 +56,11 @@ const createSlides = () => [
     title: "Claim Your Starter Quiz",
     headline: "Pick a free unlock to begin your legacy.",
     description:
-      "After setting a username, you’ll pick one premium quiz to unlock forever — the perfect launch pad before exploring the full shop.",
+      "Lock in a name, unlock a free starter quiz, and start building your legacy.",
     Icon: BookIcon,
     accent: Colors.dark.primary,
     meta: "Free Unlock",
+    type: "username",
   },
 ];
 
@@ -64,17 +69,13 @@ export default function Welcome() {
   const [step, setStep] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const translateAnim = useRef(new Animated.Value(0)).current;
-  const { user, loading } = useUser();
+  const { user, loading, refreshUser } = useUser();
+  const [username, setUsername] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [savingUsername, setSavingUsername] = useState(false);
+  const [scrollEnabled, setScrollEnabled] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/(auth)");
-    } else if (!loading && user && user.name && user.name.trim().length > 0) {
-      router.replace("/(tabs)");
-    }
-  }, [loading, user]);
-
-  const handleNext = () => {
+  const handleNextSlide = () => {
     Haptics.selectionAsync();
     if (step < slides.length - 1) {
       Animated.parallel([
@@ -111,7 +112,38 @@ export default function Welcome() {
       });
       return;
     }
-    router.replace("/(auth)/createUsername");
+  };
+  const handleUsernameSubmit = async () => {
+    const trimmed = username.trim();
+    if (
+      trimmed.length < 3 ||
+      trimmed.length > 12 ||
+      !/^[a-zA-Z0-9_]+$/.test(trimmed)
+    ) {
+      setUsernameError(
+        "Use 3-12 characters with letters, numbers, or underscores."
+      );
+      return;
+    }
+    setUsernameError("");
+    setSavingUsername(true);
+    try {
+      await updateUser({ name: trimmed });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.replace("/(auth)/pickQuiz");
+    } catch (error) {
+      console.error("Failed to update username:", error);
+      setUsernameError("Something went wrong. Please try again.");
+    } finally {
+      setSavingUsername(false);
+    }
+  };
+  const handlePrimaryAction = () => {
+    if (slides[step].type === "username") {
+      handleUsernameSubmit();
+    } else {
+      handleNextSlide();
+    }
   };
 
   if (loading || !user) {
@@ -131,105 +163,124 @@ export default function Welcome() {
 
   const currentSlide = slides[step];
   const CurrentIcon = currentSlide.Icon;
-  const showEmojiTicker =
-    currentSlide.emojiSequence && currentSlide.emojiSequence.length > 0;
+  const isUsernameStep = currentSlide.type === "username";
+  const trimmedUsername = username.trim();
+  const isUsernameValid =
+    trimmedUsername.length >= 3 &&
+    trimmedUsername.length <= 12 &&
+    /^[a-zA-Z0-9_]+$/.test(trimmedUsername);
 
   return (
-    <BackgroundGradient style={styles.container}>
-      <View style={{ gap: 100 }}>
-        <View style={styles.progressContainer}>
-          {slides.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.progressSegment,
-                index <= step && styles.progressSegmentActive,
-              ]}
-            />
-          ))}
-        </View>
-
-        <Animated.View
-          style={[
-            styles.textBlock,
+    <BackgroundGradient>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        enabled={Platform.OS === "ios"}
+      >
+        <ScrollView
+          contentContainerStyle={[
             {
-              opacity: fadeAnim,
-              transform: [{ translateY: translateAnim }],
+              flexGrow: 1,
             },
+            styles.container,
           ]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          scrollEnabled={scrollEnabled}
         >
-          <View style={styles.iconMeta}>
-            <View
+          <View style={[{ gap: 40 }, { paddingBottom: 100 }]}>
+            <View style={styles.progressContainer}>
+              {slides.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.progressSegment,
+                    index <= step && styles.progressSegmentActive,
+                  ]}
+                />
+              ))}
+            </View>
+
+            <Animated.View
               style={[
-                styles.iconBadge,
-                { backgroundColor: currentSlide.accent },
+                styles.textBlock,
+                {
+                  opacity: fadeAnim,
+                  transform: [{ translateY: translateAnim }],
+                },
               ]}
             >
-              {showEmojiTicker ? (
-                <AnimatedEmojiTicker emojis={currentSlide.emojiSequence!} />
-              ) : (
-                <CurrentIcon
-                  width={28}
-                  height={28}
-                  color={Colors.dark.bg_dark}
-                />
+              <View style={styles.metaRow}>
+                <View style={styles.iconMeta}>
+                  <View
+                    style={[
+                      styles.iconBadge,
+                      { backgroundColor: currentSlide.accent },
+                    ]}
+                  >
+                    <CurrentIcon
+                      width={30}
+                      height={30}
+                      color={Colors.dark.bg_dark}
+                    />
+                  </View>
+                  <Text style={styles.metaText}>{currentSlide.meta}</Text>
+                </View>
+              </View>
+              <Text style={styles.title}>{currentSlide.title}</Text>
+              <Text style={styles.headline}>{currentSlide.headline}</Text>
+              <Text style={styles.description}>{currentSlide.description}</Text>
+
+              {isUsernameStep && (
+                <View style={styles.inputCard}>
+                  <View style={styles.labelRow}>
+                    <Text style={styles.label}>Username</Text>
+                    <Text style={styles.counter}>{username.length}/12</Text>
+                  </View>
+
+                  <TextInput
+                    onFocus={() => {
+                      setScrollEnabled(true);
+                    }}
+                    onBlur={() => {
+                      setScrollEnabled(false);
+                    }}
+                    cursorColor={Colors.dark.text}
+                    selectionColor={Colors.dark.text}
+                    placeholder="Type your username"
+                    placeholderTextColor={Colors.dark.text_muted}
+                    value={username}
+                    onChangeText={(text) => {
+                      setUsername(text);
+                      if (usernameError) setUsernameError("");
+                    }}
+                    style={[
+                      styles.input,
+                      !isUsernameValid &&
+                        username.length > 0 && {
+                          borderColor: Colors.dark.danger,
+                        },
+                    ]}
+                    autoCapitalize="sentences"
+                    autoCorrect={false}
+                    maxLength={12}
+                  />
+                </View>
               )}
-            </View>
-            <Text style={styles.metaText}>{currentSlide.meta}</Text>
+            </Animated.View>
           </View>
-          <Text style={styles.title}>{currentSlide.title}</Text>
-          <Text style={styles.headline}>{currentSlide.headline}</Text>
-          <Text style={styles.description}>{currentSlide.description}</Text>
-        </Animated.View>
-      </View>
-      <NextButton
-        onPress={handleNext}
-        title={step === slides.length - 1 ? "Choose my username" : "Next"}
-      />
+          <NextButton
+            onPress={handlePrimaryAction}
+            title={isUsernameStep ? "Save & continue" : "Next"}
+            loading={isUsernameStep ? savingUsername : false}
+            disabled={isUsernameStep && !isUsernameValid}
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </BackgroundGradient>
   );
 }
-
-const AnimatedEmojiTicker = ({ emojis }: { emojis: string[] }) => {
-  const [index, setIndex] = useState(0);
-  const opacity = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    if (emojis.length === 0) return;
-
-    const cycle = () => {
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 300,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }).start(() => {
-        setIndex((prev) => (prev + 1) % emojis.length);
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 300,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }).start();
-      });
-    };
-
-    const interval = setInterval(cycle, 2000);
-    return () => {
-      clearInterval(interval);
-      opacity.stopAnimation();
-      opacity.setValue(1);
-    };
-  }, [emojis, opacity]);
-
-  if (!emojis.length) return null;
-
-  return (
-    <Animated.Text style={[styles.emojiTicker, { opacity }]}>
-      {emojis[index]}
-    </Animated.Text>
-  );
-};
 
 const styles = StyleSheet.create({
   container: {
@@ -272,12 +323,12 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
+    borderWidth: 0,
     borderColor: Colors.dark.bg,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
+    shadowColor: "#ffffffff",
+    shadowOpacity: 0.4,
     shadowRadius: 25,
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: 0 },
   },
   emojiTicker: {
     fontSize: 28,
@@ -312,5 +363,37 @@ const styles = StyleSheet.create({
     color: Colors.dark.text_muted,
     fontFamily: REGULAR_FONT,
     lineHeight: 22,
+  },
+  inputCard: {
+    marginTop: 24,
+    gap: 25,
+  },
+  labelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  label: {
+    fontSize: 13,
+    color: Colors.dark.text_muted,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+  },
+  counter: {
+    fontSize: 12,
+    color: Colors.dark.text_muted,
+  },
+  input: {
+    backgroundColor: Colors.dark.bg_light,
+    padding: 20,
+    fontSize: 15,
+    color: Colors.dark.text,
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
+    borderRadius: 35,
+  },
+  error: {
+    color: Colors.dark.danger,
+    fontSize: 14,
   },
 });

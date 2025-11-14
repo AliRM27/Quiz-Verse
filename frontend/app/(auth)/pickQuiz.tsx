@@ -24,19 +24,6 @@ export default function PickQuiz() {
   const [selected, setSelected] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/(auth)");
-    } else if (
-      !loading &&
-      user &&
-      user.unlockedQuizzes &&
-      user.unlockedQuizzes.length > 0
-    ) {
-      router.replace("/(tabs)");
-    }
-  }, [loading, user]);
-
   const { data, isLoading } = useQuery({
     queryKey: ["starter-quizzes"],
     queryFn: fetchQuizzes,
@@ -55,6 +42,7 @@ export default function PickQuiz() {
 
   const handleUnlock = async () => {
     if (!selected) return;
+    Haptics.selectionAsync();
     try {
       setSubmitting(true);
       await updateUserProgress({ quizId: selected });

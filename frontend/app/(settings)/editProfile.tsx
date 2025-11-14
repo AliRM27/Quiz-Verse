@@ -137,11 +137,10 @@ const EditProfile = () => {
               selectionColor={Colors.dark.text}
               value={usernameValue}
               onChangeText={(c) => {
-                if (c.length <= 12) {
-                  setUsernameValue(c);
-                }
+                setUsernameValue(c);
               }}
               autoCorrect={false}
+              maxLength={12}
             />
 
             <Text style={[styles.text, { textAlign: "center" }]}>{error}</Text>
