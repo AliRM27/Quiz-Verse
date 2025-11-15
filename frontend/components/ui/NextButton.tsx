@@ -3,6 +3,7 @@ import { TouchableOpacity, Text, StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
 import Loader from "./Loader";
 import { REGULAR_FONT } from "@/constants/Styles";
+import { useTranslation } from "react-i18next";
 
 export default function NextButton({
   onPress,
@@ -10,19 +11,17 @@ export default function NextButton({
   title,
   disabled,
 }: ButtonProps) {
+  const { t } = useTranslation();
   const isDisabled = Boolean(disabled) || Boolean(loading);
+  const label = title || t("nextButtonDefault");
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
+      activeOpacity={0.7}
       style={[styles.container, isDisabled && { opacity: 0.5 }]}
       onPress={onPress}
       disabled={isDisabled}
     >
-      {loading ? (
-        <Loader black={true} />
-      ) : (
-        <Text style={[styles.label]}>{title || "Next"}</Text>
-      )}
+      {loading ? <Loader black={true} /> : <Text style={styles.label}>{label}</Text>}
     </TouchableOpacity>
   );
 }

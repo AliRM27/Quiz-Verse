@@ -121,6 +121,7 @@ export default function Index() {
   unlockedStreaksVar = new Set(sectionProgress.streaks);
 
   const handleNextButton = async () => {
+    Haptics.selectionAsync();
     setQuestionLoading(true);
     let isCorrect: boolean = false;
 
@@ -579,11 +580,12 @@ export default function Index() {
                       },
                     ]}
                     onPressIn={() => setPressedAnswer(index)}
-                    onPress={() =>
+                    onPress={() => {
                       selectedAnswer === index
                         ? setSelectedAnswer(null)
-                        : setSelectedAnswer(index)
-                    }
+                        : setSelectedAnswer(index);
+                      Haptics.selectionAsync();
+                    }}
                     onPressOut={() => setPressedAnswer(null)}
                   >
                     <Text
@@ -627,11 +629,12 @@ export default function Index() {
                       },
                     ]}
                     onPressIn={() => setPressedAnswer(index)}
-                    onPress={() =>
+                    onPress={() => {
                       selectedAnswer === index
                         ? setSelectedAnswer(null)
-                        : setSelectedAnswer(index)
-                    }
+                        : setSelectedAnswer(index);
+                      Haptics.selectionAsync();
+                    }}
                     onPressOut={() => setPressedAnswer(null)}
                   >
                     <Text

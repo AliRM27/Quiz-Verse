@@ -17,9 +17,14 @@ import {
 } from "@react-native-google-signin/google-signin";
 import { configureGoogleSignIn } from "@/utils/auth";
 import { useUser } from "../../context/userContext";
-import { googleAuth } from "@/services/api";
+import { googleAuth, updateUser } from "@/services/api";
 import GoogleLogo from "@/assets/svgs/GoogleLogo.svg";
-import { initI18n } from "@/utils/i18n";
+import {
+  initI18n,
+  detectDeviceLanguageCode,
+  codeToLanguageName,
+  languageMap,
+} from "@/utils/i18n";
 
 export default function Index() {
   const { setUserData, loading, isAuthenticated } = useUser();
@@ -75,14 +80,37 @@ export default function Index() {
       // Call your backend
       const res = await googleAuth(tokens.idToken);
 
-      // Set user data and route
-      await setUserData(
-        res?.data.user,
-        res?.data.token,
-        res?.data.sessionToken
-      );
+      const storedLanguage = res?.data.user?.language;
+      const storedLanguageCode = storedLanguage
+        ? languageMap[storedLanguage]
+        : undefined;
+      const deviceLangCode = detectDeviceLanguageCode();
+      const deviceLanguageName =
+        codeToLanguageName[deviceLangCode] ?? "English";
+      const shouldPersistDeviceLanguage =
+        !storedLanguage ||
+        !storedLanguageCode ||
+        (storedLanguage === "English" && deviceLanguageName !== "English");
+      const effectiveLanguage = shouldPersistDeviceLanguage
+        ? deviceLanguageName
+        : storedLanguage || "English";
+      const userPayload = {
+        ...res?.data.user,
+        language: effectiveLanguage,
+      };
 
-      initI18n(res?.data.user.language);
+      // Set user data and route
+      await setUserData(userPayload, res?.data.token, res?.data.sessionToken);
+
+      initI18n(effectiveLanguage);
+
+      if (shouldPersistDeviceLanguage) {
+        try {
+          await updateUser({ language: deviceLanguageName });
+        } catch (e) {
+          console.log("Failed to persist device language", e);
+        }
+      }
 
       const loggedInUser = res?.data.user;
       const hasUsername =

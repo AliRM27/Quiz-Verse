@@ -18,11 +18,13 @@ import QuizLogo from "@/components/ui/QuizLogo";
 import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { QuizType } from "@/types";
+import { useTranslation } from "react-i18next";
 
 export default function PickQuiz() {
   const { user, loading, refreshUser } = useUser();
   const [selected, setSelected] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const { t } = useTranslation();
 
   const { data, isLoading } = useQuery({
     queryKey: ["starter-quizzes"],
@@ -66,11 +68,8 @@ export default function PickQuiz() {
   return (
     <BackgroundGradient style={styles.container}>
       <View style={{ gap: 10 }}>
-        <Text style={styles.title}>Choose Your Starter Quiz</Text>
-        <Text style={styles.subtitle}>
-          Unlock one premium quiz for free to kick off your collection. You can
-          grab more later in the shop.
-        </Text>
+        <Text style={styles.title}>{t("pickQuizTitle")}</Text>
+        <Text style={styles.subtitle}>{t("pickQuizSubtitle")}</Text>
       </View>
 
       {isLoading ? (
@@ -106,31 +105,34 @@ export default function PickQuiz() {
                 >
                   <Text style={styles.quizTitle}>{quiz.title}</Text>
                   <View style={styles.freeBadge}>
-                    <Text style={styles.freeBadgeTxt}>Free</Text>
+                    <Text style={styles.freeBadgeTxt}>
+                      {t("pickQuizBadge")}
+                    </Text>
                   </View>
                 </View>
                 <Text style={styles.quizCompany}>{quiz.company}</Text>
                 <Text style={styles.quizMeta}>
-                  {quiz.sections.length} sections · {quiz.questionsTotal}{" "}
-                  questions · {quiz.rewardsTotal} trophies
+                  {t("pickQuizMeta", {
+                    sections: quiz.sections.length,
+                    questions: quiz.questionsTotal,
+                    rewards: quiz.rewardsTotal,
+                  })}
                 </Text>
                 <Text style={styles.quizDescription} numberOfLines={2}>
-                  {"A fan-favorite journey for superfans."}
+                  {t("pickQuizDescriptionFallback")}
                 </Text>
               </View>
             </TouchableOpacity>
           ))}
           {starterQuizzes.length === 0 && (
-            <Text style={styles.emptyState}>
-              No quizzes available yet. Please try again shortly.
-            </Text>
+            <Text style={styles.emptyState}>{t("pickQuizEmpty")}</Text>
           )}
         </ScrollView>
       )}
 
       <NextButton
         onPress={handleUnlock}
-        title="Unlock & continue"
+        title={t("pickQuizButton")}
         loading={submitting}
         disabled={!selected || submitting}
       />

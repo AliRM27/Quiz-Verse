@@ -23,49 +23,47 @@ import TrophyIcon from "@/assets/svgs/trophy.svg";
 import Bow from "@/assets/svgs/bow-arrow.svg";
 import { updateUser } from "@/services/api";
 import Level from "@/assets/svgs/gauge.svg";
+import { useTranslation } from "react-i18next";
 
-const createSlides = () => [
+const createSlides = (t: ReturnType<typeof useTranslation>["t"]) => [
   {
-    title: "Play Quizzes You Love",
-    headline: "Fan-made trivia, quick rewards, zero fluff.",
-    description:
-      "Pick a universe, dive into handcrafted questions, earn trophies, and keep exploring—all inside one focused, mobile-native experience.",
+    title: t("welcomeSlide1Title"),
+    headline: t("welcomeSlide1Headline"),
+    description: t("welcomeSlide1Description"),
     Icon: Bow,
     accent: "#6A7EFC",
-    meta: "Instant Gameplay",
+    meta: t("welcomeSlide1Meta"),
   },
   {
-    title: "Climb Every Difficulty",
-    headline: "Four stages unlock as you prove yourself.",
-    description:
-      "Start on Easy, then unlock Medium, Hard, and Extreme tiers loaded with emoji puzzles, numeric inputs, and other twists that keep you guessing.",
+    title: t("welcomeSlide2Title"),
+    headline: t("welcomeSlide2Headline"),
+    description: t("welcomeSlide2Description"),
     Icon: Level,
     accent: Colors.dark.info,
-    meta: "Easy → Extreme",
+    meta: t("welcomeSlide2Meta"),
   },
   {
-    title: "Stack Rewards & Bonuses",
-    headline: "Finish faster, answer smarter, earn more.",
-    description:
-      "Collect trophies per question, chase streak badges for flawless runs, and beat the clock for time bonuses that supercharge your totals.",
+    title: t("welcomeSlide3Title"),
+    headline: t("welcomeSlide3Headline"),
+    description: t("welcomeSlide3Description"),
     Icon: TrophyIcon,
     accent: Colors.dark.secondary,
-    meta: "Trophies · Streaks · Time",
+    meta: t("welcomeSlide3Meta"),
   },
   {
-    title: "Claim Your Starter Quiz",
-    headline: "Pick a free unlock to begin your legacy.",
-    description:
-      "Lock in a name, unlock a free starter quiz, and start building your legacy.",
+    title: t("welcomeSlide4Title"),
+    headline: t("welcomeSlide4Headline"),
+    description: t("welcomeSlide4Description"),
     Icon: BookIcon,
     accent: Colors.dark.primary,
-    meta: "Free Unlock",
+    meta: t("welcomeSlide4Meta"),
     type: "username",
   },
 ];
 
 export default function Welcome() {
-  const slides = useMemo(() => createSlides(), []);
+  const { t } = useTranslation();
+  const slides = useMemo(() => createSlides(t), [t]);
   const [step, setStep] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const translateAnim = useRef(new Animated.Value(0)).current;
