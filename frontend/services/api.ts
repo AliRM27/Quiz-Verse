@@ -89,6 +89,33 @@ export const fetchUser = async (savedToken: string) => {
   }
 };
 
+export const fetchUserProgress = async () => {
+  try {
+    const res = await api.get("api/users/me/progress");
+    return res.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const fetchUserProgressDetail = async (quizId: string | string[]) => {
+  try {
+    const res = await api.get(`api/users/me/progress/${quizId}`);
+    return res.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const fetchUserHistory = async () => {
+  try {
+    const res = await api.get("api/users/me/history");
+    return res.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 export const updateUser = async (updatedData: any) => {
   try {
     const res = await api.patch("api/users/me", updatedData);
@@ -128,15 +155,6 @@ export const searchQuizzes = async (query: string) => {
   } catch (err) {
     console.log(err);
     return [];
-  }
-};
-
-export const fetchUnlockedQuizzes = async (userId: string | undefined) => {
-  try {
-    const res = await api.get("api/quizzes/unlocked/" + userId);
-    return res.data;
-  } catch (err) {
-    console.log(err);
   }
 };
 

@@ -4,15 +4,134 @@ import mongoose from "mongoose";
 
 export const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).populate(
-      "unlockedQuizzes.quizId completedQuizzes.quizId lastPlayed.quizId progress.quizId"
-    );
+    const user = await User.findById(req.userId)
+      .select(
+        "googleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes"
+      )
+      .lean();
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json(user);
+
+    const response = {
+      ...user,
+      unlockedQuizzesCount: user.unlockedQuizzes
+        ? user.unlockedQuizzes.length
+        : 0,
+      completedQuizzesCount: user.completedQuizzes
+        ? user.completedQuizzes.length
+        : 0,
+    };
+
+    delete response.unlockedQuizzes;
+    delete response.completedQuizzes;
+
+    res.json(response);
   } catch (error) {
     console.error("Error fetching profile:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getUserProgressData = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId)
+      .select("progress unlockedQuizzes")
+      .populate([
+        {
+          path: "progress.quizId",
+          select: "title logoFile questionsTotal rewardsTotal company",
+        },
+        {
+          path: "unlockedQuizzes.quizId",
+          select: "title logoFile questionsTotal rewardsTotal company",
+        },
+      ]);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const summary = (user.progress || []).map((entry) => ({
+      _id: entry._id,
+      quizId: entry.quizId,
+      questionsCompleted: entry.questionsCompleted,
+      rewardsTotal: entry.rewardsTotal,
+      completed: entry.completed,
+      perfected: entry.perfected,
+      sections: (entry.sections || []).map((section) => ({
+        difficulty: section.difficulty,
+        questions: section.questions,
+        rewards: section.rewards,
+      })),
+    }));
+
+    res.json({
+      progress: summary,
+      unlockedQuizzes: user.unlockedQuizzes || [],
+    });
+  } catch (error) {
+    console.error("Error fetching user progress:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getUserHistory = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId)
+      .select("lastPlayed completedQuizzes")
+      .populate([
+        {
+          path: "lastPlayed.quizId",
+          select: "title logoFile questionsTotal rewardsTotal company",
+        },
+        {
+          path: "completedQuizzes.quizId",
+          select: "title logoFile questionsTotal rewardsTotal company",
+        },
+      ]);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      lastPlayed: user.lastPlayed || [],
+      completedQuizzes: user.completedQuizzes || [],
+    });
+  } catch (error) {
+    console.error("Error fetching user history:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getUserProgressDetail = async (req, res) => {
+  try {
+    const { quizId } = req.params;
+    if (!quizId) {
+      return res.status(400).json({ message: "quizId is required" });
+    }
+
+    const user = await User.findById(req.userId)
+      .select("progress")
+      .populate("progress.quizId");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const progressEntry = (user.progress || []).find(
+      (entry) => entry.quizId._id.toString() === quizId
+    );
+
+    if (!progressEntry) {
+      return res.status(404).json({ message: "Progress not found" });
+    }
+
+    res.json({ progress: progressEntry });
+  } catch (error) {
+    console.error("Error fetching progress detail:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

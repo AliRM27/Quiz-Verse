@@ -89,7 +89,7 @@ const Settings = () => {
   return (
     <View
       style={{
-        paddingTop: layout.paddingTop,
+        paddingTop: 50,
         gap: 20,
         backgroundColor: Colors.dark.bg_dark,
       }}

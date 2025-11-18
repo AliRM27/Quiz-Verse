@@ -22,6 +22,8 @@ import { useTranslation } from "react-i18next";
 import { streakMilestones, timeBonusThresholds } from "@/utils/rewardsSystem";
 import Trophy from "@/assets/svgs/trophy.svg";
 import Loader from "./ui/Loader";
+import { useQuery } from "@tanstack/react-query";
+import { fetchUserProgressDetail } from "@/services/api";
 
 const RewardComponent = ({
   name,
@@ -198,18 +200,23 @@ const Result = ({
   const [showAnimation, setShowAnimation] = useState<string>("");
   const scrollViewRef = useRef<ScrollView | null>(null);
   const [loading, setloading] = useState(false);
+  const { data: detailData, isLoading: detailLoading } = useQuery({
+    queryKey: ["userProgressDetail", quiz._id],
+    queryFn: () => fetchUserProgressDetail(quiz._id),
+    enabled: !!user?._id,
+  });
+  const userProgress =
+    detailData?.progress?.sections?.[Number(selectedLevelIndex)] || null;
 
   const scrollToBottom = () => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
   };
 
-  const userProgress = user?.progress.find((p) => p.quizId._id === quiz._id)
-    .sections[Number(selectedLevelIndex)];
-
   const quizProgress = quiz.sections[Number(selectedLevelIndex)];
 
   useEffect(() => {
     scrollToBottom();
+    if (!userProgress) return;
     setValue(
       Math.floor(
         ((userProgress.questions - newQuestions) /
@@ -243,7 +250,22 @@ const Result = ({
     setTimeout(() => {
       setShowAnimation("3");
     }, 5000);
-  }, []);
+  }, [userProgress]);
+
+  if (detailLoading || !userProgress) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: Colors.dark.bg,
+        }}
+      >
+        <Loader />
+      </View>
+    );
+  }
 
   return (
     <View

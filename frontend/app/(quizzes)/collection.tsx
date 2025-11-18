@@ -14,13 +14,24 @@ import QuizLogo from "@/components/ui/QuizLogo";
 import { QuizType } from "@/types";
 import { useTranslation } from "react-i18next";
 import ArrBack from "@/components/ui/ArrBack";
+import { useQuery } from "@tanstack/react-query";
+import { fetchUserProgress } from "@/services/api";
 
 const Collection = () => {
   const { user, loading } = useUser();
   const { t } = useTranslation();
-  if (loading || !user) {
-    return;
+  const { data, isLoading } = useQuery({
+    queryKey: ["userProgress"],
+    queryFn: fetchUserProgress,
+    enabled: !!user?._id,
+  });
+
+  if (loading || !user || isLoading) {
+    return null;
   }
+
+  const unlockedQuizzes = data?.unlockedQuizzes || [];
+
   return (
     <View
       style={{
@@ -43,9 +54,9 @@ const Collection = () => {
       <FlatList
         numColumns={2}
         horizontal={false}
-        data={user.unlockedQuizzes}
+        data={unlockedQuizzes}
         contentContainerStyle={{ alignItems: "center" }}
-        keyExtractor={(item) => item._id}
+        keyExtractor={(item) => item._id || item.quizId._id}
         renderItem={({ item }: { item: QuizType }) => (
           <TouchableOpacity
             onPress={() => {

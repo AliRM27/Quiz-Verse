@@ -14,7 +14,7 @@ import Search from "@/assets/svgs/search.svg";
 import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { searchQuizzes } from "@/services/api";
+import { searchQuizzes, fetchUserProgress } from "@/services/api";
 import { debounce } from "lodash";
 import QuizLogo from "@/components/ui/QuizLogo";
 import { useUser } from "@/context/userContext";
@@ -32,8 +32,15 @@ export default function Explore() {
   const [focused, setFocused] = useState(false);
   const [query, setQuery] = useState("");
   const [input, setInput] = useState("");
-  const { user, loading, refreshUser } = useUser();
+  const { user, loading } = useUser();
   const { t } = useTranslation();
+  const { data: progressData, isLoading: progressLoading } = useQuery({
+    queryKey: ["userProgress"],
+    queryFn: fetchUserProgress,
+    enabled: !!user?._id,
+  });
+  const progressList = progressData?.progress || [];
+  const unlockedQuizzes = progressData?.unlockedQuizzes || [];
 
   const debouncedSetSearch = useMemo(
     () => debounce((text: string) => setQuery(text), 500),
@@ -56,7 +63,7 @@ export default function Explore() {
     queryFn: () => searchQuizzes(query),
   });
 
-  if (!user) {
+  if (!user || progressLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator />
@@ -103,7 +110,7 @@ export default function Explore() {
 
       {isLoading && <Loader width={50} height={50} />}
 
-      {!isLoading && !loading && quizzes?.length === 0 && (
+      {!isLoading && !loading && !progressLoading && quizzes?.length === 0 && (
         <View
           style={{
             alignItems: "center",
@@ -133,12 +140,11 @@ export default function Explore() {
         style={{ width: "100%", paddingHorizontal: 10 }}
         contentContainerStyle={{ gap: 20 }}
         renderItem={({ item }) => {
-          const progress =
-            user?.progress.find((p) => p.quizId._id === item._id)
-              ?.questionsCompleted || 0;
-          const rewards =
-            user?.progress.find((p) => p.quizId._id === item._id)
-              ?.rewardsTotal || 0;
+          const progressEntry = progressList.find(
+            (p: any) => p.quizId._id === item._id
+          );
+          const progress = progressEntry?.questionsCompleted || 0;
+          const rewards = progressEntry?.rewardsTotal || 0;
           const progressPercent =
             progress !== 0
               ? Math.floor((progress / item.questionsTotal) * 100)
@@ -147,8 +153,8 @@ export default function Explore() {
             ? Math.floor((rewards / item.rewardsTotal) * 100)
             : 0;
 
-          const isUnlocked = user.unlockedQuizzes.some(
-            (q) => q.quizId._id === item._id || q.quizId === item._id
+          const isUnlocked = unlockedQuizzes.some(
+            (q: any) => q.quizId._id === item._id || q.quizId === item._id
           );
 
           return (

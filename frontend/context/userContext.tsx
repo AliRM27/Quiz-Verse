@@ -18,10 +18,8 @@ export type User = {
   name: string;
   email: string;
   profileImage: string;
-  completedQuizzes: any[];
-  unlockedQuizzes: any[];
-  lastPlayed: any[];
-  progress: any[];
+  completedQuizzesCount?: number;
+  unlockedQuizzesCount?: number;
   role: string;
   stars: number;
   level: number;
@@ -78,7 +76,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     if (storedToken) {
       try {
         const res = await fetchUser(storedToken);
-        setUser(res?.data);
+        const baseUser = res?.data;
+        setUser(baseUser || null);
         setToken(storedToken);
         initI18n(res?.data.language);
       } catch (err) {

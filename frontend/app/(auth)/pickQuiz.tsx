@@ -19,12 +19,14 @@ import { router } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { QuizType } from "@/types";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function PickQuiz() {
   const { user, loading, refreshUser } = useUser();
   const [selected, setSelected] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: ["starter-quizzes"],
@@ -48,6 +50,7 @@ export default function PickQuiz() {
     try {
       setSubmitting(true);
       await updateUserProgress({ quizId: selected });
+      await queryClient.invalidateQueries({ queryKey: ["userProgress"] });
       await refreshUser();
       router.replace("/(tabs)");
     } catch (error) {

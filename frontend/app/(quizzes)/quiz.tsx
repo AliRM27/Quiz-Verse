@@ -21,13 +21,17 @@ import { useUser } from "@/context/userContext";
 import { useTranslation } from "react-i18next";
 import ProgressBar from "@/components/animatinos/progressBar";
 import { PRICES } from "@/constants/Prices";
-import { updateUser, updateUserProgress } from "@/services/api";
+import {
+  updateUser,
+  updateUserProgress,
+  fetchUserProgress,
+} from "@/services/api";
 import LockOpen from "@/assets/svgs/lock-open.svg";
 import Lock from "@/assets/svgs/lock.svg";
 import { languageMap } from "@/utils/i18n";
 import Trophy from "@/assets/svgs/trophy.svg";
 import { fetchQuiz } from "@/services/api";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Loader from "@/components/ui/Loader";
 import * as Haptics from "expo-haptics";
 
@@ -36,6 +40,7 @@ const Quiz = () => {
   const opacity = useRef(new Animated.Value(1)).current;
   const { t } = useTranslation();
   const { user, refreshUser } = useUser();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedLevelIndex, setSelectedLevelIndex] = useState(0);
   const [ready, setReady] = useState(false);
@@ -43,6 +48,14 @@ const Quiz = () => {
   const { data, isLoading } = useQuery({
     queryKey: ["quizzes", id],
     queryFn: ({ queryKey }) => fetchQuiz(queryKey[1]),
+  });
+  const {
+    data: progressData,
+    isLoading: progressLoading,
+  } = useQuery({
+    queryKey: ["userProgress"],
+    queryFn: fetchUserProgress,
+    enabled: !!user?._id,
   });
 
   useEffect(() => {
@@ -77,7 +90,7 @@ const Quiz = () => {
 
   if (!user) return null;
 
-  if (!ready || isLoading) {
+  if (!ready || isLoading || progressLoading) {
     return (
       <View
         style={{
@@ -93,7 +106,8 @@ const Quiz = () => {
   }
 
   const quiz: QuizType = data;
-  const currentProgress = user.progress.find((p) => p.quizId._id === id);
+  const progressList = progressData?.progress || [];
+  const currentProgress = progressList.find((p: any) => p.quizId._id === id);
   const isUnlocked = Boolean(currentProgress);
 
   return (
@@ -366,6 +380,12 @@ const Quiz = () => {
                       stars: user.stars - PRICES.quizzes.single.price.trophies,
                     });
                     await updateUserProgress({ quizId: quiz._id });
+                    await queryClient.invalidateQueries({
+                      queryKey: ["userProgress"],
+                    });
+                    await queryClient.invalidateQueries({
+                      queryKey: ["userProgressDetail", id],
+                    });
                     await refreshUser();
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
                   } catch (err) {

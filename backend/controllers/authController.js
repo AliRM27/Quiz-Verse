@@ -25,9 +25,7 @@ export const googleSignIn = async (req, res) => {
     const profileImage = payload.picture;
 
     // Check if user already exists
-    let user = await User.findOne({ googleId }).populate(
-      "completedQuizzes.quizId lastPlayed.quizId progress.quizId unlockedQuizzes.quizId"
-    );
+    let user = await User.findOne({ googleId });
 
     if (!user) {
       // Create a new user if not found
@@ -64,7 +62,26 @@ export const googleSignIn = async (req, res) => {
     user.lastActiveAt = new Date();
     await user.save();
 
-    res.status(200).json({ token: jwtToken, sessionToken, user });
+    const leanUser = await User.findById(user._id)
+      .select(
+        "googleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes"
+      )
+      .lean();
+
+    const responseUser = {
+      ...leanUser,
+      unlockedQuizzesCount: leanUser.unlockedQuizzes
+        ? leanUser.unlockedQuizzes.length
+        : 0,
+      completedQuizzesCount: leanUser.completedQuizzes
+        ? leanUser.completedQuizzes.length
+        : 0,
+    };
+
+    delete responseUser.unlockedQuizzes;
+    delete responseUser.completedQuizzes;
+
+    res.status(200).json({ token: jwtToken, sessionToken, user: responseUser });
   } catch (error) {
     console.error("Google Sign-In Error:", error);
     res.status(500).json({ message: "Internal server error" });

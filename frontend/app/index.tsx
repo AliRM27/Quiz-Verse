@@ -32,8 +32,8 @@ export default function Index() {
         }
 
         const needsUsername = !user.name || user.name.trim() === "";
-        const needsStarterQuiz =
-          !needsUsername && (user.unlockedQuizzes?.length ?? 0) === 0;
+        const unlockedCount = user.unlockedQuizzesCount ?? 0;
+        const needsStarterQuiz = !needsUsername && unlockedCount === 0;
 
         if (needsUsername) {
           router.replace("/(auth)/welcome");

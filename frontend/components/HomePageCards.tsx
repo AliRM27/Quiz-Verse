@@ -14,7 +14,7 @@ import { LineDashed } from "@/components/ui/Line";
 import * as Haptics from "expo-haptics";
 import RotatingGradient from "./ui/gradients/GlowingView";
 import { useQuery } from "@tanstack/react-query";
-import { fetchUnlockedQuizzes } from "@/services/api";
+import { fetchUserProgress } from "@/services/api";
 import QuizLogo from "@/components/ui/QuizLogo";
 import { useUser } from "@/context/userContext";
 import { REGULAR_FONT } from "@/constants/Styles";
@@ -41,17 +41,20 @@ export default function HomePageCards() {
 
   const { t } = useTranslation();
 
-  // Wait for user state to load before running query
-  const { data, error, isLoading } = useQuery({
-    queryKey: ["quizzes", user?._id],
-    queryFn: ({ queryKey }) => fetchUnlockedQuizzes(queryKey[1]),
+  const { data: progressData, error, isLoading } = useQuery({
+    queryKey: ["userProgress"],
+    queryFn: fetchUserProgress,
     enabled: !!user?._id && !loading,
   });
-  const quiz = data?.[currentIndex]?.quizId;
+
+  const unlockedQuizzes = progressData?.unlockedQuizzes || [];
+  const progressList = progressData?.progress || [];
+  const quiz = unlockedQuizzes[currentIndex]?.quizId;
+
   const currentProgress = useMemo(() => {
-    if (!user?.progress || !quiz?._id) return undefined;
-    return user.progress.find((quizObj) => quizObj.quizId._id === quiz._id);
-  }, [user, quiz]);
+    if (!quiz?._id) return undefined;
+    return progressList.find((quizObj: any) => quizObj.quizId._id === quiz._id);
+  }, [progressList, quiz]);
 
   useEffect(() => {
     // Scroll back to where user left off (if > 0)
@@ -91,7 +94,7 @@ export default function HomePageCards() {
     );
   }
 
-  if (!data || data.length === 0) {
+  if (!unlockedQuizzes || unlockedQuizzes.length === 0) {
     return (
       <View style={{ justifyContent: "center", alignItems: "center" }}>
         <Text style={{ color: Colors.dark.text_muted }}>
@@ -105,8 +108,8 @@ export default function HomePageCards() {
     <View style={defaultStyles.container}>
       <Animated.FlatList
         ref={flatListRef}
-        data={data}
-        keyExtractor={(item) => item._id}
+        data={unlockedQuizzes}
+        keyExtractor={(item) => item._id || item.quizId._id}
         horizontal
         maxToRenderPerBatch={5}
         windowSize={5}

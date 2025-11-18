@@ -12,8 +12,12 @@ import { useEffect, useRef, useState } from "react";
 import { HEIGHT, layout, myHeight } from "@/constants/Dimensions";
 import { Colors } from "@/constants/Colors";
 import { router, useLocalSearchParams } from "expo-router";
-import { useQuery } from "@tanstack/react-query";
-import { fetchQuiz } from "@/services/api";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  fetchQuiz,
+  fetchUserHistory,
+  fetchUserProgressDetail,
+} from "@/services/api";
 import BackArr from "@/assets/svgs/backArr.svg";
 import QuizLogo from "@/components/ui/QuizLogo";
 import { useUser } from "@/context/userContext";
@@ -52,6 +56,18 @@ export default function Index() {
   });
   const { t } = useTranslation();
   const { user, loading, refreshUser } = useUser();
+  const queryClient = useQueryClient();
+  const { data: historyData, isLoading: historyLoading } = useQuery({
+    queryKey: ["userHistory"],
+    queryFn: fetchUserHistory,
+    enabled: !!user?._id,
+  });
+  const lastPlayedHistory = historyData?.lastPlayed || [];
+  const { data: progressDetail, isLoading: detailLoading } = useQuery({
+    queryKey: ["userProgressDetail", id],
+    queryFn: () => fetchUserProgressDetail(id),
+    enabled: !!user?._id,
+  });
   const [rewards, setRewards] = useState<number>(0);
   const [questionRewards, setQuestionRewards] = useState<number>(0);
   const [streakRewards, setStreakRewards] = useState<number>(0);
@@ -95,7 +111,13 @@ export default function Index() {
     };
   }, [currQuestionIndex, startTime]);
 
-  if (loading || isLoading || !user) {
+  if (
+    loading ||
+    isLoading ||
+    historyLoading ||
+    detailLoading ||
+    !user
+  ) {
     return (
       <View
         style={{
@@ -114,7 +136,7 @@ export default function Index() {
   const currSection = data.sections[Number(section)];
   const currQuestion =
     data.sections[Number(section)].questions[currQuestionIndex];
-  const currProgress = user?.progress.find((q) => q.quizId._id === data._id);
+  const currProgress = progressDetail?.progress;
   const prevAnswered = currProgress.sections[Number(section)].answered ?? [];
   const sectionProgress = currProgress.sections[Number(section)];
 
@@ -298,6 +320,8 @@ export default function Index() {
               timeRewards: timeBonus,
             },
           });
+          await queryClient.invalidateQueries({ queryKey: ["userProgress"] });
+          await queryClient.invalidateQueries({ queryKey: ["userProgress"] });
 
           const finalRewardGain = newTotal - currSectionProgress.rewards;
           if (finalRewardGain > 0) {
@@ -338,15 +362,21 @@ export default function Index() {
     setSliderValue(-1);
   };
 
+  const updateLastPlayedList = async () => {
+    if (!data?._id) return;
+    const simplified = lastPlayedHistory.map((entry: any) => ({
+      quizId: entry.quizId._id || entry.quizId,
+    }));
+    const filtered = simplified.filter(
+      (entry: any) => entry.quizId !== data._id
+    );
+    const updated = [{ quizId: data._id }, ...filtered].slice(0, 2);
+    await updateUser({ lastPlayed: updated });
+    await queryClient.invalidateQueries({ queryKey: ["userHistory"] });
+  };
+
   const handleUserLastPlayed = async () => {
-    if (user.lastPlayed.length === 0) {
-      user.lastPlayed = [{ quizId: data._id }];
-      await updateUser({ lastPlayed: user.lastPlayed });
-    } else if (user.lastPlayed[0].quizId._id !== data._id) {
-      user.lastPlayed = [{ quizId: data._id }, ...user.lastPlayed];
-      user.lastPlayed.length > 2 && user.lastPlayed.pop();
-      await updateUser({ lastPlayed: user?.lastPlayed });
-    }
+    await updateLastPlayedList();
   };
 
   if (showResult) {
@@ -389,14 +419,7 @@ export default function Index() {
           }}
           onPress={async () => {
             try {
-              if (user.lastPlayed.length === 0) {
-                user.lastPlayed = [{ quizId: data._id }];
-                await updateUser({ lastPlayed: user.lastPlayed });
-              } else if (user.lastPlayed[0].quizId._id !== data._id) {
-                user.lastPlayed = [{ quizId: data._id }, ...user.lastPlayed];
-                user.lastPlayed.length > 2 && user.lastPlayed.pop();
-                await updateUser({ lastPlayed: user?.lastPlayed });
-              }
+              await updateLastPlayedList();
               await refreshUser();
               router.back();
             } catch (err) {

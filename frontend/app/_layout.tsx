@@ -12,7 +12,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider } from "@/context/userContext";
 import { useEffect } from "react";
-import { fetchUnlockedQuizzes } from "@/services/api";
+import { fetchUserProgress } from "@/services/api";
 import { useUser } from "@/context/userContext";
 import { Colors } from "@/constants/Colors";
 
@@ -33,8 +33,8 @@ export default function RootLayout() {
   useEffect(() => {
     if (isAuthenticated && user) {
       queryClient.prefetchQuery({
-        queryKey: ["quizzes", user._id],
-        queryFn: () => fetchUnlockedQuizzes(user._id),
+        queryKey: ["userProgress"],
+        queryFn: fetchUserProgress,
       });
     }
   }, [user]);

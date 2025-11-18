@@ -24,24 +24,42 @@ import ProgressBar from "@/components/animatinos/progressBar";
 import BookDashed from "@/assets/svgs/book-dashed.svg";
 import ProfileCardModal from "@/components/ui/ProfileCardModal";
 import Loader from "@/components/ui/Loader";
+import { useQuery } from "@tanstack/react-query";
+import { fetchUserProgress, fetchUserHistory } from "@/services/api";
 
 export default function Profile() {
   const { user, loading } = useUser();
   const { t } = useTranslation();
+  const { data: progressData, isLoading: progressLoading } = useQuery({
+    queryKey: ["userProgress"],
+    queryFn: fetchUserProgress,
+    enabled: !!user?._id,
+  });
+  const { data: historyData, isLoading: historyLoading } = useQuery({
+    queryKey: ["userHistory"],
+    queryFn: fetchUserHistory,
+    enabled: !!user?._id,
+  });
+  const progressList = progressData?.progress || [];
+  const lastPlayed = historyData?.lastPlayed || [];
   const [categroyPressed, setCategoryPressed] = useState<string>("");
   const [currIndex, setCurrIndex] = useState<number>(0);
   const [isVisible, setIsVisible] = useState<boolean>(false);
-  const [currLogoFile, setCurrLogoFile] = useState<string>(
-    user?.lastPlayed[0]?.quizId.logoFile
-  );
+  const [currLogoFile, setCurrLogoFile] = useState<string>("");
+
+  useEffect(() => {
+    if (lastPlayed[0]?.quizId?.logoFile) {
+      setCurrLogoFile(lastPlayed[0].quizId.logoFile);
+    }
+  }, [lastPlayed]);
 
   const progressMap = useMemo(() => {
     const map = new Map();
-    user?.progress.forEach((p) => {
+    progressList.forEach((p) => {
       map.set(p.quizId._id, p);
     });
     return map;
-  }, [user?.progress]);
+  }, [progressList]);
 
   useEffect(() => {
     if (user) {
@@ -49,14 +67,14 @@ export default function Profile() {
     }
   }, [user]);
 
-  if (!user || loading)
+  if (!user || loading || progressLoading || historyLoading)
     return (
       <View style={{ justifyContent: "center", alignItems: "center" }}>
         <Loader />
       </View>
     );
 
-  let filteredQuizzes = user.progress.filter((quiz) => {
+  let filteredQuizzes = progressList.filter((quiz) => {
     if (
       !quiz.completed &&
       !quiz.perfected &&
@@ -208,7 +226,7 @@ export default function Profile() {
           </TouchableOpacity>
         </View>
       </View>
-      {user.lastPlayed.length > 0 && (
+      {lastPlayed.length > 0 && (
         <View style={{ width: "100%", gap: 20 }}>
           <Text
             style={[
@@ -228,10 +246,10 @@ export default function Profile() {
                 borderRadius: 10,
                 height: 320,
               },
-              user.lastPlayed.length === 0 && { height: 100 },
+              lastPlayed.length === 0 && { height: 100 },
             ]}
           >
-            {user.lastPlayed.length === 0 ? (
+            {lastPlayed.length === 0 ? (
               <Text
                 style={{
                   color: Colors.dark.text,
@@ -246,7 +264,7 @@ export default function Profile() {
                 Play Quizzes
               </Text>
             ) : (
-              user.lastPlayed.map((quiz, index) => {
+              lastPlayed.map((quiz, index) => {
                 const quizId = quiz.quizId;
                 const currentProgress = progressMap.get(quiz.quizId._id);
                 return (

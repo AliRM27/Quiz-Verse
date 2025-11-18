@@ -29,6 +29,7 @@ import LockOpen from "@/assets/svgs/lock-open.svg";
 import Lock from "@/assets/svgs/lock.svg";
 import { languageMap } from "@/utils/i18n";
 import Trophy from "@/assets/svgs/trophy.svg";
+import { useQueryClient } from "@tanstack/react-query";
 
 const QuizModal: React.FC<QuizModalProps> = ({
   isVisible,
@@ -41,6 +42,7 @@ const QuizModal: React.FC<QuizModalProps> = ({
   const opacity = useRef(new Animated.Value(1)).current;
   const { t } = useTranslation();
   const { user, refreshUser } = useUser();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState<boolean>(false);
   const panResponder = useRef(
     PanResponder.create({
@@ -397,6 +399,9 @@ const QuizModal: React.FC<QuizModalProps> = ({
                             user.stars - PRICES.quizzes.single.price.trophies,
                         });
                         await updateUserProgress({ quizId: quiz._id });
+                        await queryClient.invalidateQueries({
+                          queryKey: ["userProgress"],
+                        });
                         await refreshUser();
                       } catch (err) {
                         console.log(err);
