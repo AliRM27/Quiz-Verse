@@ -116,7 +116,7 @@ const Quiz = () => {
         collapsable={false}
         style={{ alignItems: "center", gap: 15, marginTop: 50 }}
       >
-        <Animated.View style={isUnlocked && { opacity }}>
+        <Animated.View style={{ opacity: isUnlocked ? opacity : 1 }}>
           <RotatingGradient>
             <TouchableOpacity
               disabled={!isUnlocked}

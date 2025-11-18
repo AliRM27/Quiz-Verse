@@ -75,11 +75,12 @@
   "welcomeUsernameError": "Используйте 3-12 символов: буквы, цифры или нижнее подчёркивание.",
   "welcomeUsernameSave": "Сохранить и продолжить",
   "pickQuizTitle": "Выбери стартовый квиз",
-  "pickQuizSubtitle": "Открой один премиум-квиз бесплатно и начни коллекцию. Остальные будут ждать в магазине.",
+  "pickQuizSubtitle": "Открой один квиз бесплатно и начни коллекцию. Остальные будут ждать в магазине.",
   "pickQuizBadge": "Бесплатно",
   "pickQuizMeta": "{{sections}} разделов · {{questions}} вопросов · {{rewards}} трофеев",
   "pickQuizDescriptionFallback": "Любимый фанатами маршрут для настоящих ценителей.",
   "pickQuizEmpty": "Квизы пока недоступны. Попробуйте чуть позже.",
+  "pickUsernameButton": "Сохранить и продолжить",
   "pickQuizButton": "Открыть и продолжить",
   "nextButtonDefault": "Далее"
 }

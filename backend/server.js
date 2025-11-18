@@ -31,7 +31,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
-app.use("/api/quizzes", protect, checkActiveSession, quizRoutes);
+app.use("/api/quizzes", protect, quizRoutes);
 app.use("/api/categories", protect, checkActiveSession, categoryRoutes);
 app.use("/api/shop", protect, checkActiveSession, shopRoutes);
 app.use("/api/users", protect, profileRoutes);

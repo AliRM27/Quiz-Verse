@@ -270,7 +270,9 @@ export default function Welcome() {
           </View>
           <NextButton
             onPress={handlePrimaryAction}
-            title={isUsernameStep ? "Save & continue" : "Next"}
+            title={
+              isUsernameStep ? t("pickUsernameButton") : t("nextButtonDefault")
+            }
             loading={isUsernameStep ? savingUsername : false}
             disabled={isUsernameStep && !isUsernameValid}
           />

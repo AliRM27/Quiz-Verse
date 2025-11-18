@@ -75,11 +75,12 @@
   "welcomeUsernameError": "Use 3-12 characters with letters, numbers, or underscores.",
   "welcomeUsernameSave": "Save & continue",
   "pickQuizTitle": "Choose Your Starter Quiz",
-  "pickQuizSubtitle": "Unlock one premium quiz for free to kick off your collection. You can grab more later in the shop.",
+  "pickQuizSubtitle": "Unlock one quiz for free to kick off your collection. You can grab more later in the shop.",
   "pickQuizBadge": "Free",
   "pickQuizMeta": "{{sections}} sections · {{questions}} questions · {{rewards}} trophies",
   "pickQuizDescriptionFallback": "A fan-favorite journey for superfans.",
   "pickQuizEmpty": "No quizzes available yet. Please try again shortly.",
+  "pickUsernameButton": "Save & continue",
   "pickQuizButton": "Unlock & continue",
   "nextButtonDefault": "Next"
 }

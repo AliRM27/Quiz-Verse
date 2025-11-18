@@ -11,6 +11,7 @@ import { fetchUser, deleteUser } from "@/services/api";
 import { router } from "expo-router";
 import { initI18n } from "@/utils/i18n";
 import { updateUser } from "@/services/api";
+import { useQueryClient } from "@tanstack/react-query";
 
 export type User = {
   _id: string;
@@ -66,6 +67,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastIndexCard, setLastIndexRef] = useState<number>(0);
+  const queryClient = useQueryClient();
 
   const isAuthenticated = !!user && !!token;
 
@@ -109,22 +111,28 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   // Logout logic
-  const logout = useCallback(async () => {
-    setUser(null);
-    setToken(null);
-    setLastIndexRef(0);
-    await updateUser({ activeSession: null, lastActiveAt: null });
-    await SecureStore.deleteItemAsync("token");
-    await SecureStore.deleteItemAsync("sessionToken");
-    router.replace("/(auth)");
-  }, []);
+  const logout = useCallback(
+    async (options?: { skipStatusUpdate?: boolean }) => {
+      setUser(null);
+      setToken(null);
+      setLastIndexRef(0);
+      queryClient.clear();
+      if (!options?.skipStatusUpdate) {
+        await updateUser({ activeSession: null, lastActiveAt: null });
+      }
+      await SecureStore.deleteItemAsync("token");
+      await SecureStore.deleteItemAsync("sessionToken");
+      router.replace("/(auth)");
+    },
+    [queryClient]
+  );
 
   // Delete account logic
   const deleteAccount = useCallback(async () => {
     if (user?._id) {
       try {
         await deleteUser(user._id);
-        await logout();
+        await logout({ skipStatusUpdate: true });
       } catch (error) {
         console.error("Failed to delete account:", error);
       }

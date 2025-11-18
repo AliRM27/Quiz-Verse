@@ -75,11 +75,12 @@
   "welcomeUsernameError": "Nutze 3-12 Zeichen aus Buchstaben, Zahlen oder Unterstrichen.",
   "welcomeUsernameSave": "Speichern & weiter",
   "pickQuizTitle": "Wähle dein Starter-Quiz",
-  "pickQuizSubtitle": "Schalte ein Premium-Quiz kostenlos frei und starte deine Sammlung. Weitere findest du später im Shop.",
+  "pickQuizSubtitle": "Schalte ein Quiz kostenlos frei und starte deine Sammlung. Weitere findest du später im Shop.",
   "pickQuizBadge": "Gratis",
   "pickQuizMeta": "{{sections}} Abschnitte · {{questions}} Fragen · {{rewards}} Trophäen",
   "pickQuizDescriptionFallback": "Ein Fanliebling für echte Kenner.",
   "pickQuizEmpty": "Derzeit sind keine Quizze verfügbar. Bitte versuche es später erneut.",
+  "pickUsernameButton": "Speichern und fortfahren",
   "pickQuizButton": "Freischalten & weiter",
   "nextButtonDefault": "Weiter"
 }

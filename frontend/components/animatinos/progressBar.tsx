@@ -17,11 +17,17 @@ const ProgressBar = ({
   const percentage = total > 0 && progress > 0 ? (progress / total) * 100 : 0;
 
   useEffect(() => {
-    Animated.timing(widthAnim, {
+    const animation = Animated.timing(widthAnim, {
       toValue: percentage,
       duration: 1000, // animation speed (ms)
       useNativeDriver: false, // can't animate width with native driver
-    }).start();
+    });
+
+    animation.start();
+
+    return () => {
+      animation.stop();
+    };
   }, [percentage]);
 
   return (

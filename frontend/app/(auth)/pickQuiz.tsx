@@ -35,7 +35,7 @@ export default function PickQuiz() {
   });
 
   const starterQuizzes: QuizType[] = useMemo(
-    () => (data || []).slice(0, 4),
+    () => (data || []).slice(0, 7),
     [data]
   );
 
@@ -98,7 +98,7 @@ export default function PickQuiz() {
               <View style={styles.logoWrapper}>
                 <QuizLogo name={quiz.logoFile} />
               </View>
-              <View style={{ flex: 1, gap: 6 }}>
+              <View style={{ flex: 1, gap: 10 }}>
                 <View
                   style={{
                     flexDirection: "row",
@@ -107,11 +107,6 @@ export default function PickQuiz() {
                   }}
                 >
                   <Text style={styles.quizTitle}>{quiz.title}</Text>
-                  <View style={styles.freeBadge}>
-                    <Text style={styles.freeBadgeTxt}>
-                      {t("pickQuizBadge")}
-                    </Text>
-                  </View>
                 </View>
                 <Text style={styles.quizCompany}>{quiz.company}</Text>
                 <Text style={styles.quizMeta}>
@@ -120,9 +115,6 @@ export default function PickQuiz() {
                     questions: quiz.questionsTotal,
                     rewards: quiz.rewardsTotal,
                   })}
-                </Text>
-                <Text style={styles.quizDescription} numberOfLines={2}>
-                  {t("pickQuizDescriptionFallback")}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -177,12 +169,15 @@ const styles = StyleSheet.create({
   },
   quizCard: {
     flexDirection: "row",
-    gap: 16,
-    borderRadius: 16,
+    padding: 20,
     borderWidth: 1,
-    borderColor: Colors.dark.border_muted,
+    borderColor: Colors.dark.bg_light,
+    borderRadius: 10,
+    gap: 16,
     backgroundColor: Colors.dark.bg,
-    padding: 16,
+    width: "100%",
+    height: 150,
+    alignItems: "center",
   },
   quizCardActive: {
     borderColor: Colors.dark.text,
@@ -192,6 +187,8 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 12,
+    borderColor: Colors.dark.border_muted,
+    borderWidth: 1,
     overflow: "hidden",
   },
   quizTitle: {

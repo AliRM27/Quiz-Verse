@@ -15,7 +15,7 @@ export const PRICES = {
   quizzes: {
     single: {
       price: {
-        trophies: 2000,
+        trophies: 1000,
         coins: 100,
       },
       max_rewards: 1600,

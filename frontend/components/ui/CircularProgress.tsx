@@ -48,13 +48,18 @@ const CircularProgress = ({
 
   // Animate when progress changes
   useEffect(() => {
-    Animated.timing(animatedValue, {
+    const animation = Animated.timing(animatedValue, {
       toValue: progress,
       duration: 1300, // animation speed
       useNativeDriver: true,
       easing: Easing.inOut(Easing.ease),
-    }).start();
+    });
+    animation.start();
     setValue(`${progress}${percent ? "%" : "/" + total}`);
+
+    return () => {
+      animation.stop();
+    };
   }, [progress]);
 
   const strokeDashoffset = animatedValue.interpolate({
