@@ -26,6 +26,7 @@ import ProfileCardModal from "@/components/ui/ProfileCardModal";
 import Loader from "@/components/ui/Loader";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserProgress, fetchUserHistory } from "@/services/api";
+import { QuizType } from "@/types";
 
 export default function Profile() {
   const { user, loading } = useUser();
@@ -55,7 +56,7 @@ export default function Profile() {
 
   const progressMap = useMemo(() => {
     const map = new Map();
-    progressList.forEach((p) => {
+    progressList.forEach((p: QuizType) => {
       map.set(p.quizId._id, p);
     });
     return map;
@@ -74,7 +75,7 @@ export default function Profile() {
       </View>
     );
 
-  let filteredQuizzes = progressList.filter((quiz) => {
+  let filteredQuizzes = progressList.filter((quiz: any) => {
     if (
       !quiz.completed &&
       !quiz.perfected &&
@@ -111,7 +112,10 @@ export default function Profile() {
 
   const currentProgressList = progressMap.get(
     filteredQuizzes[currIndex]?.quizId._id
-  );
+  ) || {
+    questionsCompleted: 0,
+    rewardsTotal: 0,
+  };
 
   return (
     <ScrollView
@@ -264,9 +268,12 @@ export default function Profile() {
                 Play Quizzes
               </Text>
             ) : (
-              lastPlayed.map((quiz, index) => {
+              lastPlayed.map((quiz: QuizType, index: number) => {
                 const quizId = quiz.quizId;
-                const currentProgress = progressMap.get(quiz.quizId._id);
+                const currentProgress = progressMap.get(quiz.quizId._id) || {
+                  questionsCompleted: 0,
+                  rewardsTotal: 0,
+                };
                 return (
                   <View
                     key={index}

@@ -51,6 +51,9 @@ export default function PickQuiz() {
       setSubmitting(true);
       await updateUserProgress({ quizId: selected });
       await queryClient.invalidateQueries({ queryKey: ["userProgress"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["userProgressDetail", selected],
+      });
       await refreshUser();
       router.replace("/(tabs)");
     } catch (error) {

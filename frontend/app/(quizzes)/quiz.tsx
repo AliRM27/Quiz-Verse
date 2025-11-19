@@ -49,10 +49,7 @@ const Quiz = () => {
     queryKey: ["quizzes", id],
     queryFn: ({ queryKey }) => fetchQuiz(queryKey[1]),
   });
-  const {
-    data: progressData,
-    isLoading: progressLoading,
-  } = useQuery({
+  const { data: progressData, isLoading: progressLoading } = useQuery({
     queryKey: ["userProgress"],
     queryFn: fetchUserProgress,
     enabled: !!user?._id,
@@ -280,88 +277,93 @@ const Quiz = () => {
               },
             ]}
           >
-            {quiz.sections.map((lvl, index) => (
-              <TouchableOpacity
-                activeOpacity={0.7}
-                key={index}
-                style={[
-                  defaultStyles.containerBackground,
-                  {
-                    paddingHorizontal: 10,
-                    justifyContent: "flex-start",
-                    backgroundColor: Colors.dark.bg,
-                    width: "40%",
-                    gap: WIDTH * (10 / myWidth),
-                    height: HEIGHT * (180 / myHeight),
-                  },
-                  selectedLevelIndex === index && {
-                    borderColor: Colors.dark.text,
-                  },
-                ]}
-                onPress={() => {
-                  setSelectedLevelIndex(index);
-                  Haptics.selectionAsync();
-                }}
-              >
-                <Text
+            {quiz.sections.map((lvl, index) => {
+              const sectionSummary = currentProgress?.sections?.[index] || {
+                questions: 0,
+                rewards: 0,
+              };
+              return (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  key={index}
                   style={[
-                    styles.txt,
+                    defaultStyles.containerBackground,
                     {
-                      fontSize: WIDTH * (16 / myWidth),
-                      textAlign: "center",
-                      marginBottom: 15,
+                      paddingHorizontal: 10,
+                      justifyContent: "flex-start",
+                      backgroundColor: Colors.dark.bg,
+                      width: "40%",
+                      gap: WIDTH * (10 / myWidth),
+                      height: HEIGHT * (180 / myHeight),
                     },
-                    languageMap[user.language] === "ru" &&
-                      lvl.difficulty === "Extreme" && {
-                        fontSize: WIDTH * (11 / myWidth),
-                      },
+                    selectedLevelIndex === index && {
+                      borderColor: Colors.dark.text,
+                    },
                   ]}
+                  onPress={() => {
+                    setSelectedLevelIndex(index);
+                    Haptics.selectionAsync();
+                  }}
                 >
-                  {t(lvl.difficulty)}
-                </Text>
-                <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
-                  <Text style={[styles.txt_muted]}>{t("progress")}</Text>
-                  <View
-                    style={{
-                      width: "80%",
-                      backgroundColor: Colors.dark.border_muted,
-                      borderRadius: 6,
-                    }}
+                  <Text
+                    style={[
+                      styles.txt,
+                      {
+                        fontSize: WIDTH * (16 / myWidth),
+                        textAlign: "center",
+                        marginBottom: 15,
+                      },
+                      languageMap[user.language] === "ru" &&
+                        lvl.difficulty === "Extreme" && {
+                          fontSize: WIDTH * (11 / myWidth),
+                        },
+                    ]}
                   >
-                    <ProgressBar
-                      color={Colors.dark.text}
-                      progress={currentProgress?.sections[index].questions}
-                      total={lvl.questions.length}
-                      height={3}
-                    />
-                  </View>
-                  <Text style={[styles.txt_muted, { fontSize: 10 }]}>
-                    {currentProgress?.sections[index].questions} /{" "}
-                    {lvl.questions.length}
+                    {t(lvl.difficulty)}
                   </Text>
-                </View>
-                <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
-                  <Text style={[styles.txt_muted]}>{t("rewards")}</Text>
-                  <View
-                    style={{
-                      width: "80%",
-                      backgroundColor: Colors.dark.border_muted,
-                      borderRadius: 6,
-                    }}
-                  >
-                    <ProgressBar
-                      color={"#FFB11F"}
-                      progress={currentProgress?.sections[index].rewards}
-                      total={lvl.rewards}
-                      height={3}
-                    />
+                  <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
+                    <Text style={[styles.txt_muted]}>{t("progress")}</Text>
+                    <View
+                      style={{
+                        width: "80%",
+                        backgroundColor: Colors.dark.border_muted,
+                        borderRadius: 6,
+                      }}
+                    >
+                      <ProgressBar
+                        color={Colors.dark.text}
+                        progress={sectionSummary.questions}
+                        total={lvl.questions.length}
+                        height={3}
+                      />
+                    </View>
+                    <Text style={[styles.txt_muted, { fontSize: 10 }]}>
+                      {sectionSummary.questions} / {lvl.questions.length}
+                    </Text>
                   </View>
-                  <Text style={[styles.txt_muted, { fontSize: 10 }]}>
-                    {currentProgress?.sections[index].rewards} / {lvl.rewards}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+                  <View style={{ width: "100%", alignItems: "center", gap: 5 }}>
+                    <Text style={[styles.txt_muted]}>{t("rewards")}</Text>
+                    <View
+                      style={{
+                        width: "80%",
+                        backgroundColor: Colors.dark.border_muted,
+                        borderRadius: 6,
+                      }}
+                    >
+                      <ProgressBar
+                        color={"#FFB11F"}
+                        progress={sectionSummary.rewards}
+                        total={lvl.rewards}
+                        height={3}
+                      />
+                    </View>
+                    <Text style={[styles.txt_muted, { fontSize: 10 }]}>
+                      {sectionSummary.rewards} / {lvl.rewards}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         ) : (
           <View style={{ alignItems: "center", gap: 15, marginTop: "auto" }}>

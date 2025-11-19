@@ -321,7 +321,9 @@ export default function Index() {
             },
           });
           await queryClient.invalidateQueries({ queryKey: ["userProgress"] });
-          await queryClient.invalidateQueries({ queryKey: ["userProgress"] });
+          await queryClient.invalidateQueries({
+            queryKey: ["userProgressDetail", id],
+          });
 
           const finalRewardGain = newTotal - currSectionProgress.rewards;
           if (finalRewardGain > 0) {

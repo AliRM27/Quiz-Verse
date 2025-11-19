@@ -39,6 +39,19 @@ app.use("/api/admin", adminRoutes); // add protect, isAdmin later
 app.use("/api/upload-logo", uploadLogoRoute);
 app.use("/logos", staticRoutes);
 
+// 404 handler
+app.use((req, res, next) => {
+  res.status(404).json({ message: "Route not found" });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack || err);
+  res.status(err.statusCode || 500).json({
+    message: err.message || "Something went wrong",
+  });
+});
+
 app.listen(PORT, (err) => {
   if (err) {
     return console.error(err);
