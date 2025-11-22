@@ -94,7 +94,6 @@ const EditProfile = () => {
           contentContainerStyle={{
             flexGrow: 1,
             backgroundColor: Colors.dark.bg_dark,
-            paddingHorizontal: 15,
             alignItems: "center",
           }}
           keyboardShouldPersistTaps="handled"
@@ -113,7 +112,14 @@ const EditProfile = () => {
             isEditable={true}
           />
 
-          <View style={{ width: "100%", gap: 10, marginTop: 20 }}>
+          <View
+            style={{
+              width: "100%",
+              gap: 10,
+              marginTop: 20,
+              paddingHorizontal: 20,
+            }}
+          >
             <Text style={[styles.text_muted, { marginLeft: 10 }]}>
               {t("username")}
             </Text>
@@ -209,7 +215,7 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: Colors.dark.text,
-    width: "100%",
+    width: "90%",
     height: 55,
     paddingVertical: 15,
     marginTop: "auto",

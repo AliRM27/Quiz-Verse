@@ -541,7 +541,7 @@ export default function Profile() {
                       fontSize: 20,
                       width: WIDTH * (200 / myWidth),
                     },
-                    isSmallPhone && { fontSize: 18 },
+                    isSmallPhone && { fontSize: 17 },
                   ]}
                 >
                   {filteredQuizzes[currIndex].quizId.title}

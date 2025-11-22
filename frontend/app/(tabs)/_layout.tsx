@@ -29,7 +29,7 @@ export default function TabLayout() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [featureName, setFeatureName] = useState("");
   const { width, height } = useWindowDimensions();
-  const isSmallPhone = width < 360 || height < 700;
+  const isSmallPhone = width < 380 || height < 700;
 
   const handleComingSoon = (feature: string) => {
     Haptics.selectionAsync();

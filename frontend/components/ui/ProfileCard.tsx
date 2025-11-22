@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
     padding: 17,
     gap: 20,
-    width: "85%",
+    width: "75%",
     height: HEIGHT * (400 / myHeight),
     backgroundColor: "#D9D9D9",
     borderRadius: 15,

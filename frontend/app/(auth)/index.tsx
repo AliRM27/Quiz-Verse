@@ -25,11 +25,22 @@ import {
   codeToLanguageName,
   languageMap,
 } from "@/utils/i18n";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+import { useSafeAreaBg } from "@/context/safeAreaContext";
 
 export default function Index() {
   const { setUserData, loading, isAuthenticated } = useUser();
   const [errorMsg, setErrorMsg] = useState("");
   const [signingIn, setSigningIn] = useState(false);
+  const { setSafeEdges } = useSafeAreaBg();
+
+  useFocusEffect(
+    useCallback(() => {
+      // When active
+      setSafeEdges([]);
+    }, [])
+  );
 
   useEffect(() => {
     configureGoogleSignIn();

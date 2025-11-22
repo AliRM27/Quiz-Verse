@@ -24,6 +24,7 @@ import Bow from "@/assets/svgs/bow-arrow.svg";
 import { updateUser } from "@/services/api";
 import Level from "@/assets/svgs/gauge.svg";
 import { useTranslation } from "react-i18next";
+import { isSmallPhone } from "@/constants/Dimensions";
 
 const createSlides = (t: ReturnType<typeof useTranslation>["t"]) => [
   {
@@ -336,7 +337,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   metaText: {
-    fontSize: 15,
+    fontSize: isSmallPhone ? 13 : 15,
     color: Colors.dark.text_muted,
     fontFamily: REGULAR_FONT,
     letterSpacing: 1,

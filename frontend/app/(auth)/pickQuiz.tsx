@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -15,11 +15,12 @@ import { useUser } from "@/context/userContext";
 import { useQuery } from "@tanstack/react-query";
 import { fetchQuizzes, updateUserProgress } from "@/services/api";
 import QuizLogo from "@/components/ui/QuizLogo";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { QuizType } from "@/types";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSafeAreaBg } from "@/context/safeAreaContext";
 
 export default function PickQuiz() {
   const { user, loading, refreshUser } = useUser();
@@ -37,6 +38,14 @@ export default function PickQuiz() {
   const starterQuizzes: QuizType[] = useMemo(
     () => (data || []).slice(0, 7),
     [data]
+  );
+  const { setSafeEdges } = useSafeAreaBg();
+
+  useFocusEffect(
+    useCallback(() => {
+      // When active
+      return () => setSafeEdges(["top", "bottom"]);
+    }, [])
   );
 
   const handleSelect = (quizId: string) => {

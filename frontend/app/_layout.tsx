@@ -12,14 +12,17 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { UserProvider } from "@/context/userContext";
 import { Colors } from "@/constants/Colors";
-import { SafeAreaView } from "react-native";
 import { SafeAreaProvider, useSafeAreaBg } from "@/context/safeAreaContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 function RootShell({ children }: { children: React.ReactNode }) {
-  const { safeBg } = useSafeAreaBg();
+  const { safeBg, safeEdges } = useSafeAreaBg();
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: safeBg }}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: safeBg }}
+      edges={safeEdges as any}
+    >
       {children}
     </SafeAreaView>
   );
