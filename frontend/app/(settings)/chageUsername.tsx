@@ -80,7 +80,6 @@ const ChnageUsername = () => {
         style={{
           backgroundColor: Colors.dark.bg_dark,
           height: "100%",
-          paddingVertical: 50,
           paddingHorizontal: 15,
           gap: 20,
           alignItems: "center",
@@ -103,11 +102,15 @@ const ChnageUsername = () => {
         </Text>
         <View style={{ alignItems: "center", gap: 5 }}>
           <Text
-            style={{
-              color: Colors.dark.text_muted,
-              fontSize: 20,
-              fontFamily: REGULAR_FONT,
-            }}
+            style={[
+              {
+                color: Colors.dark.text_muted,
+                fontSize: 20,
+                fontFamily: REGULAR_FONT,
+                textAlign: "center",
+              },
+              isSmallPhone && { fontSize: 17 },
+            ]}
           >
             {t("enterYourNewUsername")}
           </Text>

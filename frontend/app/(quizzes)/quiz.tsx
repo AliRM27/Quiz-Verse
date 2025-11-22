@@ -177,7 +177,7 @@ const Quiz = () => {
               defaultStyles.containerBackground,
               {
                 height: "100%",
-                width: "30%",
+                width: "40%",
                 justifyContent: "flex-start",
                 gap: HEIGHT * (10 / myHeight),
                 borderRadius: 25,

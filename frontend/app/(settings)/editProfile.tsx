@@ -94,9 +94,7 @@ const EditProfile = () => {
           contentContainerStyle={{
             flexGrow: 1,
             backgroundColor: Colors.dark.bg_dark,
-            paddingVertical: 50,
             paddingHorizontal: 15,
-            paddingBottom: 50,
             alignItems: "center",
           }}
           keyboardShouldPersistTaps="handled"

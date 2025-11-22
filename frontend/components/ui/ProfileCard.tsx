@@ -17,6 +17,13 @@ import { updateUser } from "@/services/api";
 import { useTranslation } from "react-i18next";
 import * as Haptics from "expo-haptics";
 import Loader from "./Loader";
+import {
+  HEIGHT,
+  isSmallPhone,
+  myHeight,
+  myWidth,
+  WIDTH,
+} from "@/constants/Dimensions";
 
 const ProfileCard = ({
   usernameValue,
@@ -90,6 +97,7 @@ const ProfileCard = ({
                 style={[
                   styles.text,
                   { fontSize: 25, fontWeight: 600 },
+                  isSmallPhone && { fontSize: 22 },
                   Platform.OS === "android" && { fontWeight: "bold" },
                 ]}
               >
@@ -132,6 +140,7 @@ const ProfileCard = ({
                         fontSize: 18,
                         textAlign: "center",
                       },
+                      isSmallPhone && { fontSize: 16 },
                     ]}
                   >
                     {t("close")}
@@ -166,7 +175,11 @@ const ProfileCard = ({
                     <Loader black={true} />
                   ) : (
                     <Text
-                      style={[styles.text, { color: "black", fontSize: 18 }]}
+                      style={[
+                        styles.text,
+                        { color: "black", fontSize: 18 },
+                        isSmallPhone && { fontSize: 16 },
+                      ]}
                     >
                       {t("save")}
                     </Text>
@@ -242,14 +255,14 @@ const ProfileCard = ({
             transform: [{ rotate: "45deg" }],
             padding: 3,
             borderRadius: 20,
-            width: 60,
-            height: 60,
+            width: WIDTH * (60 / myWidth),
+            height: WIDTH * (60 / myWidth),
           }}
         >
           <View
             style={{
-              width: 50,
-              height: 50,
+              width: WIDTH * (50 / myWidth),
+              height: WIDTH * (50 / myWidth),
               transform: [{ rotate: "0deg" }],
               overflow: "hidden",
               justifyContent: "center",
@@ -259,8 +272,8 @@ const ProfileCard = ({
           >
             <Image
               src={user?.profileImage}
-              width={60}
-              height={60}
+              width={WIDTH * (60 / myWidth)}
+              height={WIDTH * (60 / myWidth)}
               style={{
                 transform: [{ rotate: "-45deg" }],
               }}
@@ -286,52 +299,27 @@ const ProfileCard = ({
           </TouchableOpacity>
         )} */}
       </View>
+
       <View
         style={{
-          marginTop: "auto",
           flexDirection: "row",
+          borderWidth: 1,
+          borderColor: selectedColor,
           alignItems: "center",
-          justifyContent: "space-between",
-          width: "100%",
+          paddingHorizontal: 10,
+          gap: 10,
+          borderRadius: 10,
+          marginTop: "auto",
         }}
       >
+        <Text style={[styles.text, { color: selectedColor, fontWeight: 600 }]}>
+          QV
+        </Text>
         <View
-          style={{
-            flexDirection: "row",
-            borderWidth: 1,
-            borderColor: selectedColor,
-            alignItems: "center",
-            paddingHorizontal: 10,
-            gap: 10,
-            borderRadius: 10,
-          }}
-        >
-          <Text
-            style={[styles.text, { color: selectedColor, fontWeight: 600 }]}
-          >
-            QV
-          </Text>
-          <View
-            style={{ height: 22, width: 22, backgroundColor: selectedColor }}
-          />
-          <Text
-            style={[styles.text, { color: selectedColor, fontWeight: 600 }]}
-          >
-            {date[2]} {month[date[1] as keyof typeof month]} {date[0]}
-          </Text>
-        </View>
-        <Text
-          style={[
-            styles.text,
-            {
-              color: selectedColor,
-              fontSize: 18,
-              fontWeight: 700,
-              textAlign: "center",
-            },
-          ]}
-        >
-          QUIZ{"\n"}VERSE
+          style={{ height: 22, width: 22, backgroundColor: selectedColor }}
+        />
+        <Text style={[styles.text, { color: selectedColor, fontWeight: 600 }]}>
+          {date[2]} {month[date[1] as keyof typeof month]} {date[0]}
         </Text>
       </View>
     </View>
@@ -353,8 +341,8 @@ const styles = StyleSheet.create({
     marginTop: 30,
     padding: 17,
     gap: 20,
-    width: "75%",
-    height: 400,
+    width: "85%",
+    height: HEIGHT * (400 / myHeight),
     backgroundColor: "#D9D9D9",
     borderRadius: 15,
     alignItems: "center",

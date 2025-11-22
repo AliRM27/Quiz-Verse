@@ -253,7 +253,7 @@ export default function HomePageCards() {
             {
               height: "100%",
               paddingVertical: 10,
-              minWidth: "30%",
+              minWidth: "40%",
               justifyContent: "flex-start",
               gap: HEIGHT * (10 / myHeight),
               borderRadius: 25,

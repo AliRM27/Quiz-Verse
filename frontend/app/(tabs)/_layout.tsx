@@ -118,16 +118,13 @@ export default function TabLayout() {
         screenOptions={{
           sceneStyle: {
             backgroundColor: Colors.dark.bg_dark,
-            paddingTop: 50,
           },
-          tabBarIconStyle: {
-            height: HEIGHT * (60 / myHeight),
-          },
+          tabBarIconStyle: {},
           tabBarStyle: {
-            height: HEIGHT * (80 / myHeight),
+            height: HEIGHT * (50 / myHeight),
             backgroundColor: Colors.dark.bg_dark,
-            borderTopWidth: 0,
-            paddingTop: 10,
+            paddingTop: 15,
+            borderColor: Colors.dark.bg_light,
           },
           headerShown: false,
           tabBarShowLabel: false,

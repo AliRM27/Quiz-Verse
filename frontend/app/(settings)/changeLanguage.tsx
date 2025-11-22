@@ -1,5 +1,5 @@
 import { Colors } from "@/constants/Colors";
-import { layout } from "@/constants/Dimensions";
+import { isSmallPhone, layout } from "@/constants/Dimensions";
 import { REGULAR_FONT } from "@/constants/Styles";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
@@ -26,14 +26,19 @@ const ChangeLanguage = () => {
       style={{
         backgroundColor: Colors.dark.bg_dark,
         height: "100%",
-        paddingVertical: 50,
         paddingHorizontal: 15,
         gap: 20,
         alignItems: "center",
       }}
     >
       <ArrBack />
-      <Text style={[styles.txt, { fontSize: 25, fontWeight: 700 }]}>
+      <Text
+        style={[
+          styles.txt,
+          { fontSize: 25, fontWeight: 700 },
+          isSmallPhone && { fontSize: 22 },
+        ]}
+      >
         {t("changeLanguage")}
       </Text>
       <View

@@ -1,6 +1,7 @@
 import { StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { layout } from "./Dimensions";
+import { isSmallPhone } from "./Dimensions";
 
 export const BR = 10;
 
@@ -25,7 +26,7 @@ export const defaultStyles = StyleSheet.create({
   containerBackground: {
     alignItems: "center",
     justifyContent: "center",
-    padding: 20,
+    padding: isSmallPhone ? 13 : 20,
     borderWidth: 1,
     borderColor: Colors.dark.border_muted,
     backgroundColor: Colors.dark.bg_dark,

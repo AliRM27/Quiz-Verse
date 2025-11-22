@@ -488,6 +488,7 @@ export default function Profile() {
                     category === categroyPressed &&
                       Platform.OS === "android" && { fontWeight: 700 },
                     { fontSize: 13 },
+                    isSmallPhone && { fontSize: 10 },
                   ]}
                 >
                   {category}

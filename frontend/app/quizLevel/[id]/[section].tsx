@@ -37,8 +37,24 @@ import {
 import SliderComponent from "@/components/ui/SliderComponent";
 import * as Haptics from "expo-haptics";
 import Loader from "@/components/ui/Loader";
+import { useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useSafeAreaBg } from "@/context/safeAreaContext";
 
 export default function Index() {
+  const { setSafeBg } = useSafeAreaBg();
+
+  useFocusEffect(
+    useCallback(() => {
+      // When screen becomes active
+      setSafeBg("#131313");
+
+      // When screen loses focus → reset to black
+      return () => {
+        setSafeBg(Colors.dark.bg_dark);
+      };
+    }, [])
+  );
   const { id, section } = useLocalSearchParams<{
     id: string;
     section: string;
@@ -119,7 +135,7 @@ export default function Index() {
           justifyContent: "center",
           height: "100%",
           paddingTop: layout.paddingTop,
-          backgroundColor: Colors.dark.bg_dark,
+          backgroundColor: "#131313",
         }}
       >
         <Loader width={50} height={50} />
@@ -398,8 +414,6 @@ export default function Index() {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View
         style={{
-          paddingTop: 30,
-          paddingBottom: 40,
           paddingHorizontal: 15,
           backgroundColor: "#131313",
           height: "100%",
@@ -409,7 +423,7 @@ export default function Index() {
         <Pressable
           style={{
             position: "absolute",
-            top: 50,
+            top: 0,
             left: 15,
             padding: 5,
           }}
@@ -430,7 +444,7 @@ export default function Index() {
             flexDirection: "row",
             justifyContent: "space-between",
             alignItems: "flex-end",
-            marginTop: 30,
+            marginTop: 20,
           }}
         >
           <Text
@@ -492,7 +506,7 @@ export default function Index() {
             backgroundColor: Colors.dark.bg_light,
             borderColor: "#1F1D1D",
             padding: 20,
-            paddingTop: 40,
+            paddingVertical: 40,
             borderRadius: 20,
             elevation: 3,
             shadowColor: "black",
@@ -522,7 +536,7 @@ export default function Index() {
           <Text
             style={[
               styles.txt,
-              { fontSize: 25, textAlign: "center", lineHeight: 35 },
+              { fontSize: 25, textAlign: "center" },
               isSmallPhone && { fontSize: 20 },
             ]}
           >

@@ -89,7 +89,6 @@ const Settings = () => {
   return (
     <View
       style={{
-        paddingTop: 50,
         gap: 20,
         backgroundColor: Colors.dark.bg_dark,
       }}
@@ -111,7 +110,7 @@ const Settings = () => {
 
       <ScrollView
         contentContainerStyle={{
-          paddingBottom: 100,
+          paddingBottom: 70,
           paddingHorizontal: 15,
           gap: 20,
         }}

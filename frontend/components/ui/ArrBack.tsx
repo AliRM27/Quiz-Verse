@@ -7,7 +7,6 @@ const ArrBack = () => {
     <Pressable
       style={{
         position: "absolute",
-        top: 50,
         left: 20,
         padding: 5,
       }}
