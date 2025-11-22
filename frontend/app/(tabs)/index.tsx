@@ -17,6 +17,8 @@ import Carousel from "@/components/animatinos/Carousel";
 import { useUser } from "@/context/userContext";
 import { useState } from "react";
 import ProfileCardModal from "@/components/ui/ProfileCardModal";
+import { moderateScale } from "react-native-size-matters";
+import { isSmallPhone } from "@/constants/Dimensions";
 
 export default function HomeScreen() {
   const { user, loading } = useUser();
@@ -38,6 +40,7 @@ export default function HomeScreen() {
           gap: 40,
           height: "100%",
         },
+        isSmallPhone && { gap: 20 },
       ]}
     >
       <View
@@ -84,11 +87,17 @@ export default function HomeScreen() {
                 height={60}
                 style={{
                   transform: [{ rotate: "-45deg" }],
+                  aspectRatio: 1 / 1,
                 }}
               />
             </View>
           </TouchableOpacity>
-          <Text style={[styles.txt, user.name.length > 10 && { fontSize: 16 }]}>
+          <Text
+            style={[
+              styles.txt,
+              user.name.length > 10 && { fontSize: moderateScale(15) },
+            ]}
+          >
             {user.name}
           </Text>
         </View>
@@ -122,7 +131,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   txt: {
     color: Colors.dark.text,
-    fontSize: 18,
+    fontSize: moderateScale(17),
     fontFamily: REGULAR_FONT,
     fontWeight: 600,
   },

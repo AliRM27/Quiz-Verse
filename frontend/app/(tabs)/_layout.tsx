@@ -1,5 +1,12 @@
 import { Tabs } from "expo-router";
-import { Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { Colors } from "@/constants/Colors";
 import {
   Home,
@@ -13,7 +20,7 @@ import {
   ShopFocused,
   EventsFocused,
 } from "@/assets/svgs/tabBarIcons/index";
-import { HEIGHT, layout, myHeight } from "@/constants/Dimensions";
+import { HEIGHT, myHeight } from "@/constants/Dimensions";
 import * as Haptics from "expo-haptics";
 import { useState } from "react";
 import { REGULAR_FONT } from "@/constants/Styles";
@@ -21,6 +28,8 @@ import { REGULAR_FONT } from "@/constants/Styles";
 export default function TabLayout() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [featureName, setFeatureName] = useState("");
+  const { width, height } = useWindowDimensions();
+  const isSmallPhone = width < 360 || height < 700;
 
   const handleComingSoon = (feature: string) => {
     Haptics.selectionAsync();
@@ -109,7 +118,7 @@ export default function TabLayout() {
         screenOptions={{
           sceneStyle: {
             backgroundColor: Colors.dark.bg_dark,
-            paddingTop: layout.paddingTop,
+            paddingTop: 50,
           },
           tabBarIconStyle: {
             height: HEIGHT * (60 / myHeight),
@@ -118,6 +127,7 @@ export default function TabLayout() {
             height: HEIGHT * (80 / myHeight),
             backgroundColor: Colors.dark.bg_dark,
             borderTopWidth: 0,
+            paddingTop: 10,
           },
           headerShown: false,
           tabBarShowLabel: false,
@@ -142,7 +152,11 @@ export default function TabLayout() {
           name={"shop"}
           options={{
             tabBarIcon({ focused }) {
-              return focused ? <ShopFocused /> : <Shop />;
+              return focused ? (
+                <ShopFocused width={isSmallPhone ? "80%" : "100%"} />
+              ) : (
+                <Shop width={isSmallPhone ? "80%" : "100%"} />
+              );
             },
             tabBarButton: (props: any) => (
               <Pressable
@@ -159,7 +173,11 @@ export default function TabLayout() {
           name={"events"}
           options={{
             tabBarIcon({ focused }) {
-              return focused ? <EventsFocused /> : <Events />;
+              return focused ? (
+                <EventsFocused width={isSmallPhone ? "80%" : "100%"} />
+              ) : (
+                <Events width={isSmallPhone ? "80%" : "100%"} />
+              );
             },
             tabBarButton: (props: any) => (
               <Pressable
@@ -176,7 +194,11 @@ export default function TabLayout() {
           name={"index"}
           options={{
             tabBarIcon({ focused }) {
-              return focused ? <HomeFocused /> : <Home />;
+              return focused ? (
+                <HomeFocused width={isSmallPhone ? "80%" : "100%"} />
+              ) : (
+                <Home width={isSmallPhone ? "80%" : "100%"} />
+              );
             },
           }}
         />
@@ -185,7 +207,11 @@ export default function TabLayout() {
           options={{
             title: "Search",
             tabBarIcon({ focused }) {
-              return focused ? <SearchFocused /> : <Search />;
+              return focused ? (
+                <SearchFocused width={isSmallPhone ? "80%" : "100%"} />
+              ) : (
+                <Search width={isSmallPhone ? "80%" : "100%"} />
+              );
             },
           }}
         />
@@ -193,7 +219,11 @@ export default function TabLayout() {
           name={"profile"}
           options={{
             tabBarIcon({ focused }) {
-              return focused ? <ProfileFocused /> : <Profile />;
+              return focused ? (
+                <ProfileFocused width={isSmallPhone ? "80%" : "100%"} />
+              ) : (
+                <Profile width={isSmallPhone ? "80%" : "100%"} />
+              );
             },
           }}
         />

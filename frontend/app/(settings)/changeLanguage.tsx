@@ -26,7 +26,7 @@ const ChangeLanguage = () => {
       style={{
         backgroundColor: Colors.dark.bg_dark,
         height: "100%",
-        paddingVertical: layout.paddingTop,
+        paddingVertical: 50,
         paddingHorizontal: 15,
         gap: 20,
         alignItems: "center",

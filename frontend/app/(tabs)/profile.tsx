@@ -14,7 +14,13 @@ import EditIcon from "@/assets/svgs/edit.svg";
 import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
 import QuizLogo from "@/components/ui/QuizLogo";
 import Info from "@/components/ui/Info";
-import { myWidth, WIDTH } from "@/constants/Dimensions";
+import {
+  HEIGHT,
+  isSmallPhone,
+  myHeight,
+  myWidth,
+  WIDTH,
+} from "@/constants/Dimensions";
 import { useEffect, useMemo, useState } from "react";
 import { router } from "expo-router";
 import NextArr from "@/assets/svgs/nextArr.svg";
@@ -217,14 +223,14 @@ export default function Profile() {
               router.push("/(settings)/editProfile");
             }}
             activeOpacity={0.7}
-            style={styles.iconBackground}
+            style={[styles.iconBackground, isSmallPhone && { padding: 12 }]}
           >
             <EditIcon width={24} height={24} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => router.push("/(settings)")}
             activeOpacity={0.7}
-            style={styles.iconBackground}
+            style={[styles.iconBackground, isSmallPhone && { padding: 12 }]}
           >
             <SettingsIcon width={24} height={24} />
           </TouchableOpacity>
@@ -445,12 +451,15 @@ export default function Profile() {
         }}
       >
         <View
-          style={{
-            flexDirection: "row",
-            gap: 20,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
+          style={[
+            {
+              flexDirection: "row",
+              gap: 20,
+              justifyContent: "center",
+              alignItems: "center",
+            },
+            isSmallPhone && { gap: 10 },
+          ]}
         >
           {[t("uncompleted"), t("completed"), t("perfect")].map(
             (category, index) => (
@@ -507,8 +516,8 @@ export default function Profile() {
                   });
                 }}
                 style={{
-                  width: 150,
-                  height: 150,
+                  width: WIDTH * (150 / myWidth),
+                  height: WIDTH * (150 / myWidth),
                   borderRadius: 10,
                   overflow: "hidden",
                   borderWidth: 1,
@@ -531,6 +540,7 @@ export default function Profile() {
                       fontSize: 20,
                       width: WIDTH * (200 / myWidth),
                     },
+                    isSmallPhone && { fontSize: 18 },
                   ]}
                 >
                   {filteredQuizzes[currIndex].quizId.title}

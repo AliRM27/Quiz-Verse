@@ -9,7 +9,7 @@ import {
   Keyboard,
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
-import { HEIGHT, layout, myHeight } from "@/constants/Dimensions";
+import { HEIGHT, isSmallPhone, layout, myHeight } from "@/constants/Dimensions";
 import { Colors } from "@/constants/Colors";
 import { router, useLocalSearchParams } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -111,13 +111,7 @@ export default function Index() {
     };
   }, [currQuestionIndex, startTime]);
 
-  if (
-    loading ||
-    isLoading ||
-    historyLoading ||
-    detailLoading ||
-    !user
-  ) {
+  if (loading || isLoading || historyLoading || detailLoading || !user) {
     return (
       <View
         style={{
@@ -404,7 +398,7 @@ export default function Index() {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View
         style={{
-          paddingTop: layout.paddingTop,
+          paddingTop: 30,
           paddingBottom: 40,
           paddingHorizontal: 15,
           backgroundColor: "#131313",
@@ -435,7 +429,7 @@ export default function Index() {
           style={{
             flexDirection: "row",
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: "flex-end",
             marginTop: 30,
           }}
         >
@@ -446,7 +440,9 @@ export default function Index() {
                 fontSize: 25,
                 fontWeight: "600",
                 width: "70%",
+                marginBottom: 10,
               },
+              isSmallPhone && { fontSize: 20 },
             ]}
           >
             {data.title}
@@ -454,6 +450,7 @@ export default function Index() {
           <View
             style={{
               alignItems: "center",
+              justifyContent: "center",
               gap: 10,
               width: "25%",
             }}
@@ -495,7 +492,7 @@ export default function Index() {
             backgroundColor: Colors.dark.bg_light,
             borderColor: "#1F1D1D",
             padding: 20,
-            paddingVertical: 30,
+            paddingTop: 40,
             borderRadius: 20,
             elevation: 3,
             shadowColor: "black",
@@ -515,8 +512,8 @@ export default function Index() {
                 marginTop: 15,
                 fontWeight: 600,
                 position: "absolute",
-                top: -10,
-                left: 10,
+                top: -8,
+                left: 12,
               },
             ]}
           >
@@ -526,6 +523,7 @@ export default function Index() {
             style={[
               styles.txt,
               { fontSize: 25, textAlign: "center", lineHeight: 35 },
+              isSmallPhone && { fontSize: 20 },
             ]}
           >
             {currQuestion.question[languageMap[user.language]]}
@@ -538,6 +536,11 @@ export default function Index() {
               flexDirection: "row",
               justifyContent: "center",
               gap: 10,
+            },
+            isSmallPhone && {
+              flexWrap: "wrap",
+              flexDirection: "row",
+              justifyContent: "center",
             },
           ]}
         >
@@ -582,6 +585,7 @@ export default function Index() {
                     key={index}
                     style={[
                       {
+                        width: "100%",
                         borderWidth: 1,
                         backgroundColor: Colors.dark.bg_light,
                         borderColor: "#1F1D1D",
@@ -595,6 +599,7 @@ export default function Index() {
                         shadowRadius: 1,
                         justifyContent: "center",
                       },
+                      isSmallPhone && { width: "45%", paddingLeft: 15 },
                       pressedAnswer === index && {
                         shadowOpacity: 0,
                         elevation: 0,
@@ -617,6 +622,7 @@ export default function Index() {
                       style={[
                         styles.txtItalic,
                         { fontSize: 20 },
+                        isSmallPhone && { fontSize: 16, textAlign: "center" },
                         pressedAnswer === index && {
                           color: Colors.dark.text_muted,
                         },

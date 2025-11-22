@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { Colors } from "@/constants/Colors";
-import { Auth, layout } from "@/constants/Dimensions";
+import { Auth, isSmallPhone, layout } from "@/constants/Dimensions";
 import { useUser } from "@/context/userContext";
 import { updateUser } from "@/services/api";
 import { useTranslation } from "react-i18next";
@@ -80,7 +80,7 @@ const ChnageUsername = () => {
         style={{
           backgroundColor: Colors.dark.bg_dark,
           height: "100%",
-          paddingVertical: layout.paddingTop,
+          paddingVertical: 50,
           paddingHorizontal: 15,
           gap: 20,
           alignItems: "center",
@@ -96,6 +96,7 @@ const ChnageUsername = () => {
               textAlign: "center",
               width: "80%",
             },
+            isSmallPhone && { fontSize: 22 },
           ]}
         >
           {t("changeUsername")}

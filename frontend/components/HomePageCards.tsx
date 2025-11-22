@@ -5,6 +5,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  useWindowDimensions,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { WIDTH, HEIGHT, myHeight, myWidth } from "@/constants/Dimensions";
@@ -23,6 +24,8 @@ import { useTranslation } from "react-i18next";
 import ProgressBar from "./animatinos/progressBar";
 import { router } from "expo-router";
 import Loader from "./ui/Loader";
+import { moderateScale } from "react-native-size-matters";
+import { isSmallPhone } from "@/constants/Dimensions";
 
 const ITEM_WIDTH = HEIGHT * (150 / myHeight);
 const ITEM_SPACING = (WIDTH - ITEM_WIDTH) / 2;
@@ -41,11 +44,17 @@ export default function HomePageCards() {
 
   const { t } = useTranslation();
 
-  const { data: progressData, error, isLoading } = useQuery({
+  const {
+    data: progressData,
+    error,
+    isLoading,
+  } = useQuery({
     queryKey: ["userProgress"],
     queryFn: fetchUserProgress,
     enabled: !!user?._id && !loading,
   });
+
+  const { width, height } = useWindowDimensions();
 
   const unlockedQuizzes = progressData?.unlockedQuizzes || [];
   const progressList = progressData?.progress || [];
@@ -203,10 +212,13 @@ export default function HomePageCards() {
         style={[
           styles.txt,
           {
-            fontSize: 25,
-            marginVertical: 10,
+            fontSize: 25, // scales but caps at 26
+            marginVertical: Math.max(height * 0.01, 6),
             letterSpacing: -1,
+            textAlign: "center",
+            paddingHorizontal: 8,
           },
+          isSmallPhone && { fontSize: 22 },
         ]}
       >
         {quiz.title}
@@ -230,8 +242,9 @@ export default function HomePageCards() {
           {
             width: "100%",
             justifyContent: "space-evenly",
-            height: HEIGHT * (115 / myHeight),
+            minHeight: 120,
           },
+          isSmallPhone && { minHeight: 110 },
         ]}
       >
         <View
@@ -239,15 +252,20 @@ export default function HomePageCards() {
             defaultStyles.containerBackground,
             {
               height: "100%",
-              paddingVertical: HEIGHT * (10 / myHeight),
-              width: "30%",
+              paddingVertical: 10,
+              minWidth: "30%",
               justifyContent: "flex-start",
               gap: HEIGHT * (10 / myHeight),
               borderRadius: 25,
             },
           ]}
         >
-          <Text style={[styles.txt, { fontSize: WIDTH * (14 / myWidth) }]}>
+          <Text
+            style={[
+              styles.txt,
+              isSmallPhone ? { fontSize: 13 } : { fontSize: 15 },
+            ]}
+          >
             {t("progress")}
           </Text>
           <LineDashed />
@@ -261,7 +279,7 @@ export default function HomePageCards() {
                   )
                 : 0
             }
-            size={HEIGHT * (50 / myHeight)}
+            size={50}
             strokeWidth={3}
             fontSize={12}
           />

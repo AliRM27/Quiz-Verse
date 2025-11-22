@@ -6,7 +6,7 @@ import {
   ScrollView,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
-import { layout } from "@/constants/Dimensions";
+import { isSmallPhone, layout } from "@/constants/Dimensions";
 import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
 import { router } from "expo-router";
 import { useUser } from "@/context/userContext";
@@ -278,264 +278,278 @@ const Result = ({
         paddingBottom: 50,
       }}
     >
-      <View style={{ alignItems: "center" }}>
-        <View style={{ alignItems: "center", flexDirection: "row", gap: 30 }}>
-          <View
-            style={{
-              width: 100,
-              height: 100,
-              borderRadius: 10,
-              borderWidth: 1,
-              borderColor: Colors.dark.border,
-              overflow: "hidden",
-              marginVertical: 30,
-            }}
-          >
-            <QuizLogo name={quiz.logoFile} />
-          </View>
-          <View style={{ gap: 10 }}>
-            <Text style={[styles.txt, { fontSize: 15, fontWeight: "600" }]}>
-              {t("Questions")}: {questionRewards / mult}
-            </Text>
-            <Text style={[styles.txt, { fontSize: 15, fontWeight: "600" }]}>
-              {t("Streak")}🔥: {streakNumber}
-            </Text>
-            <Text style={[styles.txt, { fontSize: 15, fontWeight: "600" }]}>
-              {t("Time")}⏱️: {timeNumber}s
-            </Text>
-          </View>
-        </View>
-
-        <Text style={[styles.txt, { fontSize: 25, fontWeight: "bold" }]}>
-          {quiz.title}
-        </Text>
-        <Text style={[styles.txt_muted, { fontSize: 15, marginTop: 10 }]}>
-          {t(quizProgress.difficulty)}
-        </Text>
-      </View>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          width: "100%",
-          justifyContent: "space-evenly",
-          marginVertical: 10,
-        }}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            borderWidth: 1,
-            borderColor: Colors.dark.success,
-            padding: 10,
-            paddingHorizontal: 15,
-            justifyContent: "space-between",
-            width: 100,
-            borderRadius: 10,
-            backgroundColor: Colors.dark.bg_light,
-          }}
-        >
-          <Text style={[styles.txt, { fontSize: 17, fontWeight: "700" }]}>
-            {correctAnswers}
-          </Text>
-          <Right width={15} height={15} />
-        </View>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            borderWidth: 1,
-            borderColor: "#920202",
-            padding: 10,
-            paddingHorizontal: 15,
-            justifyContent: "space-between",
-            width: 100,
-            borderRadius: 10,
-            backgroundColor: Colors.dark.bg_light,
-          }}
-        >
-          <Text style={[styles.txt, { fontSize: 17, fontWeight: "700" }]}>
-            {total - correctAnswers}
-          </Text>
-          <Wrong width={15} height={15} />
-        </View>
-      </View>
-      <Text
-        style={[
-          styles.txt,
-          {
-            alignSelf: "flex-start",
-            fontSize: 16,
-            fontWeight: "600",
-            marginLeft: 15,
-          },
-        ]}
-      >
-        {t("rewards")}
-      </Text>
       <ScrollView
         ref={scrollViewRef}
-        style={{
-          width: "99%",
-          paddingHorizontal: 10,
-          borderWidth: 1,
-          borderColor: Colors.dark.border_muted,
-          borderRadius: 10,
-        }}
-      >
-        {[
-          {
-            type: "Questions",
-            rewards: questionRewards,
-            total: total * mult,
-            progress: userProgress.questions * mult,
-          },
-          {
-            type: "Streak",
-            rewards: streak,
-            total: 100,
-            progress: userProgress.streaksRewards,
-          },
-          {
-            type: "Time",
-            rewards: time,
-            total: 50,
-            progress: userProgress.timeRewards,
-          },
-          {
-            type: "Total",
-            rewards: rewards,
-            total: quizProgress.rewards,
-            progress: userProgress.rewards,
-          },
-        ].map(
-          (
-            r: {
-              type: string;
-              rewards: number;
-              total: number;
-              progress: any;
-            },
-            index
-          ) => {
-            let bonuses = [];
-            if (r.type === "Streak")
-              bonuses = userProgress.streaks.sort(
-                (a: number, b: number) => a - b
-              );
-            else if (r.type === "Time")
-              bonuses = userProgress.timeBonuses.sort(
-                (a: number, b: number) => b - a
-              );
-
-            return (
-              <RewardComponent
-                key={index}
-                name={r.type}
-                rewards={r.rewards}
-                total={r.total}
-                progress={r.progress}
-                bonuses={bonuses}
-                difficulty={
-                  r.type === "Streak" || r.type === "Time"
-                    ? (quizProgress.difficulty as
-                        | "Easy"
-                        | "Medium"
-                        | "Hard"
-                        | "Extreme")
-                    : undefined
-                }
-                mult={r.type === "Questions" ? mult : undefined}
-              />
-            );
-          }
-        )}
-      </ScrollView>
-      <View
-        style={{
-          flexDirection: "row",
+        contentContainerStyle={{
           alignItems: "center",
-          justifyContent: "space-around",
-          width: "100%",
-          height: 130,
+          gap: 30,
+          paddingBottom: 50,
         }}
       >
-        <View
-          style={{
-            borderWidth: 1,
-            borderColor: Colors.dark.border_muted,
-            padding: 15,
-            borderRadius: 20,
-            alignItems: "center",
-            height: "100%",
-            gap: 10,
-            width: "30%",
-          }}
-        >
-          {showAnimation === "1" && (
-            <Text style={[styles.txt, { fontSize: 16, fontWeight: "600" }]}>
-              +{" "}
-              {newQuestions &&
-                Math.floor(
-                  (newQuestions / quizProgress.questions.length) * 100
-                )}{" "}
-              %
-            </Text>
-          )}
-          <Text style={[styles.txt, { fontSize: 16, fontWeight: "600" }]}>
-            {t("progress")}
+        <View style={{ alignItems: "center" }}>
+          <View style={{ alignItems: "center", flexDirection: "row", gap: 30 }}>
+            <View
+              style={{
+                width: 100,
+                height: 100,
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: Colors.dark.border,
+                overflow: "hidden",
+                marginVertical: 30,
+              }}
+            >
+              <QuizLogo name={quiz.logoFile} />
+            </View>
+            <View style={{ gap: 10 }}>
+              <Text style={[styles.txt, { fontSize: 15, fontWeight: "600" }]}>
+                {t("Questions")}: {questionRewards / mult}
+              </Text>
+              <Text style={[styles.txt, { fontSize: 15, fontWeight: "600" }]}>
+                {t("Streak")}🔥: {streakNumber}
+              </Text>
+              <Text style={[styles.txt, { fontSize: 15, fontWeight: "600" }]}>
+                {t("Time")}⏱️: {timeNumber}s
+              </Text>
+            </View>
+          </View>
+
+          <Text style={[styles.txt, { fontSize: 25, fontWeight: "bold" }]}>
+            {quiz.title}
           </Text>
-          <LineDashed needMargin={true} margin={5} />
-          <CircularProgress
-            progress={value}
-            size={50}
-            strokeWidth={3}
-            fontSize={12}
-            showNumbers={true}
-            totalNum={quizProgress.questions.length}
-          />
+          <Text style={[styles.txt_muted, { fontSize: 15, marginTop: 10 }]}>
+            {t(quizProgress.difficulty)}
+          </Text>
         </View>
         <View
           style={{
+            flexDirection: "row",
             alignItems: "center",
-            gap: 10,
-            borderWidth: 1,
-            borderColor: Colors.dark.border_muted,
-            padding: 15,
-            borderRadius: 20,
-            width: "50%",
-            height: "100%",
+            width: "100%",
+            justifyContent: "space-evenly",
+            marginVertical: 10,
           }}
         >
-          {showAnimation === "2" && (
-            <Text style={[styles.txt, { fontSize: 16, fontWeight: "600" }]}>
-              + {rewards}
-            </Text>
-          )}
-          <Text style={[styles.txt, { fontSize: 16, fontWeight: "600" }]}>
-            {t("rewards")}
-          </Text>
-          <LineDashed needMargin={true} margin={15} />
           <View
             style={{
-              width: "80%",
-              backgroundColor: Colors.dark.border_muted,
-              borderRadius: 6,
+              flexDirection: "row",
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: Colors.dark.success,
+              padding: 10,
+              paddingHorizontal: 15,
+              justifyContent: "space-between",
+              width: 100,
+              borderRadius: 10,
+              backgroundColor: Colors.dark.bg_light,
             }}
           >
-            <ProgressBar
-              color={"#FFB11F"}
-              progress={rewardsValue}
-              total={quizProgress.rewards}
-              height={3}
+            <Text style={[styles.txt, { fontSize: 17, fontWeight: "700" }]}>
+              {correctAnswers}
+            </Text>
+            <Right width={15} height={15} />
+          </View>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: "#920202",
+              padding: 10,
+              paddingHorizontal: 15,
+              justifyContent: "space-between",
+              width: 100,
+              borderRadius: 10,
+              backgroundColor: Colors.dark.bg_light,
+            }}
+          >
+            <Text style={[styles.txt, { fontSize: 17, fontWeight: "700" }]}>
+              {total - correctAnswers}
+            </Text>
+            <Wrong width={15} height={15} />
+          </View>
+        </View>
+        <Text
+          style={[
+            styles.txt,
+            {
+              alignSelf: "flex-start",
+              fontSize: 16,
+              fontWeight: "600",
+              marginLeft: 15,
+            },
+          ]}
+        >
+          {t("rewards")}
+        </Text>
+        <View
+          style={{
+            width: "99%",
+            paddingHorizontal: 10,
+            borderWidth: 1,
+            borderColor: Colors.dark.border_muted,
+            borderRadius: 10,
+          }}
+        >
+          {[
+            {
+              type: "Questions",
+              rewards: questionRewards,
+              total: total * mult,
+              progress: userProgress.questions * mult,
+            },
+            {
+              type: "Streak",
+              rewards: streak,
+              total: 100,
+              progress: userProgress.streaksRewards,
+            },
+            {
+              type: "Time",
+              rewards: time,
+              total: 50,
+              progress: userProgress.timeRewards,
+            },
+            {
+              type: "Total",
+              rewards: rewards,
+              total: quizProgress.rewards,
+              progress: userProgress.rewards,
+            },
+          ].map(
+            (
+              r: {
+                type: string;
+                rewards: number;
+                total: number;
+                progress: any;
+              },
+              index
+            ) => {
+              let bonuses = [];
+              if (r.type === "Streak")
+                bonuses = userProgress.streaks.sort(
+                  (a: number, b: number) => a - b
+                );
+              else if (r.type === "Time")
+                bonuses = userProgress.timeBonuses.sort(
+                  (a: number, b: number) => b - a
+                );
+
+              return (
+                <RewardComponent
+                  key={index}
+                  name={r.type}
+                  rewards={r.rewards}
+                  total={r.total}
+                  progress={r.progress}
+                  bonuses={bonuses}
+                  difficulty={
+                    r.type === "Streak" || r.type === "Time"
+                      ? (quizProgress.difficulty as
+                          | "Easy"
+                          | "Medium"
+                          | "Hard"
+                          | "Extreme")
+                      : undefined
+                  }
+                  mult={r.type === "Questions" ? mult : undefined}
+                />
+              );
+            }
+          )}
+        </View>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-around",
+            width: "100%",
+            height: 130,
+          }}
+        >
+          <View
+            style={{
+              borderWidth: 1,
+              borderColor: Colors.dark.border_muted,
+              padding: 15,
+              borderRadius: 20,
+              alignItems: "center",
+              height: "100%",
+              gap: 10,
+              width: "30%",
+            }}
+          >
+            {showAnimation === "1" && (
+              <Text style={[styles.txt, { fontSize: 16, fontWeight: "600" }]}>
+                +{" "}
+                {newQuestions &&
+                  Math.floor(
+                    (newQuestions / quizProgress.questions.length) * 100
+                  )}{" "}
+                %
+              </Text>
+            )}
+            <Text
+              style={[
+                styles.txt,
+                { fontSize: 15, fontWeight: "600" },
+                isSmallPhone && { fontSize: 13 },
+              ]}
+            >
+              {t("progress")}
+            </Text>
+            <LineDashed needMargin={true} margin={5} />
+            <CircularProgress
+              progress={value}
+              size={50}
+              strokeWidth={3}
+              fontSize={12}
+              showNumbers={true}
+              totalNum={quizProgress.questions.length}
             />
           </View>
-          <Text style={[styles.txt, { fontSize: 13 }]}>
-            {rewardsValue} / {quizProgress.rewards}
-          </Text>
+          <View
+            style={{
+              alignItems: "center",
+              gap: 10,
+              borderWidth: 1,
+              borderColor: Colors.dark.border_muted,
+              padding: 15,
+              borderRadius: 20,
+              width: "50%",
+              height: "100%",
+            }}
+          >
+            {showAnimation === "2" && (
+              <Text style={[styles.txt, { fontSize: 16, fontWeight: "600" }]}>
+                + {rewards}
+              </Text>
+            )}
+            <Text style={[styles.txt, { fontSize: 16, fontWeight: "600" }]}>
+              {t("rewards")}
+            </Text>
+            <LineDashed needMargin={true} margin={15} />
+            <View
+              style={{
+                width: "80%",
+                backgroundColor: Colors.dark.border_muted,
+                borderRadius: 6,
+              }}
+            >
+              <ProgressBar
+                color={"#FFB11F"}
+                progress={rewardsValue}
+                total={quizProgress.rewards}
+                height={3}
+              />
+            </View>
+            <Text style={[styles.txt, { fontSize: 13 }]}>
+              {rewardsValue} / {quizProgress.rewards}
+            </Text>
+          </View>
         </View>
-      </View>
+      </ScrollView>
       <View
         style={{
           alignItems: "center",

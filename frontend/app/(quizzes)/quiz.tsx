@@ -168,8 +168,7 @@ const Quiz = () => {
             {
               width: "100%",
               justifyContent: "space-evenly",
-              height: HEIGHT * (115 / myHeight),
-              flexWrap: "wrap",
+              height: 120,
             },
           ]}
         >
@@ -178,7 +177,6 @@ const Quiz = () => {
               defaultStyles.containerBackground,
               {
                 height: "100%",
-                paddingVertical: HEIGHT * (10 / myHeight),
                 width: "30%",
                 justifyContent: "flex-start",
                 gap: HEIGHT * (10 / myHeight),
@@ -199,22 +197,20 @@ const Quiz = () => {
               {t("progress")}
             </Text>
             <LineDashed />
-            <View>
-              <CircularProgress
-                progress={
-                  currentProgress
-                    ? Math.floor(
-                        (currentProgress?.questionsCompleted /
-                          quiz.questionsTotal) *
-                          100
-                      )
-                    : 0
-                }
-                size={HEIGHT * (50 / myHeight)}
-                strokeWidth={3}
-                fontSize={12}
-              />
-            </View>
+            <CircularProgress
+              progress={
+                currentProgress
+                  ? Math.floor(
+                      (currentProgress?.questionsCompleted /
+                        quiz.questionsTotal) *
+                        100
+                    )
+                  : 0
+              }
+              size={50}
+              strokeWidth={3}
+              fontSize={12}
+            />
           </View>
           <View
             style={[
@@ -223,7 +219,6 @@ const Quiz = () => {
                 width: "50%",
                 paddingVertical: 10,
                 height: "100%",
-                justifyContent: "flex-start",
                 gap: HEIGHT * (10 / myHeight),
                 borderRadius: 25,
                 backgroundColor: Colors.dark.bg,
@@ -294,7 +289,7 @@ const Quiz = () => {
                       backgroundColor: Colors.dark.bg,
                       width: "40%",
                       gap: WIDTH * (10 / myWidth),
-                      height: HEIGHT * (180 / myHeight),
+                      minHeight: 180,
                     },
                     selectedLevelIndex === index && {
                       borderColor: Colors.dark.text,

@@ -1,10 +1,12 @@
-import { Dimensions } from "react-native";
+import { Dimensions, useWindowDimensions } from "react-native";
 
 export const myHeight = 844;
 export const myWidth = 390;
 
 export const HEIGHT = Dimensions.get("screen").height;
 export const WIDTH = Dimensions.get("screen").width;
+
+export const isSmallPhone = WIDTH < 380 || HEIGHT < 700;
 
 export const layout = {
   paddingTop: HEIGHT * (50 / myHeight),
