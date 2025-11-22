@@ -276,6 +276,7 @@ const ProfileCard = ({
               height={WIDTH * (60 / myWidth)}
               style={{
                 transform: [{ rotate: "-45deg" }],
+                aspectRatio: 1 / 1,
               }}
             />
           </View>

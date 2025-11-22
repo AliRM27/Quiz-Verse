@@ -189,8 +189,7 @@ const Quiz = () => {
               style={[
                 styles.txt,
                 {
-                  fontSize:
-                    WIDTH * ((t("progress").length > 11 ? 15 : 14) / myWidth),
+                  fontSize: 14,
                 },
               ]}
             >
@@ -217,7 +216,7 @@ const Quiz = () => {
               defaultStyles.containerBackground,
               {
                 width: "50%",
-                paddingVertical: 10,
+                justifyContent: "flex-start",
                 height: "100%",
                 gap: HEIGHT * (10 / myHeight),
                 borderRadius: 25,
@@ -231,7 +230,7 @@ const Quiz = () => {
                 {
                   width: "100%",
                   textAlign: "center",
-                  fontSize: WIDTH * (15 / myWidth),
+                  fontSize: 15,
                 },
               ]}
             >

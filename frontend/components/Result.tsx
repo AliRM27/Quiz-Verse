@@ -259,7 +259,7 @@ const Result = ({
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: Colors.dark.bg,
+          backgroundColor: "#131313",
         }}
       >
         <Loader />
@@ -270,12 +270,10 @@ const Result = ({
   return (
     <View
       style={{
-        backgroundColor: Colors.dark.bg,
+        backgroundColor: "#131313",
         alignItems: "center",
         height: "100%",
-        paddingTop: 30,
         gap: 20,
-        paddingBottom: 50,
       }}
     >
       <ScrollView
@@ -477,7 +475,7 @@ const Result = ({
               alignItems: "center",
               height: "100%",
               gap: 10,
-              width: "30%",
+              width: "40%",
             }}
           >
             {showAnimation === "1" && (
