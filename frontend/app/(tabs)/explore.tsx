@@ -11,14 +11,14 @@ import {
   TouchableOpacity,
 } from "react-native";
 import Search from "@/assets/svgs/search.svg";
-import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
+import { REGULAR_FONT } from "@/constants/Styles";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { searchQuizzes, fetchUserProgress } from "@/services/api";
 import { debounce } from "lodash";
 import QuizLogo from "@/components/ui/QuizLogo";
 import { useUser } from "@/context/userContext";
-import { myWidth, WIDTH } from "@/constants/Dimensions";
+import { isSmallPhone, myWidth, WIDTH } from "@/constants/Dimensions";
 import Close from "@/assets/svgs/close.svg";
 import { useTranslation } from "react-i18next";
 import ProgressBar from "@/components/animatinos/progressBar";
@@ -190,7 +190,14 @@ export default function Explore() {
 
               {/* Right: Info */}
               <View style={styles.infoWrapper}>
-                <Text style={[styles.txt, styles.title]} numberOfLines={2}>
+                <Text
+                  style={[
+                    styles.txt,
+                    styles.title,
+                    isSmallPhone && { fontSize: 16 },
+                  ]}
+                  numberOfLines={2}
+                >
                   {item.title}
                 </Text>
 

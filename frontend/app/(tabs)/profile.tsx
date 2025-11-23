@@ -143,7 +143,7 @@ export default function Profile() {
           },
         ]}
       >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 20 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
           <TouchableOpacity
             onPress={() => {
               setIsVisible(true);
@@ -186,6 +186,7 @@ export default function Profile() {
                 fontWeight: "600",
               },
               user.name.length > 10 && { fontSize: 16 },
+              isSmallPhone && { fontSize: 15 },
             ]}
           >
             {user.name}
@@ -541,7 +542,7 @@ export default function Profile() {
                       fontSize: 20,
                       width: WIDTH * (200 / myWidth),
                     },
-                    isSmallPhone && { fontSize: 17 },
+                    isSmallPhone && { fontSize: 16 },
                   ]}
                 >
                   {filteredQuizzes[currIndex].quizId.title}

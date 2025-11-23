@@ -269,11 +269,10 @@ const ProfileCard = ({
         style={{
           flexDirection: "row",
           justifyContent: "space-between",
-          paddingHorizontal: 10,
           width: "100%",
         }}
       >
-        <View style={{ gap: 5 }}>
+        <View style={{ gap: 10 }}>
           {/* ✅ Animate username color */}
           <Animated.Text
             style={[
@@ -281,7 +280,7 @@ const ProfileCard = ({
               animatedText,
               {
                 fontSize: 25,
-                fontWeight: 700,
+                fontWeight: 600,
               },
               isSmallPhone && { fontSize: 22 },
               usernameValue.length > 10 && { fontSize: 18 },
@@ -295,7 +294,8 @@ const ProfileCard = ({
             style={[
               styles.text,
               animatedText,
-              { fontSize: 17, fontWeight: 600 },
+              { fontSize: 17 },
+              isSmallPhone && { fontSize: 15 },
             ]}
           >
             QUIZ MASTER
@@ -308,18 +308,19 @@ const ProfileCard = ({
             {
               borderWidth: 2,
               transform: [{ rotate: "45deg" }],
-              padding: 3,
+              alignItems: "center",
+              justifyContent: "center",
               borderRadius: 20,
-              width: WIDTH * (60 / myWidth),
-              height: WIDTH * (60 / myWidth),
+              width: 54,
+              height: 54,
             },
             animatedBorder,
           ]}
         >
           <View
             style={{
-              width: WIDTH * (50 / myWidth),
-              height: WIDTH * (50 / myWidth),
+              width: 43,
+              height: 43,
               transform: [{ rotate: "0deg" }],
               overflow: "hidden",
               justifyContent: "center",
@@ -329,9 +330,9 @@ const ProfileCard = ({
           >
             <Image
               src={user?.profileImage}
-              width={WIDTH * (60 / myWidth)}
-              height={WIDTH * (60 / myWidth)}
-              style={{ transform: [{ rotate: "-45deg" }], aspectRatio: 1 }}
+              width={50}
+              height={50}
+              style={{ transform: [{ rotate: "-45deg" }], aspectRatio: 1 / 1 }}
             />
           </View>
         </Animated.View>

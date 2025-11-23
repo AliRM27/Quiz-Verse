@@ -15,14 +15,25 @@ import HomePageCards from "@/components/HomePageCards";
 import { WIDTH, HEIGHT, myHeight, myWidth } from "@/constants/Dimensions";
 import Carousel from "@/components/animatinos/Carousel";
 import { useUser } from "@/context/userContext";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import ProfileCardModal from "@/components/ui/ProfileCardModal";
 import { moderateScale } from "react-native-size-matters";
 import { isSmallPhone } from "@/constants/Dimensions";
+import { useFocusEffect } from "expo-router";
+import { useSafeAreaBg } from "@/context/safeAreaContext";
 
 export default function HomeScreen() {
   const { user, loading } = useUser();
   const [isVisible, setIsVisible] = useState<boolean>(false);
+
+  const { setSafeEdges } = useSafeAreaBg();
+
+  useFocusEffect(
+    useCallback(() => {
+      // When active
+      setSafeEdges(["bottom", "top"]);
+    }, [])
+  );
 
   if (loading || !user) {
     return (

@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -68,7 +68,7 @@ export default function Welcome() {
   const [step, setStep] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const translateAnim = useRef(new Animated.Value(0)).current;
-  const { user, loading, refreshUser } = useUser();
+  const { user, loading } = useUser();
   const [username, setUsername] = useState("");
   const [usernameError, setUsernameError] = useState("");
   const [savingUsername, setSavingUsername] = useState(false);

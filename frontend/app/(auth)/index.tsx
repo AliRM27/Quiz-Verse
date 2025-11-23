@@ -127,12 +127,9 @@ export default function Index() {
       const hasUsername =
         loggedInUser?.name && loggedInUser.name.trim().length > 0;
       const unlockedCount = loggedInUser?.unlockedQuizzesCount ?? 0;
-      const hasUnlocked = unlockedCount > 0;
 
       if (!hasUsername) {
         router.replace("/(auth)/welcome");
-      } else if (!hasUnlocked) {
-        router.replace("/(auth)/pickQuiz");
       } else {
         router.replace("/(tabs)");
       }
