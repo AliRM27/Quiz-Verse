@@ -4,10 +4,12 @@ import {
   Modal,
   ActivityIndicator,
   TouchableOpacity,
+  Text,
 } from "react-native";
 import ProfileCard from "./ProfileCard";
 import { useUser } from "@/context/userContext";
-import Close from "@/assets/svgs/x.svg";
+import { useTranslation } from "react-i18next";
+import { REGULAR_FONT } from "@/constants/Styles";
 
 const ProfileCardModal = ({
   isVisible,
@@ -17,6 +19,7 @@ const ProfileCardModal = ({
   setIsVisible: any;
 }) => {
   const { user } = useUser();
+  const { t } = useTranslation();
 
   if (!user)
     return (
@@ -37,51 +40,46 @@ const ProfileCardModal = ({
       <View
         style={{
           height: "100%",
-          justifyContent: "center",
+
           backgroundColor: "rgba(0,0,0,0.7)",
         }}
       >
         <View
           style={{
-            height: "60%",
+            height: "100%",
             alignItems: "center",
+            justifyContent: "center",
             gap: 40,
           }}
         >
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => setIsVisible(false)}
-            style={{
-              position: "absolute",
-              top: -20,
-              right: 20,
-              backgroundColor: "#D9D9D9",
-              padding: 5,
-              borderRadius: 13,
-            }}
-          >
-            <Close color={"black"} />
-          </TouchableOpacity>
           <ProfileCard
             user={user}
             usernameValue={user.name}
             isEditable={false}
           />
-          {/* <TouchableOpacity
+          <TouchableOpacity
             activeOpacity={0.7}
             style={{
               width: "50%",
-              backgroundColor: Colors.dark.text,
+              backgroundColor: "#D9D9D9",
               alignItems: "center",
-              borderRadius: 20,
+              borderRadius: 25,
               padding: 10,
+              paddingVertical: 15,
             }}
             onPress={() => {
               setIsVisible(false);
             }}
           >
-            <Text style={{ fontSize: 18 }}>Close</Text>
-          </TouchableOpacity> */}
+            <Text
+              style={{
+                fontSize: 18,
+                fontFamily: REGULAR_FONT,
+              }}
+            >
+              {t("close")}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </Modal>

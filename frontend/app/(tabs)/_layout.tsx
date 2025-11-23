@@ -20,9 +20,8 @@ import {
   ShopFocused,
   EventsFocused,
 } from "@/assets/svgs/tabBarIcons/index";
-import { HEIGHT, myHeight } from "@/constants/Dimensions";
 import * as Haptics from "expo-haptics";
-import { useState } from "react";
+import { JSX, useState } from "react";
 import { REGULAR_FONT } from "@/constants/Styles";
 
 export default function TabLayout() {
@@ -31,11 +30,31 @@ export default function TabLayout() {
   const { width, height } = useWindowDimensions();
   const isSmallPhone = width < 380 || height < 700;
 
+  const iconWidth = isSmallPhone ? "80%" : "100%";
+
   const handleComingSoon = (feature: string) => {
     Haptics.selectionAsync();
     setFeatureName(feature);
     setModalVisible(true);
   };
+
+  const ComingSoonButton =
+    (feature: string) =>
+    (props: any): JSX.Element => (
+      <Pressable
+        {...props}
+        hitSlop={10}
+        onPress={() => handleComingSoon(feature)}
+        style={({ pressed }) => ({
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+          opacity: pressed ? 0.6 : 1,
+        })}
+      >
+        {props.children}
+      </Pressable>
+    );
 
   return (
     <>
@@ -120,24 +139,31 @@ export default function TabLayout() {
             backgroundColor: Colors.dark.bg_dark,
           },
           tabBarStyle: {
-            height: HEIGHT * (50 / myHeight),
-            backgroundColor: Colors.dark.bg_dark,
+            paddingBottom: 0,
             paddingTop: 10,
+            height: 60,
+            backgroundColor: Colors.dark.bg_dark,
+            borderTopWidth: 1,
             borderColor: Colors.dark.bg_light,
           },
           headerShown: false,
           tabBarShowLabel: false,
+          tabBarHideOnKeyboard: true,
           animation: "fade",
           tabBarButton: (props: any) => (
             <Pressable
               {...props}
+              hitSlop={10}
               onPress={() => {
                 Haptics.selectionAsync();
                 props.onPress?.();
               }}
-              style={{
+              style={({ pressed }) => ({
                 alignItems: "center",
-              }}
+                justifyContent: "center",
+                height: "100%",
+                opacity: pressed ? 0.6 : 1,
+              })}
             >
               {props.children}
             </Pressable>
@@ -149,20 +175,12 @@ export default function TabLayout() {
           options={{
             tabBarIcon({ focused }) {
               return focused ? (
-                <ShopFocused width={isSmallPhone ? "80%" : "100%"} />
+                <ShopFocused width={iconWidth} />
               ) : (
-                <Shop width={isSmallPhone ? "80%" : "100%"} />
+                <Shop width={iconWidth} />
               );
             },
-            tabBarButton: (props: any) => (
-              <Pressable
-                {...props}
-                onPress={() => handleComingSoon("Shop")}
-                style={{ alignItems: "center" }}
-              >
-                {props.children}
-              </Pressable>
-            ),
+            tabBarButton: ComingSoonButton("Shop"),
           }}
         />
         <Tabs.Screen
@@ -170,20 +188,12 @@ export default function TabLayout() {
           options={{
             tabBarIcon({ focused }) {
               return focused ? (
-                <EventsFocused width={isSmallPhone ? "80%" : "100%"} />
+                <EventsFocused width={iconWidth} />
               ) : (
-                <Events width={isSmallPhone ? "80%" : "100%"} />
+                <Events width={iconWidth} />
               );
             },
-            tabBarButton: (props: any) => (
-              <Pressable
-                {...props}
-                onPress={() => handleComingSoon("Events")}
-                style={{ alignItems: "center" }}
-              >
-                {props.children}
-              </Pressable>
-            ),
+            tabBarButton: ComingSoonButton("Events"),
           }}
         />
         <Tabs.Screen
@@ -191,9 +201,9 @@ export default function TabLayout() {
           options={{
             tabBarIcon({ focused }) {
               return focused ? (
-                <HomeFocused width={isSmallPhone ? "80%" : "100%"} />
+                <HomeFocused width={iconWidth} />
               ) : (
-                <Home width={isSmallPhone ? "80%" : "100%"} />
+                <Home width={iconWidth} />
               );
             },
           }}
@@ -204,9 +214,9 @@ export default function TabLayout() {
             title: "Search",
             tabBarIcon({ focused }) {
               return focused ? (
-                <SearchFocused width={isSmallPhone ? "80%" : "100%"} />
+                <SearchFocused width={iconWidth} />
               ) : (
-                <Search width={isSmallPhone ? "80%" : "100%"} />
+                <Search width={iconWidth} />
               );
             },
           }}
@@ -216,9 +226,9 @@ export default function TabLayout() {
           options={{
             tabBarIcon({ focused }) {
               return focused ? (
-                <ProfileFocused width={isSmallPhone ? "80%" : "100%"} />
+                <ProfileFocused width={iconWidth} />
               ) : (
-                <Profile width={isSmallPhone ? "80%" : "100%"} />
+                <Profile width={iconWidth} />
               );
             },
           }}

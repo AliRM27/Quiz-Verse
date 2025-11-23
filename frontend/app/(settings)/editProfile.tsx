@@ -95,6 +95,7 @@ const EditProfile = () => {
             flexGrow: 1,
             backgroundColor: Colors.dark.bg_dark,
             alignItems: "center",
+            gap: 20,
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -114,10 +115,8 @@ const EditProfile = () => {
 
           <View
             style={{
-              width: "100%",
+              width: "90%",
               gap: 10,
-              marginTop: 20,
-              paddingHorizontal: 20,
             }}
           >
             <Text style={[styles.text_muted, { marginLeft: 10 }]}>
@@ -183,25 +182,6 @@ const styles = StyleSheet.create({
   text_muted: {
     color: Colors.dark.text_muted,
     fontFamily: REGULAR_FONT,
-  },
-  card: {
-    marginTop: 30,
-    padding: 17,
-    gap: 20,
-    width: "75%",
-    height: 400,
-    backgroundColor: "#D9D9D9",
-    borderRadius: 15,
-    alignItems: "center",
-  },
-  figure: {
-    width: "100%",
-    height: "55%",
-    backgroundColor: "#E39595",
-    borderTopRightRadius: 10,
-    borderBottomLeftRadius: 10,
-    borderTopLeftRadius: 65,
-    borderBottomRightRadius: 65,
   },
   input: {
     paddingHorizontal: 20,

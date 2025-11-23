@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import ColorPicker from "./ColorPicker";
 import Pencil from "@/assets/svgs/pencil.svg";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { updateUser } from "@/services/api";
 import { useTranslation } from "react-i18next";
 import * as Haptics from "expo-haptics";
@@ -24,6 +24,15 @@ import {
   myWidth,
   WIDTH,
 } from "@/constants/Dimensions";
+
+// ✅ Reanimated imports
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  interpolateColor,
+  cancelAnimation,
+} from "react-native-reanimated";
 
 const ProfileCard = ({
   usernameValue,
@@ -42,6 +51,7 @@ const ProfileCard = ({
     "#FF9F1A",
     "green",
   ];
+
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [selectedColor, setSelectedColor] = useState(user.theme.cardColor);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -63,17 +73,59 @@ const ProfileCard = ({
     "11": "Nov.",
     "12": "Dec.",
   };
+  // UI-thread color state
+  const fromColor = useSharedValue(selectedColor);
+  const toColor = useSharedValue(selectedColor);
+  const progress = useSharedValue(1);
+
+  useEffect(() => {
+    // stop any running transition
+    cancelAnimation(progress);
+
+    // move current target to "from", new pick to "to"
+    fromColor.value = toColor.value;
+    toColor.value = selectedColor;
+
+    progress.value = 0;
+    progress.value = withTiming(1, { duration: 300 });
+  }, [selectedColor]);
+
+  // ✅ Animated theme color computed from progress
+  const animatedTheme = useAnimatedStyle(() => {
+    const c = interpolateColor(
+      progress.value,
+      [0, 1],
+      [fromColor.value, toColor.value]
+    );
+    return { backgroundColor: c };
+  });
+
+  const animatedBorder = useAnimatedStyle(() => {
+    const c = interpolateColor(
+      progress.value,
+      [0, 1],
+      [fromColor.value, toColor.value]
+    );
+    return { borderColor: c };
+  });
+
+  const animatedText = useAnimatedStyle(() => {
+    const c = interpolateColor(
+      progress.value,
+      [0, 1],
+      [fromColor.value, toColor.value]
+    );
+    return { color: c };
+  });
 
   return (
     <View style={styles.card}>
       {isEditable && (
         <Modal
-          transparent={true}
+          transparent
           animationType="slide"
           visible={isVisible}
-          onRequestClose={() => {
-            setIsVisible(false);
-          }}
+          onRequestClose={() => setIsVisible(false)}
         >
           <View
             style={{
@@ -103,11 +155,13 @@ const ProfileCard = ({
               >
                 {t("chooseTheme")}
               </Text>
+
               <ColorPicker
                 colors={colors}
                 selectedColor={selectedColor}
-                setSelectedColor={setSelectedColor}
+                setSelectedColor={setSelectedColor} // animation triggers automatically
               />
+
               <View
                 style={{
                   flexDirection: "row",
@@ -146,6 +200,7 @@ const ProfileCard = ({
                     {t("close")}
                   </Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
                   activeOpacity={0.7}
                   style={[
@@ -172,7 +227,7 @@ const ProfileCard = ({
                   }}
                 >
                   {isLoading ? (
-                    <Loader black={true} />
+                    <Loader black />
                   ) : (
                     <Text
                       style={[
@@ -190,32 +245,26 @@ const ProfileCard = ({
           </View>
         </Modal>
       )}
-      <View
+
+      {/* ✅ Animate the top figure background */}
+      <Animated.View
         style={[
           styles.figure,
-          {
-            backgroundColor: selectedColor,
-            alignItems: "flex-end",
-            padding: 10,
-          },
+          animatedTheme,
+          { alignItems: "flex-end", padding: 10 },
         ]}
       >
         {isEditable && (
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => {
-              setIsVisible(true);
-            }}
-            style={{
-              backgroundColor: "#D9D9D9",
-              padding: 7,
-              borderRadius: 15,
-            }}
+            onPress={() => setIsVisible(true)}
+            style={{ backgroundColor: "#D9D9D9", padding: 7, borderRadius: 15 }}
           >
             <Pencil color={Colors.dark.bg_dark} width={20} height={20} />
           </TouchableOpacity>
         )}
-      </View>
+      </Animated.View>
+
       <View
         style={{
           flexDirection: "row",
@@ -225,39 +274,47 @@ const ProfileCard = ({
         }}
       >
         <View style={{ gap: 5 }}>
-          <Text
+          {/* ✅ Animate username color */}
+          <Animated.Text
             style={[
               styles.text,
+              animatedText,
               {
-                color: selectedColor,
                 fontSize: 25,
                 fontWeight: 700,
               },
+              isSmallPhone && { fontSize: 22 },
               usernameValue.length > 10 && { fontSize: 18 },
             ]}
           >
             {usernameValue}
-          </Text>
+          </Animated.Text>
 
-          <Text
+          {/* ✅ Animate subtitle color */}
+          <Animated.Text
             style={[
               styles.text,
-              { color: selectedColor, fontSize: 17, fontWeight: 600 },
+              animatedText,
+              { fontSize: 17, fontWeight: 600 },
             ]}
           >
             QUIZ MASTER
-          </Text>
+          </Animated.Text>
         </View>
-        <View
-          style={{
-            borderWidth: 2,
-            borderColor: selectedColor,
-            transform: [{ rotate: "45deg" }],
-            padding: 3,
-            borderRadius: 20,
-            width: WIDTH * (60 / myWidth),
-            height: WIDTH * (60 / myWidth),
-          }}
+
+        {/* ✅ Animate diamond border */}
+        <Animated.View
+          style={[
+            {
+              borderWidth: 2,
+              transform: [{ rotate: "45deg" }],
+              padding: 3,
+              borderRadius: 20,
+              width: WIDTH * (60 / myWidth),
+              height: WIDTH * (60 / myWidth),
+            },
+            animatedBorder,
+          ]}
         >
           <View
             style={{
@@ -274,55 +331,37 @@ const ProfileCard = ({
               src={user?.profileImage}
               width={WIDTH * (60 / myWidth)}
               height={WIDTH * (60 / myWidth)}
-              style={{
-                transform: [{ rotate: "-45deg" }],
-                aspectRatio: 1 / 1,
-              }}
+              style={{ transform: [{ rotate: "-45deg" }], aspectRatio: 1 }}
             />
           </View>
-        </View>
-        {/* {isEditable && (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => {
-              setIsVisible(true);
-            }}
-            style={{
-              padding: 7,
-              borderRadius: 15,
-              position: "absolute",
-              zIndex: 1,
-              bottom: -15,
-              right: -13,
-            }}
-          >
-            <Pencil color={Colors.dark.bg_dark} width={20} height={20} />
-          </TouchableOpacity>
-        )} */}
+        </Animated.View>
       </View>
 
-      <View
-        style={{
-          flexDirection: "row",
-          borderWidth: 1,
-          borderColor: selectedColor,
-          alignItems: "center",
-          paddingHorizontal: 10,
-          gap: 10,
-          borderRadius: 10,
-          marginTop: "auto",
-        }}
+      {/* ✅ Animate bottom badge border + text + square */}
+      <Animated.View
+        style={[
+          {
+            flexDirection: "row",
+            borderWidth: 1,
+            alignItems: "center",
+            paddingHorizontal: 10,
+            gap: 10,
+            borderRadius: 10,
+            marginTop: "auto",
+          },
+          animatedBorder,
+        ]}
       >
-        <Text style={[styles.text, { color: selectedColor, fontWeight: 600 }]}>
+        <Animated.Text style={[styles.text, animatedText, { fontWeight: 600 }]}>
           QV
-        </Text>
-        <View
-          style={{ height: 22, width: 22, backgroundColor: selectedColor }}
-        />
-        <Text style={[styles.text, { color: selectedColor, fontWeight: 600 }]}>
+        </Animated.Text>
+
+        <Animated.View style={[{ height: 22, width: 22 }, animatedTheme]} />
+
+        <Animated.Text style={[styles.text, animatedText, { fontWeight: 600 }]}>
           {date[2]} {month[date[1] as keyof typeof month]} {date[0]}
-        </Text>
-      </View>
+        </Animated.Text>
+      </Animated.View>
     </View>
   );
 };
@@ -330,20 +369,13 @@ const ProfileCard = ({
 export default ProfileCard;
 
 const styles = StyleSheet.create({
-  text: {
-    color: Colors.dark.text,
-    fontFamily: REGULAR_FONT,
-  },
-  text_muted: {
-    color: Colors.dark.text_muted,
-    fontFamily: REGULAR_FONT,
-  },
+  text: { color: Colors.dark.text, fontFamily: REGULAR_FONT },
+  text_muted: { color: Colors.dark.text_muted, fontFamily: REGULAR_FONT },
   card: {
-    marginTop: 30,
     padding: 17,
     gap: 20,
-    width: "75%",
-    height: HEIGHT * (400 / myHeight),
+    width: "78%",
+    height: HEIGHT * 0.5,
     backgroundColor: "#D9D9D9",
     borderRadius: 15,
     alignItems: "center",
