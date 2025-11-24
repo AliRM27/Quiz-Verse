@@ -24,6 +24,7 @@ import Trophy from "@/assets/svgs/trophy.svg";
 import Loader from "./ui/Loader";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserProgressDetail } from "@/services/api";
+import { languageMap } from "@/utils/i18n";
 
 const RewardComponent = ({
   name,
@@ -179,6 +180,7 @@ const Result = ({
   mult,
   timeNumber,
   streakNumber,
+  wrongQuestions,
 }: {
   quiz: QuizType;
   selectedLevelIndex: string;
@@ -192,6 +194,7 @@ const Result = ({
   mult: number;
   timeNumber: number;
   streakNumber: number;
+  wrongQuestions: { index: number; question: Record<string, string> }[];
 }) => {
   const { user, refreshUser } = useUser();
   const { t } = useTranslation();
@@ -200,6 +203,7 @@ const Result = ({
   const [showAnimation, setShowAnimation] = useState<string>("");
   const scrollViewRef = useRef<ScrollView | null>(null);
   const [loading, setloading] = useState(false);
+  const [showWrongQuestions, setShowWrongQuestions] = useState(false);
   const { data: detailData, isLoading: detailLoading } = useQuery({
     queryKey: ["userProgressDetail", quiz._id],
     queryFn: () => fetchUserProgressDetail(quiz._id),
@@ -207,6 +211,7 @@ const Result = ({
   });
   const userProgress =
     detailData?.progress?.sections?.[Number(selectedLevelIndex)] || null;
+  const hasWrongQuestions = wrongQuestions && wrongQuestions.length > 0;
 
   const scrollToBottom = () => {
     scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -252,7 +257,7 @@ const Result = ({
     }, 5000);
   }, [userProgress]);
 
-  if (detailLoading || !userProgress) {
+  if (detailLoading || !userProgress || !user) {
     return (
       <View
         style={{
@@ -366,6 +371,69 @@ const Result = ({
             </Text>
             <Wrong width={15} height={15} />
           </View>
+        </View>
+        <View
+          style={{
+            width: "95%",
+            borderWidth: 1,
+            borderColor: Colors.dark.border_muted,
+            borderRadius: 14,
+            padding: 12,
+            backgroundColor: Colors.dark.bg_light,
+            gap: 10,
+          }}
+        >
+          {!hasWrongQuestions ? (
+            <Text
+              style={[
+                styles.txt,
+                { fontSize: 14, fontWeight: "600", textAlign: "center" },
+              ]}
+            >
+              {t("answeredCorrectly")}
+            </Text>
+          ) : (
+            <TouchableOpacity
+              onPress={() => setShowWrongQuestions((prev) => !prev)}
+              activeOpacity={0.7}
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Text style={[styles.txt, { fontSize: 16, fontWeight: "600" }]}>
+                {t("wrongAnswers")}
+              </Text>
+              <Text style={[styles.txt_muted, { fontSize: 13 }]}>
+                {showWrongQuestions ? t("hide") : t("show")}
+              </Text>
+            </TouchableOpacity>
+          )}
+          {hasWrongQuestions && showWrongQuestions && (
+            <View style={{ gap: 8 }}>
+              {wrongQuestions.map((item) => (
+                <View
+                  key={item.index}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: Colors.dark.border,
+                    borderRadius: 10,
+                    padding: 10,
+                    backgroundColor: Colors.dark.bg_dark,
+                    gap: 6,
+                  }}
+                >
+                  <Text style={[styles.txt, { fontSize: 13, opacity: 0.8 }]}>
+                    {t("question")} {item.index + 1}
+                  </Text>
+                  <Text style={[styles.txt, { fontSize: 15 }]}>
+                    {item.question[languageMap[user.language]]}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
         <Text
           style={[

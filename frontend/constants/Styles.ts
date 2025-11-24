@@ -29,7 +29,7 @@ export const defaultStyles = StyleSheet.create({
     padding: isSmallPhone ? 13 : 20,
     borderWidth: 1,
     borderColor: Colors.dark.border_muted,
-    backgroundColor: Colors.dark.bg_dark,
+    backgroundColor: Colors.dark.bg,
     borderRadius: BR,
   },
   containerRowBackground: {

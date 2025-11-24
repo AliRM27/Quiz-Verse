@@ -82,5 +82,9 @@
   "pickQuizEmpty": "Квизы пока недоступны. Попробуйте чуть позже.",
   "pickUsernameButton": "Сохранить и продолжить",
   "pickQuizButton": "Открыть и продолжить",
-  "nextButtonDefault": "Далее"
+  "nextButtonDefault": "Далее",
+  "answeredCorrectly": "Все вопросы отвечены правильно!",
+  "wrongAnswers": "Неправильные oтветы",
+  "hide": "Скрыть",
+  "show": "Показать"
 }

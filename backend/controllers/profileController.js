@@ -115,7 +115,7 @@ export const getUserProgressDetail = async (req, res) => {
 
     const user = await User.findById(req.userId)
       .select("progress")
-      .populate("progress.quizId");
+      .select("sections");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });

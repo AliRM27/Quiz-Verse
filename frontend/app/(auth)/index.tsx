@@ -126,7 +126,6 @@ export default function Index() {
       const loggedInUser = res?.data.user;
       const hasUsername =
         loggedInUser?.name && loggedInUser.name.trim().length > 0;
-      const unlockedCount = loggedInUser?.unlockedQuizzesCount ?? 0;
 
       if (!hasUsername) {
         router.replace("/(auth)/welcome");

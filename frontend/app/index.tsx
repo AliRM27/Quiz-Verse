@@ -32,13 +32,9 @@ export default function Index() {
         }
 
         const needsUsername = !user.name || user.name.trim() === "";
-        const unlockedCount = user.unlockedQuizzesCount ?? 0;
-        const needsStarterQuiz = !needsUsername && unlockedCount === 0;
 
         if (needsUsername) {
           router.replace("/(auth)/welcome");
-        } else if (needsStarterQuiz) {
-          router.replace("/(auth)/pickQuiz");
         } else {
           router.replace("/(tabs)");
         }

@@ -101,6 +101,9 @@ export default function Index() {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [newQuestions, setNewQuestions] = useState<number>(0);
   const [questionLoading, setQuestionLoading] = useState<boolean>(false);
+  const [wrongQuestions, setWrongQuestions] = useState<
+    { index: number; question: Record<string, string> }[]
+  >([]);
 
   useEffect(() => {
     newCorrectIndexesRef.current = new Set();
@@ -194,6 +197,12 @@ export default function Index() {
 
     if (isCorrect) setCorrectAnswers((p) => p + 1);
     else setCurrentStreak(0);
+    if (!isCorrect) {
+      setWrongQuestions((prev) => [
+        ...prev,
+        { index: currQuestionIndex, question: currQuestion.question },
+      ]);
+    }
 
     // --- Base rewards for first-time correct answers (per-question) ---
     let perQuestionReward = 0;
@@ -406,6 +415,7 @@ export default function Index() {
         mult={mult}
         timeNumber={timeLeft}
         streakNumber={maxStreak}
+        wrongQuestions={wrongQuestions}
       />
     );
   }
@@ -497,7 +507,14 @@ export default function Index() {
                 }}
               />
             </View>
-            <Text style={[styles.txt]}>{currSection.difficulty}</Text>
+            <Text
+              style={[
+                styles.txt,
+                user.language === "Русский" && { fontSize: 9 },
+              ]}
+            >
+              {t(currSection.difficulty)}
+            </Text>
           </View>
         </View>
         <View
@@ -710,11 +727,14 @@ export default function Index() {
             })}
         </View>
         <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
-            marginTop: "auto",
-          }}
+          style={[
+            {
+              flexDirection: "row",
+              justifyContent: "space-around",
+              marginTop: "auto",
+            },
+            isSmallPhone && { paddingBottom: 10 },
+          ]}
         >
           <View
             style={{
@@ -739,10 +759,10 @@ export default function Index() {
             onPress={() => handleNextButton()}
           >
             <CircularProgress
-              size={80}
+              size={isSmallPhone ? 75 : 80}
               strokeWidth={3}
               progress={currQuestionIndex + 1}
-              fontSize={18}
+              fontSize={isSmallPhone ? 16 : 18}
               percent={false}
               total={currSection.questions.length}
               arrow={

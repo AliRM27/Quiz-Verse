@@ -82,5 +82,9 @@
   "pickQuizEmpty": "Derzeit sind keine Quizze verfügbar. Bitte versuche es später erneut.",
   "pickUsernameButton": "Speichern und fortfahren",
   "pickQuizButton": "Freischalten & weiter",
-  "nextButtonDefault": "Weiter"
+  "nextButtonDefault": "Weiter",
+  "answeredCorrectly": "Alle Fragen richtig beantwortet!",
+  "wrongAnswers": "Falsche Antworten",
+  "hide": "Verstecken",
+  "show": "Anzeigen"
 }

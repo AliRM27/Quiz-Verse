@@ -82,5 +82,9 @@
   "pickQuizEmpty": "No quizzes available yet. Please try again shortly.",
   "pickUsernameButton": "Save & continue",
   "pickQuizButton": "Unlock & continue",
-  "nextButtonDefault": "Next"
+  "nextButtonDefault": "Next",
+  "answeredCorrectly": "All questions answered correctly!",
+  "wrongAnswers": "Wrong answers",
+  "hide": "Hide",
+  "show": "Show"
 }

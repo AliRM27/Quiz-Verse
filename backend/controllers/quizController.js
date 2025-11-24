@@ -3,7 +3,7 @@ import User from "../models/User.js";
 
 export const getAllQuizzes = async (req, res) => {
   try {
-    const quizzes = await Quiz.find();
+    const quizzes = await Quiz.find().select("-sections");
     res.status(200).json(quizzes);
   } catch (error) {
     res.status(500).json({ message: "Error fetching quizzes" });
@@ -45,11 +45,13 @@ export const searchQuizzes = async (req, res) => {
 
   try {
     if (!query) {
-      quizzes = await Quiz.find().limit(10);
+      quizzes = await Quiz.find().select("-sections").limit(10);
     } else {
       quizzes = await Quiz.find({
         $or: [{ title: { $regex: query, $options: "i" } }],
-      }).limit(20);
+      })
+        .select("-sections")
+        .limit(20);
     }
     res.status(200).json(quizzes);
   } catch (error) {
