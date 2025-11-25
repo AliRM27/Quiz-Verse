@@ -379,7 +379,7 @@ const Result = ({
             borderColor: Colors.dark.border_muted,
             borderRadius: 14,
             padding: 12,
-            backgroundColor: Colors.dark.bg_light,
+            backgroundColor: "#131313",
             gap: 10,
           }}
         >
@@ -420,7 +420,7 @@ const Result = ({
                     borderColor: Colors.dark.border,
                     borderRadius: 10,
                     padding: 10,
-                    backgroundColor: Colors.dark.bg_dark,
+                    backgroundColor: Colors.dark.bg_light,
                     gap: 6,
                   }}
                 >

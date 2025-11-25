@@ -207,21 +207,21 @@ const ProfileCard = ({
                     styles.button,
                     { width: "45%" },
                     isLoading && { paddingVertical: 5 },
+                    user.theme.cardColor === selectedColor && { opacity: 0.5 },
                   ]}
+                  disabled={user.theme.cardColor === selectedColor || isLoading}
                   onPress={async () => {
                     setIsLoading(true);
-                    if (user.theme.cardColor !== selectedColor) {
-                      try {
-                        user.theme.cardColor = selectedColor;
-                        await updateUser(user);
-                        Haptics.notificationAsync(
-                          Haptics.NotificationFeedbackType.Success
-                        );
-                      } catch (err) {
-                        console.log(err);
-                      } finally {
-                        setIsVisible(false);
-                      }
+                    try {
+                      user.theme.cardColor = selectedColor;
+                      await updateUser(user);
+                      Haptics.notificationAsync(
+                        Haptics.NotificationFeedbackType.Success
+                      );
+                    } catch (err) {
+                      console.log(err);
+                    } finally {
+                      setIsVisible(false);
                     }
                     setIsLoading(false);
                   }}
