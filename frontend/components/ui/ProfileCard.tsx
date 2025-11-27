@@ -298,7 +298,7 @@ const ProfileCard = ({
               isSmallPhone && { fontSize: 15 },
             ]}
           >
-            QUIZ MASTER
+            {t(user.title).toUpperCase()}
           </Animated.Text>
         </View>
 

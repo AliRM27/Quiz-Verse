@@ -14,6 +14,11 @@ const quizSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  titleQuiz: {
+    en: { type: String, required: true, trim: true },
+    de: { type: String, required: true, trim: true },
+    ru: { type: String, required: true, trim: true },
+  },
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",

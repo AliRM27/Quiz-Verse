@@ -120,6 +120,7 @@ const Quiz = () => {
               activeOpacity={0.6}
               style={styles.logoContainer}
               onPress={() => {
+                Haptics.selectionAsync();
                 router.replace({
                   pathname: "/quizLevel/[id]/[section]",
                   params: {

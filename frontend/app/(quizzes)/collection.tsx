@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { REGULAR_FONT } from "@/constants/Styles";
 import { Colors } from "@/constants/Colors";
-import { layout, myWidth, WIDTH } from "@/constants/Dimensions";
+import { myWidth, WIDTH } from "@/constants/Dimensions";
 import { useUser } from "@/context/userContext";
 import { router } from "expo-router";
 import QuizLogo from "@/components/ui/QuizLogo";
@@ -37,7 +37,6 @@ const Collection = () => {
       style={{
         backgroundColor: Colors.dark.bg_dark,
         height: "100%",
-        paddingVertical: layout.paddingTop,
         paddingHorizontal: 15,
         alignItems: "center",
       }}

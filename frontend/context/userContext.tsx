@@ -24,6 +24,7 @@ export type User = {
   role: string;
   stars: number;
   level: number;
+  title: string;
   language: string;
   activeSession: string | null;
   lastActiveAt: any;

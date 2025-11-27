@@ -86,5 +86,9 @@
   "answeredCorrectly": "All questions answered correctly!",
   "wrongAnswers": "Wrong answers",
   "hide": "Hide",
-  "show": "Show"
+  "show": "Show",
+  "newbie": "Newbie",
+  "legend": "Legend",
+  "master": "Master",
+  "grandmaster": "Grandmaster"
 }

@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   stars: { type: Number, default: 0 }, // In-game currency
   gems: { type: Number, default: 0 },
   level: { type: Number, default: 0 },
+  title: { type: String, default: "newbie" },
   unlockedQuizzes: [
     { quizId: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" } },
   ],

@@ -52,13 +52,13 @@ const RotatingGradient = ({ children, isOn = true }: any) => {
     <LinearGradient
       colors={
         isOn
-          ? ["#6e6e6eff", "#1c1c1cff"]
+          ? [Colors.dark.text, Colors.dark.bg_dark]
           : [Colors.dark.bg_dark, Colors.dark.bg_dark]
       }
       start={start}
       end={end}
       style={{
-        padding: 2,
+        padding: 1,
         borderRadius: 10,
       }}
     >
