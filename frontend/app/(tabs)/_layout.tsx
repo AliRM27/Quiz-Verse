@@ -193,7 +193,6 @@ export default function TabLayout() {
                 <Events width={iconWidth} />
               );
             },
-            tabBarButton: ComingSoonButton("Events"),
           }}
         />
         <Tabs.Screen
