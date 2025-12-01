@@ -3,12 +3,22 @@ import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import DailyQuiz from "@/assets/svgs/dailyQuiz.svg";
 import WeeklyChallange from "@/assets/svgs/weeklyEvent.svg";
 import Championship from "@/assets/svgs/championship.svg";
+import { router } from "expo-router";
+import type { Href } from "expo-router";
 
 export default function Events() {
   const events = [
-    { name: "Daily Quiz", icon: DailyQuiz },
-    { name: "Weekly Challenge", icon: WeeklyChallange },
-    { name: "Championship", icon: Championship },
+    { name: "Daily Quiz", icon: DailyQuiz, path: "/(events)/dailyQuiz" },
+    {
+      name: "Weekly Challenge",
+      icon: WeeklyChallange,
+      path: "/(events)/weeklyEvent",
+    },
+    {
+      name: "Championship",
+      icon: Championship,
+      path: "/(evetns)/championship",
+    },
   ];
   return (
     <View style={{ alignItems: "center", height: "100%" }}>
@@ -26,6 +36,7 @@ export default function Events() {
           return (
             <TouchableOpacity
               key={event.name}
+              onPress={() => router.push(event.path as Href)}
               style={{
                 width: "90%",
                 height: 100,

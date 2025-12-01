@@ -54,6 +54,7 @@ export default function RootLayout() {
               <UserProvider>
                 <StatusBar style="light" />
                 <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="(events)/dailyQuiz" />
                   <Stack.Screen
                     name="(tabs)"
                     options={{ animation: "fade", gestureEnabled: false }}

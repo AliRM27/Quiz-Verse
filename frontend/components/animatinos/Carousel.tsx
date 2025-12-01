@@ -16,6 +16,7 @@ import Championship from "@/assets/svgs/championship.svg";
 import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
 import { Colors } from "@/constants/Colors";
 import { HEIGHT, myHeight, WIDTH, myWidth } from "@/constants/Dimensions";
+import { Href, router } from "expo-router";
 
 const width = WIDTH * (230 / myWidth);
 const height = HEIGHT * (100 / myHeight);
@@ -28,6 +29,7 @@ const MODES = [
       />
     ),
     time: "17h 30m",
+    path: "/(events)/dailyQuiz",
   },
   {
     svg: (
@@ -37,10 +39,12 @@ const MODES = [
       />
     ),
     time: "2h 56m",
+    path: "/(events)/weeklyEvent",
   },
   {
     svg: <Championship height={HEIGHT * (50 / myHeight)} />,
     time: "12h 13m",
+    path: "/(events)/championship",
   },
 ];
 
@@ -184,7 +188,13 @@ export default function Carousel() {
           {MODES.map((card, index) => (
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => handleComingSoon("Events")}
+              onPress={() => {
+                if (index === 0) {
+                  router.push(card.path as Href);
+                  return;
+                }
+                handleComingSoon("Events");
+              }}
               key={index}
               style={styles.card}
             >

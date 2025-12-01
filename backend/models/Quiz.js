@@ -58,8 +58,6 @@ const quizSchema = new mongoose.Schema({
             de: { type: String, required: true, trim: true },
             ru: { type: String, required: true, trim: true },
           },
-          image: { type: String, trim: true },
-          video: { type: String, trim: true },
           type: {
             type: String,
             required: true,

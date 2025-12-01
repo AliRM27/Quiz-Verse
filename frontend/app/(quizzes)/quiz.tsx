@@ -247,7 +247,7 @@ const Quiz = () => {
               }}
             >
               <ProgressBar
-                color={"#FFB11F"}
+                color={Colors.dark.secondary}
                 progress={currentProgress?.rewardsTotal}
                 total={quiz.rewardsTotal}
               />

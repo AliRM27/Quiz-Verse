@@ -9,6 +9,8 @@ const userSchema = new mongoose.Schema({
   gems: { type: Number, default: 0 },
   level: { type: Number, default: 0 },
   title: { type: String, default: "newbie" },
+  dailyQuizStreak: { type: Number, default: 0 },
+  lastDailyQuizDateKey: { type: String, default: null },
   unlockedQuizzes: [
     { quizId: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" } },
   ],
