@@ -93,6 +93,10 @@ export default function RootLayout() {
                     options={{ animation: "none", gestureEnabled: false }}
                   />
                   <Stack.Screen
+                    name="quizLevel/daily"
+                    options={{ animation: "none", gestureEnabled: false }}
+                  />
+                  <Stack.Screen
                     name="(auth)/index"
                     options={{ animation: "none", gestureEnabled: false }}
                   />

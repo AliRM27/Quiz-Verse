@@ -4,8 +4,10 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ViewBase,
+  InteractionManager,
 } from "react-native";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Colors } from "@/constants/Colors";
 import ArrBack from "@/components/ui/ArrBack";
 import { useUser } from "@/context/userContext";
@@ -18,14 +20,79 @@ import CircularProgress from "@/components/ui/CircularProgress";
 import { useTranslation } from "react-i18next";
 import ProgressBar from "@/components/animatinos/progressBar";
 import { isSmallPhone } from "@/constants/Dimensions";
+import LottieView from "lottie-react-native";
+import { fetchDailyQuiz } from "@/services/api";
+import { useQuery } from "@tanstack/react-query";
+import { formatResetTime } from "@/utils/events";
+import { router } from "expo-router";
 
 const dailyQuiz = () => {
   const [hasCompletedToday, sethasCompletedToday] = useState(false);
   const { user } = useUser();
   const { t } = useTranslation();
+  const fireAnimation = useMemo(
+    () => require("@/assets/animations/Fire.json"),
+    []
+  );
+  const fireRef = useRef<LottieView | null>(null);
 
-  if (!user) {
-    return <Loader />;
+  const { data: dailyQuizData, isLoading: dailyQuizLoading } = useQuery({
+    queryKey: ["dailyQuiz"],
+    queryFn: fetchDailyQuiz,
+  });
+
+  // Lottie
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      fireRef.current?.play();
+    });
+    return () => task.cancel();
+  }, []);
+
+  // ⬇️ Start with null, then set when data arrives
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+
+  // When dailyQuizData changes, initialize / reset the timer
+  useEffect(() => {
+    if (!dailyQuizData?.quiz) return;
+    setSecondsLeft(dailyQuizData.quiz.resetsInSeconds);
+  }, [dailyQuizData?.quiz?.resetsInSeconds]);
+
+  // Timer effect
+  useEffect(() => {
+    // no data yet → do nothing
+    if (secondsLeft === null) return;
+    if (secondsLeft <= 0) return;
+
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev === null || prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [secondsLeft]);
+
+  const formattedTime =
+    secondsLeft !== null ? formatResetTime(secondsLeft) : "–h –min ⏱️";
+
+  if (!user || dailyQuizLoading || !dailyQuizData || secondsLeft === null) {
+    return (
+      <View
+        style={{
+          backgroundColor: Colors.dark.bg_dark,
+          height: "100%",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Loader />
+      </View>
+    );
   }
 
   return (
@@ -48,7 +115,9 @@ const dailyQuiz = () => {
       >
         <View style={{ alignItems: "center", gap: 20 }}>
           <DailyQuiz width={160} height={60} />
-          <Text style={[{ fontSize: 15 }, styles.txt_muted]}>13h 47min ⏱️</Text>
+          <Text style={[{ fontSize: 15 }, styles.txt_muted]}>
+            {formattedTime}
+          </Text>
         </View>
         {/* Trophies / Gems summary */}
         {/* <View style={{ alignItems: "flex-end" }}>
@@ -206,6 +275,7 @@ const dailyQuiz = () => {
               paddingVertical: 10,
               alignItems: "center",
             }}
+            onPress={() => router.navigate("/quizLevel/daily")}
           >
             <Text
               style={{
@@ -224,6 +294,7 @@ const dailyQuiz = () => {
           style={{
             borderRadius: 16,
             padding: 16,
+            paddingTop: 10,
             backgroundColor: Colors.dark.bg_light,
           }}
         >
@@ -231,7 +302,7 @@ const dailyQuiz = () => {
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
-              alignItems: "center",
+              alignItems: "flex-end",
               marginBottom: 20,
             }}
           >
@@ -246,9 +317,25 @@ const dailyQuiz = () => {
             >
               Daily Streak
             </Text>
-            <Text style={[{ fontSize: 14, fontWeight: "700" }, styles.txt]}>
-              3 🔥
-            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "flex-end",
+                gap: 5,
+                justifyContent: "center",
+              }}
+            >
+              <Text style={[{ fontSize: 20, fontWeight: "700" }, styles.txt]}>
+                3
+              </Text>
+              <LottieView
+                ref={fireRef}
+                autoPlay={false}
+                loop
+                source={fireAnimation}
+                style={{ width: 35, height: 35 }}
+              />
+            </View>
           </View>
           {/* Fake progress bar */}
           <View

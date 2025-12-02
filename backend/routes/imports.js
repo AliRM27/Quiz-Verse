@@ -6,6 +6,7 @@ import profileRoutes from "./profileRoutes.js";
 import adminRoutes from "./adminRoutes.js";
 import staticRoutes from "./staticRoutes.js";
 import uploadLogoRoute from "./uploadLogo.js";
+import eventRoutes from "./eventRoutes.js";
 
 export {
   authRoutes,
@@ -16,4 +17,5 @@ export {
   adminRoutes,
   staticRoutes,
   uploadLogoRoute,
+  eventRoutes,
 };

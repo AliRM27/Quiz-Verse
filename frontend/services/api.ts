@@ -89,6 +89,15 @@ export const fetchUser = async (savedToken: string) => {
   }
 };
 
+export const fetchDailyQuiz = async () => {
+  try {
+    const res = await api.get("api/events/daily-quiz");
+    return res.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 export const fetchUserProgress = async () => {
   try {
     const res = await api.get("api/users/me/progress");

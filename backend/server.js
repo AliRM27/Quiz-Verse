@@ -11,6 +11,7 @@ import {
   adminRoutes,
   staticRoutes,
   uploadLogoRoute,
+  eventRoutes,
 } from "./routes/imports.js";
 import { protect } from "./middleware/protect.js";
 import { isAdmin } from "./middleware/isAdmin.js";
@@ -32,6 +33,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/quizzes", protect, quizRoutes);
+app.use("/api/events", protect, eventRoutes);
 app.use("/api/categories", protect, checkActiveSession, categoryRoutes);
 app.use("/api/shop", protect, checkActiveSession, shopRoutes);
 app.use("/api/users", protect, profileRoutes);
