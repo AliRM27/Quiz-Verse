@@ -61,7 +61,7 @@ export const getDailyQuiz = async (req, res) => {
     });
 
     if (!dailyQuiz) {
-      return res.status(404).json({
+      return res.json({
         success: false,
         message: `No Daily Quiz defined for ${dateKey}`,
       });

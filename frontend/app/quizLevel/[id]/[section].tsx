@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
+  ScrollView,
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { HEIGHT, isSmallPhone, layout, myHeight } from "@/constants/Dimensions";
@@ -560,8 +561,9 @@ export default function Index() {
             {currQuestion.question[languageMap[user.language]]}
           </Text>
         </View>
-        <View
-          style={[
+        <ScrollView
+          scrollEnabled={currQuestion.type === QUESTION_TYPES.MC}
+          contentContainerStyle={[
             { gap: 15 },
             currQuestion.type === QUESTION_TYPES.TF && {
               flexDirection: "row",
@@ -725,7 +727,7 @@ export default function Index() {
                   </Pressable>
                 );
             })}
-        </View>
+        </ScrollView>
         <View
           style={[
             {

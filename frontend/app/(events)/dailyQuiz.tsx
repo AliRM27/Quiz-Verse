@@ -81,6 +81,22 @@ const dailyQuiz = () => {
     secondsLeft !== null ? formatResetTime(secondsLeft) : "–h –min ⏱️";
 
   if (!user || dailyQuizLoading || !dailyQuizData || secondsLeft === null) {
+    if (dailyQuizData?.success === false)
+      return (
+        <View
+          style={{
+            backgroundColor: Colors.dark.bg_dark,
+            height: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ color: Colors.dark.text }}>
+            No Daily Quiz available
+          </Text>
+        </View>
+      );
+
     return (
       <View
         style={{
@@ -328,13 +344,13 @@ const dailyQuiz = () => {
               <Text style={[{ fontSize: 20, fontWeight: "700" }, styles.txt]}>
                 3
               </Text>
-              <LottieView
+              {/* <LottieView
                 ref={fireRef}
                 autoPlay={false}
                 loop
                 source={fireAnimation}
                 style={{ width: 35, height: 35 }}
-              />
+              /> */}
             </View>
           </View>
           {/* Fake progress bar */}
