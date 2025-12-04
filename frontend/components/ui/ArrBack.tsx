@@ -9,6 +9,7 @@ const ArrBack = () => {
         position: "absolute",
         left: 20,
         padding: 5,
+        zIndex: 1,
       }}
       onPress={() => router.back()}
     >

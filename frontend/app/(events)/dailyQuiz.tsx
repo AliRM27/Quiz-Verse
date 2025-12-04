@@ -14,20 +14,19 @@ import { useUser } from "@/context/userContext";
 import Loader from "@/components/ui/Loader";
 import Trophy from "@/assets/svgs/trophy.svg";
 import DailyQuiz from "@/assets/svgs/dailyQuiz.svg";
-import { defaultStyles } from "@/constants/Styles";
+import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
 import { LineDashed } from "@/components/ui/Line";
 import CircularProgress from "@/components/ui/CircularProgress";
 import { useTranslation } from "react-i18next";
 import ProgressBar from "@/components/animatinos/progressBar";
 import { isSmallPhone } from "@/constants/Dimensions";
 import LottieView from "lottie-react-native";
-import { fetchDailyQuiz } from "@/services/api";
+import { fetchDailyQuiz, fetchUserDailyQuizProgress } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
 import { formatResetTime } from "@/utils/events";
 import { router } from "expo-router";
 
 const dailyQuiz = () => {
-  const [hasCompletedToday, sethasCompletedToday] = useState(false);
   const { user } = useUser();
   const { t } = useTranslation();
   const fireAnimation = useMemo(
@@ -39,6 +38,11 @@ const dailyQuiz = () => {
   const { data: dailyQuizData, isLoading: dailyQuizLoading } = useQuery({
     queryKey: ["dailyQuiz"],
     queryFn: fetchDailyQuiz,
+  });
+
+  const { data: dailyQuizUserProgressData } = useQuery({
+    queryKey: ["dailyQuizUserProgress"],
+    queryFn: fetchUserDailyQuizProgress,
   });
 
   // Lottie
@@ -80,7 +84,13 @@ const dailyQuiz = () => {
   const formattedTime =
     secondsLeft !== null ? formatResetTime(secondsLeft) : "–h –min ⏱️";
 
-  if (!user || dailyQuizLoading || !dailyQuizData || secondsLeft === null) {
+  if (
+    !user ||
+    dailyQuizLoading ||
+    !dailyQuizData ||
+    secondsLeft === null ||
+    !dailyQuizUserProgressData
+  ) {
     if (dailyQuizData?.success === false)
       return (
         <View
@@ -165,31 +175,18 @@ const dailyQuiz = () => {
               styles.txt,
             ]}
           >
-            Daily Quiz
+            {t("dailyQuiz")}
           </Text>
           <Text style={[{ fontSize: 13, marginBottom: 8 }, styles.txt_muted]}>
-            5 random gaming questions.
+            {t("dailyQuizDesc")}
           </Text>
 
           <Text style={[{ fontSize: 13, marginBottom: 2 }, styles.txt_muted]}>
-            🧠 Difficulty: Mixed
+            🧠 {t("difficultyDaily")}
           </Text>
           <Text style={[{ fontSize: 13 }, styles.txt_muted]}>
-            🎁 Reward: +50 Trophies, +10 Gems
+            🎁 {t("reward")}: +50 Trophies, +10 Gems
           </Text>
-
-          {hasCompletedToday && (
-            <Text
-              style={{
-                fontSize: 12,
-                color: "#4ade80",
-                marginBottom: 12,
-                fontWeight: "600",
-              }}
-            >
-              Completed today ✅
-            </Text>
-          )}
           <View
             style={[
               defaultStyles.containerRow,
@@ -229,10 +226,12 @@ const dailyQuiz = () => {
               </Text>
               <LineDashed />
               <CircularProgress
-                progress={0}
+                progress={dailyQuizUserProgressData.correctCount}
+                total={dailyQuizData.quiz.questions.length}
                 size={46}
                 strokeWidth={2}
                 fontSize={11}
+                percent={false}
               />
             </View>
             <View
@@ -274,35 +273,52 @@ const dailyQuiz = () => {
               >
                 <ProgressBar
                   color={Colors.dark.secondary}
-                  progress={0}
-                  total={50}
+                  progress={dailyQuizUserProgressData.totalRewards}
+                  total={dailyQuizData.quiz.rewards.trophies}
                   height={2}
                 />
               </View>
               <Text style={[styles.txt, { fontSize: 12 }]}>
-                {0} / {50}
+                {dailyQuizUserProgressData.totalRewards} /{" "}
+                {dailyQuizData.quiz.rewards.trophies}
               </Text>
             </View>
           </View>
-          <TouchableOpacity
-            style={{
-              backgroundColor: Colors.dark.text,
-              borderRadius: 999,
-              paddingVertical: 10,
-              alignItems: "center",
-            }}
-            onPress={() => router.navigate("/quizLevel/daily")}
-          >
+          {dailyQuizUserProgressData.completed ? (
             <Text
               style={{
-                color: Colors.dark.bg_dark,
+                fontSize: 17,
+                color: "#4ade80",
+                marginBottom: 15,
                 fontWeight: "600",
-                fontSize: 14,
+                textAlign: "center",
               }}
             >
-              Start Quiz
+              {t("completedToday")}
             </Text>
-          </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={{
+                backgroundColor: dailyQuizUserProgressData.completed
+                  ? Colors.dark.highlight
+                  : Colors.dark.text,
+                borderRadius: 999,
+                paddingVertical: 10,
+                alignItems: "center",
+              }}
+              onPress={() => router.navigate("/quizLevel/daily")}
+            >
+              <Text
+                style={{
+                  color: Colors.dark.bg_dark,
+                  fontWeight: "600",
+                  fontSize: 14,
+                }}
+              >
+                {t("Start Quiz")}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Streak card */}
@@ -331,7 +347,7 @@ const dailyQuiz = () => {
                 styles.txt,
               ]}
             >
-              Daily Streak
+              {t("dailyStreak")}
             </Text>
             <View
               style={{
@@ -342,7 +358,7 @@ const dailyQuiz = () => {
               }}
             >
               <Text style={[{ fontSize: 20, fontWeight: "700" }, styles.txt]}>
-                3
+                {dailyQuizData.streak.current}
               </Text>
               {/* <LottieView
                 ref={fireRef}
@@ -353,7 +369,6 @@ const dailyQuiz = () => {
               /> */}
             </View>
           </View>
-          {/* Fake progress bar */}
           <View
             style={{
               borderRadius: 999,
@@ -364,7 +379,7 @@ const dailyQuiz = () => {
           >
             <ProgressBar
               height={5}
-              progress={3}
+              progress={dailyQuizData.streak.current}
               color={Colors.dark.primary}
               total={7}
             />
@@ -413,12 +428,10 @@ const dailyQuiz = () => {
               styles.txt,
             ]}
           >
-            How it works
+            {t("howItWorks")}
           </Text>
           <Text style={[{ fontSize: 12, opacity: 0.8 }, styles.txt]}>
-            • One new Daily Quiz every day.{"\n"}• You can play each Daily Quiz
-            once.{"\n"}• Complete it to earn trophies and gems.{"\n"}• Keep your
-            streak to unlock bigger rewards.
+            {t("dailyQuizRules")}
           </Text>
         </View>
       </ScrollView>
@@ -429,6 +442,6 @@ const dailyQuiz = () => {
 export default dailyQuiz;
 
 const styles = StyleSheet.create({
-  txt: { color: Colors.dark.text, fontFamily: "Inter" },
-  txt_muted: { color: Colors.dark.text_muted, fontFamily: "Inter" },
+  txt: { color: Colors.dark.text, fontFamily: REGULAR_FONT },
+  txt_muted: { color: Colors.dark.text_muted, fontFamily: REGULAR_FONT },
 });

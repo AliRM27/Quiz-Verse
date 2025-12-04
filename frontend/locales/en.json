@@ -90,5 +90,14 @@
   "newbie": "Newbie",
   "legend": "Legend",
   "master": "Master",
-  "grandmaster": "Grandmaster"
+  "grandmaster": "Grandmaster",
+  "dailyQuiz": "Daily Quiz",
+  "dailyQuizDesc": "5 random questions",
+  "difficultyDaily": "Difficulty: Mixed",
+  "reward": "Reward",
+  "completedToday": "Completed today",
+  "dailyStreak": "Daily Streak",
+  "howItWorks": "How it works",
+  "startQuiz": "Start Quiz",
+  "dailyQuizRules": "• One new Daily Quiz every day.\n• You can play each Daily Quiz once.\n• Complete it to earn trophies and gems.\n• Keep yourstreak to unlock bigger rewards."
 }

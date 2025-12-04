@@ -34,6 +34,11 @@ const userDailyQuizSchema = new mongoose.Schema(
       default: false,
     },
 
+    totalRewards: {
+      type: Number,
+      default: 0,
+    },
+
     rewardsGiven: {
       type: Boolean,
       default: false, // so you can't claim twice

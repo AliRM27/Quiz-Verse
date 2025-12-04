@@ -77,7 +77,7 @@ const dailyQuizSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-dailyQuizSchema.index({ dateKey: 1 }, { unique: true });
+dailyQuizSchema.index({ unique: true });
 
 const DailyQuiz = mongoose.model("DailyQuiz", dailyQuizSchema);
 export default DailyQuiz;

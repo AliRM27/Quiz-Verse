@@ -2,7 +2,273 @@ import DailyQuiz from "../models/DailyQuiz.js";
 import Quiz from "../models/Quiz.js";
 import User from "../models/User.js";
 import UserDailyQuiz from "../models/userDailyQuiz.js";
-import { getTodayDateKey } from "../services/dateKey.js";
+import { getTodayDateKey, getYesterdayDateKey } from "../services/dateKey.js";
+
+// helper: normalize text for comparison
+function normalizeText(str = "") {
+  return String(str).trim().toLowerCase();
+}
+
+export const submitDailyQuiz = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    const { answers } = req.body;
+
+    if (!answers || !Array.isArray(answers) || answers.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Answers are required.",
+      });
+    }
+
+    const dateKey = getTodayDateKey();
+    const yesterdayKey = getYesterdayDateKey();
+
+    // 1. Find today's quiz
+    const dailyQuiz = await DailyQuiz.findOne({
+      dateKey,
+      isPublished: true,
+    });
+
+    if (!dailyQuiz) {
+      return res.status(404).json({
+        success: false,
+        message: `No Daily Quiz defined for ${dateKey}`,
+      });
+    }
+
+    // 2. Check if user already completed today (one rewarded attempt per day)
+    let userDaily = await UserDailyQuiz.findOne({
+      userId: user._id,
+      dailyQuizId: dailyQuiz._id,
+    });
+
+    if (userDaily?.completed) {
+      return res.status(400).json({
+        success: false,
+        message: "Daily Quiz already completed.",
+      });
+    }
+
+    const questions = dailyQuiz.questions;
+    let correctCount = 0;
+
+    // This will be sent back so you can show which ones were wrong
+    const detailedResults = [];
+
+    // 3. For each question, compare user answer with correct one
+    questions.forEach((q, index) => {
+      const answerPayload = answers.find((a) => a.index === index);
+
+      // default result: unanswered/incorrect
+      let isCorrect = false;
+      const result = {
+        index,
+        type: q.type,
+        isCorrect: false,
+        userAnswer: null,
+        correctAnswer: null,
+      };
+
+      if (!answerPayload) {
+        // user skipped this question
+        // still push default result
+        detailedResults.push(result);
+        return;
+      }
+
+      if (q.type === "Multiple Choice" || q.type === "True/False") {
+        const selectedIndex = answerPayload.selectedOptionIndex;
+
+        const correctOptionIndex = q.options.findIndex((opt) => opt.isCorrect);
+
+        isCorrect =
+          typeof selectedIndex === "number" &&
+          correctOptionIndex === selectedIndex;
+
+        result.userAnswer = {
+          selectedAnswer: selectedIndex,
+        };
+
+        result.correctAnswer = {
+          correctOptionIndex,
+        };
+      } else if (q.type === "Short Answer") {
+        const userText = normalizeText(answerPayload.textAnswer);
+
+        const correctOption = q.options.find((opt) => opt.isCorrect);
+        const correctTextEn = correctOption?.text?.en || "";
+        // You can adapt this to check different languages if needed
+        const correctTextNormalized = normalizeText(correctTextEn);
+
+        isCorrect = userText.length > 0 && userText === correctTextNormalized;
+
+        result.userAnswer = {
+          textAnswer: answerPayload.textAnswer || "",
+        };
+
+        result.correctAnswer = {
+          correctTextEn,
+        };
+      } else if (q.type === "Numeric") {
+        const userValue = Number(answerPayload.numericAnswer);
+        const target = q.numericAnswer;
+        const tolerance = q.numericTolerance ?? 0;
+
+        if (!Number.isNaN(userValue) && typeof target === "number") {
+          isCorrect = Math.abs(userValue - target) <= tolerance;
+        }
+
+        result.userAnswer = {
+          numericAnswer: userValue,
+        };
+
+        result.correctAnswer = {
+          numericAnswer: target,
+          tolerance,
+        };
+      }
+
+      if (isCorrect) {
+        correctCount++;
+      }
+
+      result.isCorrect = isCorrect;
+      detailedResults.push(result);
+    });
+
+    const totalQuestions = questions.length;
+    const perfect = correctCount === totalQuestions;
+
+    // 4. Create or update UserDailyQuiz
+    if (!userDaily) {
+      userDaily = await UserDailyQuiz.create({
+        userId: user._id,
+        dailyQuizId: dailyQuiz._id,
+        dateKey,
+        completed: true,
+        correctCount,
+        totalQuestions,
+        perfect,
+        rewardsGiven: false,
+        completedAt: new Date(),
+      });
+    } else {
+      userDaily.completed = true;
+      userDaily.correctCount = correctCount;
+      userDaily.totalQuestions = totalQuestions;
+      userDaily.perfect = perfect;
+      userDaily.completedAt = new Date();
+      await userDaily.save();
+    }
+
+    // 5. Give rewards + update streak (only once)
+    const { trophies: maxTrophies, gems: maxGems } = dailyQuiz.rewards;
+
+    let trophiesToGive = 0;
+    let gemsToGive = 0;
+
+    if (totalQuestions > 0) {
+      const ratio = correctCount / totalQuestions;
+
+      trophiesToGive = Math.round(maxTrophies * ratio);
+      if (ratio >= 0.6) {
+        gemsToGive = maxGems;
+      }
+
+      if (perfect) {
+        trophiesToGive += 10; // optional perfect bonus
+      }
+    }
+
+    if (!userDaily.rewardsGiven) {
+      user.stars = (user.stars || 0) + trophiesToGive;
+      user.gems = (user.gems || 0) + gemsToGive;
+
+      if (user.lastDailyQuizDateKey === dateKey) {
+        // already counted today → do nothing
+      } else if (user.lastDailyQuizDateKey === yesterdayKey) {
+        user.dailyQuizStreak = (user.dailyQuizStreak || 0) + 1;
+      } else {
+        user.dailyQuizStreak = 1;
+      }
+
+      user.lastDailyQuizDateKey = dateKey;
+      userDaily.rewardsGiven = true;
+      userDaily.totalRewards = trophiesToGive;
+
+      await Promise.all([user.save(), userDaily.save()]);
+    }
+
+    return res.json({
+      success: true,
+      message: "Daily Quiz submitted.",
+      correctCount,
+      totalQuestions,
+      perfect,
+      rewards: {
+        trophies: trophiesToGive,
+        gems: gemsToGive,
+      },
+      streak: user.dailyQuizStreak,
+      results: detailedResults,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to submit Daily Quiz",
+    });
+  }
+};
+
+export const getUserDailyQuizProgress = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+
+    const dateKey = getTodayDateKey();
+
+    // 1. Find today's quiz
+    const dailyQuiz = await DailyQuiz.findOne({
+      dateKey,
+      isPublished: true,
+    });
+
+    if (!dailyQuiz) {
+      return res.status(404).json({
+        success: false,
+        message: `No Daily Quiz defined for ${dateKey}`,
+      });
+    }
+
+    // 2. Check if user already completed today (one rewarded attempt per day)
+    let userDailyProgress = await UserDailyQuiz.findOne({
+      userId: user._id,
+      dailyQuizId: dailyQuiz._id,
+    });
+
+    if (!dailyQuiz) {
+      return res.status(404).json({
+        success: false,
+        message: `No Daily Quiz defined for ${dateKey}`,
+      });
+    }
+
+    if (!userDailyProgress)
+      userDailyProgress = await UserDailyQuiz.create({
+        userId: user._id,
+        dailyQuizId: dailyQuiz._id,
+        completed: false,
+        dateKey,
+        completedAt: new Date(),
+      });
+
+    await userDailyProgress.save();
+
+    return res.json({ userDailyProgress });
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 export const getAllQuizzes = async (req, res) => {
   try {

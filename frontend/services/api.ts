@@ -3,6 +3,7 @@ import { API_URL } from "./config";
 import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
 import { Alert, DevSettings } from "react-native";
+import { DailyAnswerPayload } from "@/types";
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -93,6 +94,27 @@ export const fetchDailyQuiz = async () => {
   try {
     const res = await api.get("api/events/daily-quiz");
     return res.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const submitDailyQuiz = async (answers: DailyAnswerPayload[]) => {
+  try {
+    const res = await api.post("api/events/daily-quiz/submit", {
+      answers,
+    });
+    console.log(res.data);
+    return res.data;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+export const fetchUserDailyQuizProgress = async () => {
+  try {
+    const res = await api.get("api/events/daily-quiz/userprogress");
+    return res.data.userDailyProgress;
   } catch (err) {
     console.log(err);
   }

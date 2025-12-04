@@ -90,5 +90,14 @@
   "newbie": "Anfänger",
   "legend": "Legende",
   "master": "Meister",
-  "grandmaster": "Großmeister"
+  "grandmaster": "Großmeister",
+  "dailyQuiz": "Tägliches Quiz",
+  "dailyQuizDesc": "5 zufällige Fragen",
+  "difficultyDaily": "Schwierigkeit: Gemischt",
+  "reward": "Belohnung",
+  "completedToday": "Heute abgeschlossen",
+  "dailyStreak": "Tägliche Serie",
+  "howItWorks": "So funktioniert es",
+  "startQuiz": "Quiz starten",
+  "dailyQuizRules": "• Jeden Tag ein neues tägliches Quiz.\n• Du kannst jedes tägliche Quiz einmal spielen.\n• Schließe es ab, um Trophäen und Edelsteine zu verdienen.\n• Halte deine Serie, um größere Belohnungen freizuschalten."
 }

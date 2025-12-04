@@ -47,3 +47,11 @@ export interface QuizModalProps {
   currentProgress?: any;
   isUnlocked?: boolean;
 }
+
+export type DailyAnswerPayload = {
+  index: number; // question index
+  type: string; // for backend if needed
+  selectedOptionIndex?: number; // for MC/TF
+  textAnswer?: string; // for Short Answer
+  numericAnswer?: number; // for Numeric
+};
