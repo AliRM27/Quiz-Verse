@@ -40,7 +40,10 @@ const dailyQuiz = () => {
     queryFn: fetchDailyQuiz,
   });
 
-  const { data: dailyQuizUserProgressData } = useQuery({
+  const {
+    data: dailyQuizUserProgressData,
+    isLoading: dailyQuizUserProgressDataLoading,
+  } = useQuery({
     queryKey: ["dailyQuizUserProgress"],
     queryFn: fetchUserDailyQuizProgress,
   });
@@ -89,7 +92,8 @@ const dailyQuiz = () => {
     dailyQuizLoading ||
     !dailyQuizData ||
     secondsLeft === null ||
-    !dailyQuizUserProgressData
+    !dailyQuizUserProgressData ||
+    dailyQuizUserProgressDataLoading
   ) {
     if (dailyQuizData?.success === false)
       return (
@@ -185,7 +189,7 @@ const dailyQuiz = () => {
             🧠 {t("difficultyDaily")}
           </Text>
           <Text style={[{ fontSize: 13 }, styles.txt_muted]}>
-            🎁 {t("reward")}: +50 Trophies, +10 Gems
+            🎁 {t("reward")}: 50 Trophies, 10 Gems
           </Text>
           <View
             style={[
@@ -306,6 +310,7 @@ const dailyQuiz = () => {
                 paddingVertical: 10,
                 alignItems: "center",
               }}
+              activeOpacity={0.7}
               onPress={() => router.navigate("/quizLevel/daily")}
             >
               <Text
@@ -358,7 +363,7 @@ const dailyQuiz = () => {
               }}
             >
               <Text style={[{ fontSize: 20, fontWeight: "700" }, styles.txt]}>
-                {dailyQuizData.streak.current}
+                {user.dailyQuizStreak}
               </Text>
               {/* <LottieView
                 ref={fireRef}
@@ -379,7 +384,7 @@ const dailyQuiz = () => {
           >
             <ProgressBar
               height={5}
-              progress={dailyQuizData.streak.current}
+              progress={user.dailyQuizStreak}
               color={Colors.dark.primary}
               total={7}
             />

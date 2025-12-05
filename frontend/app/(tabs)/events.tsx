@@ -5,10 +5,12 @@ import WeeklyChallange from "@/assets/svgs/weeklyEvent.svg";
 import Championship from "@/assets/svgs/championship.svg";
 import { router } from "expo-router";
 import type { Href } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 export default function Events() {
+  const { t } = useTranslation();
   const events = [
-    { name: "Daily Quiz", icon: DailyQuiz, path: "/(events)/dailyQuiz" },
+    { name: t("dailyQuiz"), icon: DailyQuiz, path: "/(events)/dailyQuiz" },
     {
       name: "Weekly Challenge",
       icon: WeeklyChallange,
@@ -20,9 +22,14 @@ export default function Events() {
       path: "/(evetns)/championship",
     },
   ];
+
   return (
     <View style={{ alignItems: "center", height: "100%" }}>
-      <Text style={{ color: Colors.dark.text }}>Events</Text>
+      <Text
+        style={[{ color: Colors.dark.text }, { fontSize: 27, fontWeight: 700 }]}
+      >
+        {t("events")}
+      </Text>
       <ScrollView
         contentContainerStyle={{
           alignItems: "center",
@@ -48,12 +55,12 @@ export default function Events() {
                 gap: 20,
               }}
             >
-              <EventIcon width={80} height={80} />
+              <EventIcon width={100} height={100} />
               <Text
                 style={{
                   color: Colors.dark.text,
-                  fontSize: 18,
-                  fontWeight: "600",
+                  fontSize: 16,
+                  fontWeight: "500",
                 }}
               >
                 {event.name}

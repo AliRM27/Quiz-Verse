@@ -27,6 +27,10 @@ import { DailyAnswerPayload, QUESTION_TYPES } from "@/types";
 import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
 import SliderComponent from "@/components/ui/SliderComponent";
 import * as Haptics from "expo-haptics";
+import Right from "@/assets/svgs/rightAnswers.svg";
+import Wrong from "@/assets/svgs/wrongAnswers.svg";
+import Trophy from "@/assets/svgs/currencyTropht.svg";
+import Gem from "@/assets/svgs/currencyDiamond.svg";
 
 const DailyQuiz = () => {
   const { setSafeBg } = useSafeAreaBg();
@@ -105,6 +109,8 @@ const DailyQuiz = () => {
       return;
     }
 
+    Haptics.selectionAsync();
+
     const current = currQuestion;
 
     // 1. Build answer payload for current question
@@ -177,7 +183,7 @@ const DailyQuiz = () => {
   type ResultProps = {
     result: DailyQuizSubmitResult;
     questions: any[];
-    onClose: () => void;
+    onClose: () => void | Promise<void>;
     language: string; // user.language
   };
 
@@ -236,20 +242,6 @@ const DailyQuiz = () => {
             style={[
               styles.txt,
               {
-                fontSize: 18,
-                fontWeight: "600",
-                textAlign: "center",
-                marginBottom: 8,
-              },
-            ]}
-          >
-            {result.correctCount} / {result.totalQuestions}{" "}
-            {t("correct") || "correct"}
-          </Text>
-          <Text
-            style={[
-              styles.txt,
-              {
                 fontSize: 13,
                 textAlign: "center",
                 color: Colors.dark.text_muted,
@@ -257,72 +249,81 @@ const DailyQuiz = () => {
             ]}
           >
             {result.perfect
-              ? t("perfect_score") || "Perfect score!"
-              : t("nice_try") || "Nice try! Come back tomorrow for a new quiz."}
+              ? t("perfectScore") || "Perfect score!"
+              : t("niceTry") || "Nice try! Come back tomorrow for a new quiz."}
           </Text>
-
-          {/* Rewards */}
           <View
             style={{
               flexDirection: "row",
               justifyContent: "space-around",
-              marginTop: 18,
+              marginTop: 35,
             }}
           >
-            <View style={{ alignItems: "center" }}>
-              <Text
-                style={[
-                  styles.txt,
-                  { fontSize: 12, color: Colors.dark.text_muted },
-                ]}
-              >
-                Trophies
-              </Text>
-              <Text
-                style={[
-                  styles.txt,
-                  { fontSize: 18, fontWeight: "700", marginTop: 4 },
-                ]}
-              >
+            <View
+              style={{ alignItems: "center", flexDirection: "row", gap: 10 }}
+            >
+              <Trophy />
+              <Text style={[styles.txt, { fontSize: 18, fontWeight: "700" }]}>
                 +{result.rewards.trophies}
               </Text>
             </View>
-            <View style={{ alignItems: "center" }}>
-              <Text
-                style={[
-                  styles.txt,
-                  { fontSize: 12, color: Colors.dark.text_muted },
-                ]}
-              >
-                Gems
-              </Text>
-              <Text
-                style={[
-                  styles.txt,
-                  { fontSize: 18, fontWeight: "700", marginTop: 4 },
-                ]}
-              >
+            <View
+              style={{ alignItems: "center", flexDirection: "row", gap: 10 }}
+            >
+              <Gem />
+              <Text style={[styles.txt, { fontSize: 18, fontWeight: "700" }]}>
                 +{result.rewards.gems}
               </Text>
             </View>
-            <View style={{ alignItems: "center" }}>
-              <Text
-                style={[
-                  styles.txt,
-                  { fontSize: 12, color: Colors.dark.text_muted },
-                ]}
-              >
-                Streak
-              </Text>
-              <Text
-                style={[
-                  styles.txt,
-                  { fontSize: 18, fontWeight: "700", marginTop: 4 },
-                ]}
-              >
-                {result.streak} 🔥
-              </Text>
-            </View>
+          </View>
+        </View>
+
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            width: "100%",
+            justifyContent: "space-evenly",
+            marginVertical: 40,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: Colors.dark.success,
+              padding: 10,
+              paddingHorizontal: 15,
+              justifyContent: "space-between",
+              width: 100,
+              borderRadius: 10,
+              backgroundColor: Colors.dark.bg_light,
+            }}
+          >
+            <Text style={[styles.txt, { fontSize: 17, fontWeight: "700" }]}>
+              {result.correctCount}
+            </Text>
+            <Right width={15} height={15} />
+          </View>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: "#920202",
+              padding: 10,
+              paddingHorizontal: 15,
+              justifyContent: "space-between",
+              width: 100,
+              borderRadius: 10,
+              backgroundColor: Colors.dark.bg_light,
+            }}
+          >
+            <Text style={[styles.txt, { fontSize: 17, fontWeight: "700" }]}>
+              {result.totalQuestions - result.correctCount}
+            </Text>
+            <Wrong width={15} height={15} />
           </View>
         </View>
 
@@ -334,12 +335,13 @@ const DailyQuiz = () => {
                 styles.txt,
                 {
                   fontSize: 16,
-                  fontWeight: "700",
-                  marginBottom: 10,
+                  fontWeight: "600",
+                  marginBottom: 20,
+                  textAlign: "center",
                 },
               ]}
             >
-              {t("questions_you_missed") || "Questions you missed"}
+              {t("questionsMissed")}
             </Text>
 
             <ScrollView
@@ -371,7 +373,7 @@ const DailyQuiz = () => {
 
                   userAnswerLabel = userOpt
                     ? userOpt.text[languageMap[language]]
-                    : t("no_answer") || "No answer";
+                    : "No answer";
                   correctAnswerLabel = correctOpt
                     ? correctOpt.text[languageMap[language]]
                     : "-";
@@ -380,14 +382,13 @@ const DailyQuiz = () => {
                     r.userAnswer?.numericAnswer !== undefined &&
                     r.userAnswer?.numericAnswer !== null
                       ? String(r.userAnswer.numericAnswer)
-                      : t("no_answer") || "No answer";
+                      : "No answer";
                   correctAnswerLabel =
                     r.correctAnswer?.numericAnswer !== undefined
                       ? String(r.correctAnswer.numericAnswer)
                       : "-";
                 } else if (r.type === QUESTION_TYPES.SA) {
-                  userAnswerLabel =
-                    r.userAnswer?.textAnswer || t("no_answer") || "No answer";
+                  userAnswerLabel = r.userAnswer?.textAnswer || "No answer";
                   correctAnswerLabel = r.correctAnswer?.correctTextEn || "-";
                 }
 
@@ -399,13 +400,13 @@ const DailyQuiz = () => {
                       backgroundColor: Colors.dark.bg_light,
                       padding: 12,
                       borderWidth: 1,
-                      borderColor: Colors.dark.border_muted,
+                      borderColor: "#1F1D1D",
                     }}
                   >
                     <Text
                       style={[
-                        styles.txt,
-                        { fontSize: 14, marginBottom: 6, fontWeight: "600" },
+                        styles.txtItalic,
+                        { fontSize: 15, marginBottom: 15, fontWeight: "600" },
                       ]}
                     >
                       {questionText}
@@ -415,25 +416,40 @@ const DailyQuiz = () => {
                       style={[
                         styles.txt,
                         {
-                          fontSize: 12,
-                          marginBottom: 2,
-                          color: Colors.dark.danger,
+                          fontSize: 14,
+                          marginBottom: 10,
+                          color: Colors.dark.text_muted,
                         },
                       ]}
                     >
-                      {t("your_answer") || "Your answer"}: {userAnswerLabel}
+                      {t("yourAnswer")}:{" "}
+                      <Text
+                        style={{
+                          fontFamily: ITALIC_FONT,
+                          color: Colors.dark.danger,
+                        }}
+                      >
+                        {userAnswerLabel}
+                      </Text>
                     </Text>
                     <Text
                       style={[
                         styles.txt,
                         {
-                          fontSize: 12,
-                          color: Colors.dark.success,
+                          fontSize: 14,
+                          color: Colors.dark.text_muted,
                         },
                       ]}
                     >
-                      {t("correct_answer") || "Correct answer"}:{" "}
-                      {correctAnswerLabel}
+                      {t("correctAnswer")}:{" "}
+                      <Text
+                        style={{
+                          fontFamily: ITALIC_FONT,
+                          color: Colors.dark.success,
+                        }}
+                      >
+                        {correctAnswerLabel}
+                      </Text>
                     </Text>
                   </View>
                 );
@@ -455,8 +471,7 @@ const DailyQuiz = () => {
                 },
               ]}
             >
-              {t("all_correct") ||
-                "You answered all questions correctly. Great job!"}
+              {t("allCorrect")}
             </Text>
           </View>
         )}
@@ -471,6 +486,7 @@ const DailyQuiz = () => {
             paddingVertical: 12,
             alignItems: "center",
           }}
+          activeOpacity={0.7}
           onPress={onClose}
         >
           <Text
@@ -480,7 +496,7 @@ const DailyQuiz = () => {
               fontSize: 14,
             }}
           >
-            {t("back_to_events") || "Back to Events"}
+            {t("backToEvents")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -488,15 +504,21 @@ const DailyQuiz = () => {
   };
 
   if (showResult && submitResult) {
+    const handleResultClose = async () => {
+      await queryClient.refetchQueries({
+        queryKey: ["dailyQuizUserProgress"],
+        type: "all",
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.back();
+    };
+
     return (
       <Result
         result={submitResult}
         questions={dailyQuizData.quiz.questions}
         language={user.language}
-        onClose={() => {
-          queryClient.invalidateQueries({ queryKey: ["dailyQuizUserProgress"] });
-          router.back();
-        }}
+        onClose={handleResultClose}
       />
     );
   }
@@ -522,7 +544,7 @@ const DailyQuiz = () => {
             },
           ]}
         >
-          Daily Quiz
+          {t("dailyQuiz")}
         </Text>
         <View
           style={{

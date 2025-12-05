@@ -104,7 +104,6 @@ export const submitDailyQuiz = async (answers: DailyAnswerPayload[]) => {
     const res = await api.post("api/events/daily-quiz/submit", {
       answers,
     });
-    console.log(res.data);
     return res.data;
   } catch (err) {
     console.log(err);

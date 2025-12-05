@@ -99,5 +99,13 @@
   "dailyStreak": "Daily Streak",
   "howItWorks": "How it works",
   "startQuiz": "Start Quiz",
-  "dailyQuizRules": "• One new Daily Quiz every day.\n• You can play each Daily Quiz once.\n• Complete it to earn trophies and gems.\n• Keep yourstreak to unlock bigger rewards."
+  "dailyQuizRules": "• One new Daily Quiz every day.\n• You can play each Daily Quiz once.\n• Complete it to earn trophies and gems.\n• Keep yourstreak to unlock bigger rewards.",
+  "questionsMissed": "Questions you missed",
+  "yourAnswer": "Your Answer",
+  "correctAnswer": "Correct Answer",
+  "allCorrect": "You answered all questions correctly. Great job!",
+  "backToEvents": "Back to Events",
+  "events": "Events",
+  "perfectScore": "Perfect score!",
+  "niceTry": "Nice try! Come back tomorrow for a new quiz."
 }

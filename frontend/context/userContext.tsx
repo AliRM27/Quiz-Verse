@@ -31,6 +31,8 @@ export type User = {
   firstLogIn: string;
   theme: { cardColor: string };
   gems: number;
+  dailyQuizStreak: number;
+  lastDailyQuizDateKey: string;
 };
 
 type UserContextType = {
