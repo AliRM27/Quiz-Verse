@@ -1,4 +1,4 @@
-import UserDailyQuiz from "../models/userDailyQuiz.js";
+import UserDailyQuiz from "../models/UserDailyQuiz.js";
 import Quiz from "../models/Quiz.js";
 import User from "../models/User.js";
 import DailyQuiz from "../models/DailyQuiz.js";
