@@ -1,10 +1,9 @@
-import DailyQuiz from "../models/DailyQuiz.js";
+import UserDailyQuiz from "../models/userDailyQuiz.js";
 import Quiz from "../models/Quiz.js";
 import User from "../models/User.js";
-import UserDailyQuiz from "../models/userDailyQuiz.js";
+import DailyQuiz from "../models/DailyQuiz.js";
 import { getTodayDateKey, getYesterdayDateKey } from "../services/dateKey.js";
 
-// helper: normalize text for comparison
 function normalizeText(str = "") {
   return String(str).trim().toLowerCase();
 }
