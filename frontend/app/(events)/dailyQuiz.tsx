@@ -358,20 +358,20 @@ const dailyQuiz = () => {
               style={{
                 flexDirection: "row",
                 alignItems: "flex-end",
-                gap: 5,
+                gap: 3,
                 justifyContent: "center",
               }}
             >
               <Text style={[{ fontSize: 20, fontWeight: "700" }, styles.txt]}>
                 {user.dailyQuizStreak}
               </Text>
-              {/* <LottieView
+              <LottieView
                 ref={fireRef}
                 autoPlay={false}
                 loop
                 source={fireAnimation}
                 style={{ width: 35, height: 35 }}
-              /> */}
+              />
             </View>
           </View>
           <View

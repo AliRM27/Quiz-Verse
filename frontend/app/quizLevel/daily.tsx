@@ -4,7 +4,6 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   StyleSheet,
-  Button,
   TouchableOpacity,
   ScrollView,
   TextInput,
@@ -37,10 +36,9 @@ const DailyQuiz = () => {
   const [currQuestionIndex, setCurrQuestionIndex] = useState<number>(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [sliderValue, setSliderValue] = useState<number>(-1);
-  const [questionLoading, setQuestionLoading] = useState<boolean>(false);
   const [shortAnswer, setShortAnswer] = useState<string>("");
   const [pressedAnswer, setPressedAnswer] = useState<number | null>(null);
-  const { user } = useUser();
+  const { user, refreshUser } = useUser();
   const { t } = useTranslation();
 
   type DailyQuizSubmitResult = {
@@ -170,7 +168,7 @@ const DailyQuiz = () => {
         }
       })();
 
-      const res = await submitDailyQuiz(finalAnswers); // we’ll define this next
+      const res = await submitDailyQuiz(finalAnswers);
       setSubmitResult(res);
       setShowResult(true);
     } catch (err) {
@@ -224,7 +222,7 @@ const DailyQuiz = () => {
             },
           ]}
         >
-          Daily Quiz Result
+          {t("dailyQuizResult")}
         </Text>
 
         {/* Summary Card */}
@@ -509,6 +507,7 @@ const DailyQuiz = () => {
         queryKey: ["dailyQuizUserProgress"],
         type: "all",
       });
+      await refreshUser();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     };
@@ -542,6 +541,7 @@ const DailyQuiz = () => {
               fontSize: 25,
               textAlign: "center",
             },
+            isSmallPhone && { fontSize: 20 },
           ]}
         >
           {t("dailyQuiz")}

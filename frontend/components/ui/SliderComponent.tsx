@@ -3,6 +3,7 @@ import Slider from "@react-native-community/slider";
 import { Colors } from "@/constants/Colors";
 import { REGULAR_FONT } from "@/constants/Styles";
 import * as Haptics from "expo-haptics";
+import { isSmallPhone } from "@/constants/Dimensions";
 
 const SliderComponent = ({
   value,
@@ -25,7 +26,7 @@ const SliderComponent = ({
   return (
     <View style={{ width: "100%", alignItems: "center", gap: 50 }}>
       <Slider
-        style={{ width: 300, height: 40 }}
+        style={{ width: "80%", height: 40 }}
         minimumValue={min}
         maximumValue={max}
         step={step}
@@ -35,7 +36,9 @@ const SliderComponent = ({
         thumbTintColor={Colors.dark.text}
         onValueChange={handleValueChange}
       />
-      <Text style={styles.text}>{value === -1 ? min : value}</Text>
+      <Text style={[styles.text, isSmallPhone && { fontSize: 35 }]}>
+        {value === -1 ? min : value}
+      </Text>
     </View>
   );
 };

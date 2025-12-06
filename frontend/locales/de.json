@@ -95,7 +95,7 @@
   "dailyQuizDesc": "5 zufällige Fragen",
   "difficultyDaily": "Schwierigkeit: Gemischt",
   "reward": "Belohnung",
-  "completedToday": "Heute abgeschlossen",
+  "completedToday": "Abgeschlossen",
   "dailyStreak": "Tägliche Serie",
   "howItWorks": "So funktioniert es",
   "startQuiz": "Quiz starten",
@@ -107,5 +107,6 @@
   "backToEvents": "Zurück zu Events",
   "events": "Ereignisse",
   "perfectScore": "Perfekte Punktzahl!",
-  "niceTry": "Guter Versuch! Komm morgen für ein neues Quiz zurück."
+  "niceTry": "Guter Versuch! Komm morgen für ein neues Quiz zurück.",
+  "dailyQuizResult": "Quiz Ergebnis"
 }

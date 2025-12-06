@@ -570,11 +570,6 @@ export default function Index() {
               justifyContent: "center",
               gap: 10,
             },
-            isSmallPhone && {
-              flexWrap: "wrap",
-              flexDirection: "row",
-              justifyContent: "center",
-            },
           ]}
         >
           {currQuestion.type === QUESTION_TYPES.SA && (
@@ -632,7 +627,6 @@ export default function Index() {
                         shadowRadius: 1,
                         justifyContent: "center",
                       },
-                      isSmallPhone && { width: "45%", paddingLeft: 15 },
                       pressedAnswer === index && {
                         shadowOpacity: 0,
                         elevation: 0,
@@ -655,7 +649,7 @@ export default function Index() {
                       style={[
                         styles.txtItalic,
                         { fontSize: 20 },
-                        isSmallPhone && { fontSize: 16, textAlign: "center" },
+                        isSmallPhone && { fontSize: 16 },
                         pressedAnswer === index && {
                           color: Colors.dark.text_muted,
                         },
