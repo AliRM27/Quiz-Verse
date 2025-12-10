@@ -12,7 +12,7 @@ import {
 import ArrBack from "@/components/ui/ArrBack";
 import { useSafeAreaBg } from "@/context/safeAreaContext";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Colors } from "@/constants/Colors";
 import { fetchDailyQuiz, submitDailyQuiz } from "@/services/api";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -30,6 +30,7 @@ import Right from "@/assets/svgs/rightAnswers.svg";
 import Wrong from "@/assets/svgs/wrongAnswers.svg";
 import Trophy from "@/assets/svgs/currencyTropht.svg";
 import Gem from "@/assets/svgs/currencyDiamond.svg";
+import LottieView from "lottie-react-native";
 
 const DailyQuiz = () => {
   const { setSafeBg } = useSafeAreaBg();
@@ -62,10 +63,15 @@ const DailyQuiz = () => {
   };
 
   const [answers, setAnswers] = useState<DailyAnswerPayload[]>([]);
-  const [submitting, setSubmitting] = useState(false);
-  const [showResult, setShowResult] = useState(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [showResult, setShowResult] = useState<boolean>(false);
+  const [showStreakScreen, setShowStreakScreen] = useState<boolean>(false);
+
   const [submitResult, setSubmitResult] =
     useState<DailyQuizSubmitResult | null>(null);
+
+  const [baseStreak, setBaseStreak] = useState<number | null>(null);
+
   const queryClient = useQueryClient();
 
   useFocusEffect(
@@ -84,6 +90,12 @@ const DailyQuiz = () => {
     queryKey: ["dailyQuiz"],
     queryFn: fetchDailyQuiz,
   });
+
+  useEffect(() => {
+    if (dailyQuizData?.streak?.current != null) {
+      setBaseStreak(dailyQuizData.streak.current);
+    }
+  }, [dailyQuizData?.streak?.current]);
 
   if (!dailyQuizData || dailyQuizLoading || !user) {
     return (
@@ -154,7 +166,6 @@ const DailyQuiz = () => {
     try {
       setSubmitting(true);
 
-      // because setAnswers is async, we build final array manually
       const finalAnswers: DailyAnswerPayload[] = (() => {
         const existing = [...answers];
         const existingIndex = existing.findIndex(
@@ -503,13 +514,15 @@ const DailyQuiz = () => {
 
   if (showResult && submitResult) {
     const handleResultClose = async () => {
-      await queryClient.refetchQueries({
-        queryKey: ["dailyQuizUserProgress"],
-        type: "all",
-      });
-      await refreshUser();
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.back();
+      // await queryClient.refetchQueries({
+      //   queryKey: ["dailyQuizUserProgress"],
+      //   type: "all",
+      // });
+      // await refreshUser();
+      // Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // router.back();
+      setShowResult(false);
+      setShowStreakScreen(true);
     };
 
     return (
@@ -518,6 +531,242 @@ const DailyQuiz = () => {
         questions={dailyQuizData.quiz.questions}
         language={user.language}
         onClose={handleResultClose}
+      />
+    );
+  }
+
+  type StreakScreenProps = {
+    baseStreak: number; // before quiz
+    newStreak: number; // after quiz
+    onClose: () => void;
+  };
+
+  const StreakScreen: React.FC<StreakScreenProps> = ({
+    baseStreak,
+    newStreak,
+    onClose,
+  }) => {
+    const fireAnimation = useMemo(
+      () => require("@/assets/animations/Fire.json"),
+      []
+    );
+    const fireRef = useRef<LottieView | null>(null);
+
+    const increased = newStreak > baseStreak;
+    const reset = newStreak === 1 && baseStreak > 1;
+    const firstTime = baseStreak === 0 && newStreak === 1;
+
+    useEffect(() => {
+      fireRef.current?.play();
+    }, []);
+
+    let title = "";
+    let subtitle = "";
+
+    if (increased) {
+      title = `🔥 Streak ${newStreak} days!`;
+      subtitle = "You kept your daily streak going. Keep it up!";
+    } else if (firstTime) {
+      title = "✨ New streak started!";
+      subtitle = "You completed your first Daily Quiz streak day.";
+    } else if (reset) {
+      title = "💔 Streak reset";
+      subtitle = `You are back to a 1-day streak. Try to play again tomorrow.`;
+    } else {
+      // fallback (should rarely happen)
+      title = `Streak: ${newStreak} days`;
+      subtitle = "Come back tomorrow to grow your streak.";
+    }
+
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#131313",
+          paddingHorizontal: 20,
+          paddingTop: 60,
+          alignItems: "center",
+        }}
+      >
+        {/* Animation */}
+        <View style={{ width: 100, height: 100, marginBottom: 20 }}>
+          <LottieView
+            ref={fireRef}
+            autoPlay
+            loop={increased || firstTime} // maybe no loop if reset
+            source={fireAnimation}
+            style={{ width: "100%", height: "100%" }}
+          />
+        </View>
+
+        {/* Text */}
+        <Text
+          style={[
+            styles.txt,
+            {
+              fontSize: 24,
+              fontWeight: "700",
+              textAlign: "center",
+              marginBottom: 10,
+            },
+          ]}
+        >
+          {title}
+        </Text>
+
+        <Text
+          style={[
+            styles.txt,
+            {
+              fontSize: 14,
+              textAlign: "center",
+              color: Colors.dark.text_muted,
+              marginBottom: 30,
+            },
+          ]}
+        >
+          {subtitle}
+        </Text>
+
+        {/* Streak progression card */}
+        <View
+          style={{
+            width: "100%",
+            borderRadius: 18,
+            backgroundColor: Colors.dark.bg_light,
+            padding: 16,
+            marginBottom: 24,
+          }}
+        >
+          <Text
+            style={[
+              styles.txt,
+              {
+                fontSize: 14,
+                marginBottom: 10,
+              },
+            ]}
+          >
+            Streak progress
+          </Text>
+
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginBottom: 8,
+            }}
+          >
+            <View style={{ alignItems: "center", flex: 1 }}>
+              <Text
+                style={[
+                  styles.txt,
+                  { fontSize: 12, color: Colors.dark.text_muted },
+                ]}
+              >
+                Previous
+              </Text>
+              <Text
+                style={[
+                  styles.txt,
+                  { fontSize: 20, fontWeight: "700", marginTop: 2 },
+                ]}
+              >
+                {baseStreak}
+              </Text>
+            </View>
+            <View style={{ alignItems: "center", flex: 1 }}>
+              <Text
+                style={[
+                  styles.txt,
+                  { fontSize: 12, color: Colors.dark.text_muted },
+                ]}
+              >
+                Current
+              </Text>
+              <Text
+                style={[
+                  styles.txt,
+                  { fontSize: 22, fontWeight: "700", marginTop: 2 },
+                ]}
+              >
+                {newStreak}
+              </Text>
+            </View>
+          </View>
+
+          {/* Simple progress bar toward 7-day target */}
+          <View
+            style={{
+              borderRadius: 999,
+              backgroundColor: Colors.dark.border_muted,
+              overflow: "hidden",
+              height: 8,
+            }}
+          >
+            <View
+              style={{
+                width: `${Math.min((newStreak / 7) * 100, 100)}%`,
+                height: "100%",
+                backgroundColor: Colors.dark.primary,
+              }}
+            />
+          </View>
+          <Text
+            style={[
+              styles.txt,
+              {
+                fontSize: 12,
+                marginTop: 4,
+                color: Colors.dark.text_muted,
+                textAlign: "right",
+              },
+            ]}
+          >
+            {newStreak}/7 days to bonus reward
+          </Text>
+        </View>
+
+        {/* Button */}
+        <TouchableOpacity
+          style={{
+            marginTop: "auto",
+            marginBottom: 40,
+            backgroundColor: Colors.dark.text,
+            borderRadius: 999,
+            paddingVertical: 12,
+            paddingHorizontal: 32,
+          }}
+          onPress={onClose}
+        >
+          <Text
+            style={{
+              color: Colors.dark.bg_dark,
+              fontWeight: "600",
+              fontSize: 14,
+            }}
+          >
+            Back to Events
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  if (showStreakScreen && submitResult && baseStreak !== null) {
+    return (
+      <StreakScreen
+        baseStreak={baseStreak}
+        newStreak={submitResult.streak}
+        onClose={async () => {
+          await queryClient.refetchQueries({
+            queryKey: ["dailyQuizUserProgress"],
+            type: "all",
+          });
+          await refreshUser();
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          router.back();
+        }}
       />
     );
   }
@@ -532,7 +781,6 @@ const DailyQuiz = () => {
           gap: 20,
         }}
       >
-        <ArrBack />
         <Text
           style={[
             styles.txt,

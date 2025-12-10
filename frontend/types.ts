@@ -55,3 +55,51 @@ export type DailyAnswerPayload = {
   textAnswer?: string; // for Short Answer
   numericAnswer?: number; // for Numeric
 };
+
+// weeklyEvent
+
+export type WeeklyEventNodeStatus = "locked" | "unlocked" | "completed";
+
+export type WeeklyEventNodeType =
+  | "mini_quiz"
+  | "time_challenge"
+  | "true_false_sprint"
+  | "survival"
+  | "mixed_gauntlet"
+  | "emoji_puzzle"
+  | "quote_guess"
+  | "vote";
+
+export interface WeeklyEventNodeSummary {
+  index: number;
+  type: WeeklyEventNodeType;
+  title: string;
+  description: string;
+  iconKey: string;
+  status: WeeklyEventNodeStatus;
+}
+
+export interface WeeklyEventInfo {
+  id: string;
+  weekKey: string;
+  title: string;
+  description: string;
+  startsAt: string;
+  endsAt: string;
+  theme?: {
+    name?: string;
+    primaryColor?: string;
+    bannerImageUrl?: string;
+  };
+}
+
+export interface WeeklyEventProgress {
+  currentNodeIndex: number;
+  fullCompletionRewardClaimed: boolean;
+}
+
+export interface WeeklyEventResponse {
+  event: WeeklyEventInfo;
+  progress: WeeklyEventProgress;
+  nodes: WeeklyEventNodeSummary[];
+}

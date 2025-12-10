@@ -101,6 +101,8 @@ export default function RootLayout() {
                     options={{ animation: "none", gestureEnabled: false }}
                   />
                   <Stack.Screen name="+not-found" />
+                  <Stack.Screen name="quizLevel/WeeklyEventNodeScreen" />
+                  <Stack.Screen name="(events)/weeklyEvent" />
                 </Stack>
               </UserProvider>
             </GestureHandlerRootView>
