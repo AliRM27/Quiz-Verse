@@ -189,7 +189,7 @@ export default function Carousel() {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => {
-                if (index === 0) {
+                if (index != 2) {
                   router.push(card.path as Href);
                   return;
                 }

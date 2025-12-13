@@ -1,5 +1,5 @@
 // src/screens/WeeklyEventNodeScreen.tsx
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -7,85 +7,55 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { WeeklyEventNodeType } from "@/types";
-import { API_URL } from "@/services/config";
-
-const API_BASE_URL = API_URL;
-
-type WeeklyEventNodeRouteParams = {
-  WeeklyEventNode: {
-    nodeIndex: number;
-    nodeType: WeeklyEventNodeType;
-    nodeTitle: string;
-  };
-};
+import { useLocalSearchParams, router } from "expo-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { completeWeeklyEventNode } from "@/services/api";
 
 const WeeklyEventNodeScreen: React.FC = () => {
-  const navigation = useNavigation<any>();
-  const route =
-    useRoute<RouteProp<WeeklyEventNodeRouteParams, "WeeklyEventNode">>();
+  const queryClient = useQueryClient();
+  const { nodeIndex, nodeType, nodeTitle } = useLocalSearchParams<{
+    nodeIndex?: string;
+    nodeType?: WeeklyEventNodeType;
+    nodeTitle?: string;
+  }>();
 
-  const { nodeIndex, nodeType, nodeTitle } = route.params;
+  const resolvedNodeIndex = Number(nodeIndex ?? 0);
+  const resolvedNodeTitle = nodeTitle ?? "Weekly Event Node";
 
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleCompleteNode = async () => {
-    try {
-      setSubmitting(true);
-      setError(null);
-
-      const res = await fetch(
-        `${API_BASE_URL}api/events/weekly/node/${nodeIndex}/complete`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            // later you can send score/time/etc here
-            score: 100,
-          }),
-        }
-      );
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.message || "Failed to complete node");
-      }
-
-      const json = await res.json();
-      console.log("Node completed:", json);
-
-      // After completion, go back to weekly list and refresh there
-      navigation.goBack();
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Something went wrong");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  const {
+    mutate: completeNode,
+    isPending,
+    error,
+  } = useMutation({
+    mutationFn: () => completeWeeklyEventNode(resolvedNodeIndex),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["weeklyEvent"] });
+      router.back();
+    },
+  });
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{nodeTitle}</Text>
+      <Text style={styles.title}>{resolvedNodeTitle}</Text>
       <Text style={styles.subtitle}>
         Type: <Text style={styles.bold}>{nodeType}</Text>
       </Text>
 
       {/* TODO: here you will render the actual mini-event UI based on nodeType */}
 
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && (
+        <Text style={styles.error}>
+          {error instanceof Error ? error.message : "Failed to complete node"}
+        </Text>
+      )}
 
       <TouchableOpacity
-        style={[styles.button, submitting && styles.buttonDisabled]}
-        onPress={handleCompleteNode}
-        disabled={submitting}
+        style={[styles.button, isPending && styles.buttonDisabled]}
+        onPress={() => completeNode()}
+        disabled={isPending}
       >
-        {submitting ? (
+        {isPending ? (
           <ActivityIndicator />
         ) : (
           <Text style={styles.buttonText}>Finish Node (test)</Text>

@@ -1,5 +1,4 @@
-// src/screens/WeeklyEventScreen.tsx
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -9,72 +8,47 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import {
   WeeklyEventResponse,
   WeeklyEventNodeSummary,
   WeeklyEventNodeStatus,
 } from "@/types";
-import { API_URL } from "@/services/config";
 import { useUser } from "@/context/userContext";
-
-// Adjust this to your API base
-const API_BASE_URL = API_URL;
+import { fetchWeeklyEvent } from "@/services/api";
+import { useQuery } from "@tanstack/react-query";
+import { router } from "expo-router";
 
 const WeeklyEventScreen: React.FC = () => {
-  const navigation = useNavigation<any>();
-
-  const [data, setData] = useState<WeeklyEventResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const { token } = useUser();
 
-  const fetchWeeklyEvent = useCallback(async () => {
-    try {
-      setError(null);
-      setLoading(true);
-      // include auth token if needed
-      const res = await fetch(`${API_BASE_URL}api/events/weekly/current`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.message || "Failed to load weekly event");
-      }
-
-      const json: WeeklyEventResponse = await res.json();
-      setData(json);
-    } catch (err: any) {
-      console.error("Error fetching weekly event:", err);
-      setError(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchWeeklyEvent();
-  }, [fetchWeeklyEvent]);
+  const { data, isLoading, isError, error, refetch, isRefetching } =
+    useQuery<WeeklyEventResponse>({
+      queryKey: ["weeklyEvent"],
+      queryFn: fetchWeeklyEvent,
+      enabled: !!token,
+    });
 
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchWeeklyEvent();
-    setRefreshing(false);
-  }, [fetchWeeklyEvent]);
+    await refetch();
+  }, [refetch]);
+
+  const errorMessage = isError
+    ? error instanceof Error
+      ? error.message
+      : "Failed to load weekly event"
+    : null;
 
   const handleNodePress = (node: WeeklyEventNodeSummary) => {
     if (node.status === "locked") return;
 
     // Navigate to node play screen (stub for now)
-    navigation.navigate("WeeklyEventNode", {
-      nodeIndex: node.index,
-      nodeType: node.type,
-      nodeTitle: node.title,
+    router.push({
+      pathname: "/quizLevel/WeeklyEventNodeScreen",
+      params: {
+        nodeIndex: node.index,
+        nodeType: node.type,
+        nodeTitle: node.title,
+      },
     });
   };
 
@@ -175,7 +149,7 @@ const WeeklyEventScreen: React.FC = () => {
     );
   };
 
-  if (loading && !data) {
+  if ((isLoading || !token) && !data) {
     return (
       <View style={styles.centered}>
         <ActivityIndicator size="large" />
@@ -184,11 +158,11 @@ const WeeklyEventScreen: React.FC = () => {
     );
   }
 
-  if (error && !data) {
+  if (errorMessage && !data) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={fetchWeeklyEvent}>
+        <Text style={styles.errorText}>{errorMessage}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={onRefresh}>
           <Text style={styles.retryButtonText}>Retry</Text>
         </TouchableOpacity>
       </View>
@@ -212,7 +186,7 @@ const WeeklyEventScreen: React.FC = () => {
         ListHeaderComponent={renderHeader}
         contentContainerStyle={styles.listContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />
         }
       />
     </View>

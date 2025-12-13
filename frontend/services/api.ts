@@ -3,7 +3,11 @@ import { API_URL } from "./config";
 import * as SecureStore from "expo-secure-store";
 import { router } from "expo-router";
 import { Alert, DevSettings } from "react-native";
-import { DailyAnswerPayload } from "@/types";
+import {
+  DailyAnswerPayload,
+  WeeklyEventResponse,
+  WeeklyEventNodeType,
+} from "@/types";
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -116,6 +120,32 @@ export const fetchUserDailyQuizProgress = async () => {
     return res.data.userDailyProgress;
   } catch (err) {
     console.log(err);
+  }
+};
+
+export const fetchWeeklyEvent = async (): Promise<WeeklyEventResponse> => {
+  try {
+    const res = await api.get("api/events/weekly/current");
+    return res.data;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+export const completeWeeklyEventNode = async (
+  nodeIndex: number,
+  payload?: { score?: number; nodeType?: WeeklyEventNodeType }
+) => {
+  try {
+    const res = await api.post(`api/events/weekly/node/${nodeIndex}/complete`, {
+      score: 100,
+      ...payload,
+    });
+    return res.data;
+  } catch (err) {
+    console.log(err);
+    throw err;
   }
 };
 
