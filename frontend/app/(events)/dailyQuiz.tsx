@@ -35,17 +35,26 @@ const dailyQuiz = () => {
   );
   const fireRef = useRef<LottieView | null>(null);
 
-  const { data: dailyQuizData, isLoading: dailyQuizLoading } = useQuery({
+  const {
+    data: dailyQuizData,
+    isLoading: dailyQuizLoading,
+    isRefetching: dailyQuizRefetching,
+    refetch: refetchDailyQuiz,
+  } = useQuery({
     queryKey: ["dailyQuiz"],
     queryFn: fetchDailyQuiz,
+    enabled: !!user,
   });
 
   const {
     data: dailyQuizUserProgressData,
     isLoading: dailyQuizUserProgressDataLoading,
+    isRefetching: progressRefetching,
+    refetch: refetchDailyQuizUserProgress,
   } = useQuery({
     queryKey: ["dailyQuizUserProgress"],
     queryFn: fetchUserDailyQuizProgress,
+    enabled: !!user && !!dailyQuizData?.quiz,
   });
 
   // Lottie
@@ -87,30 +96,63 @@ const dailyQuiz = () => {
   const formattedTime =
     secondsLeft !== null ? formatResetTime(secondsLeft) : "–h –min ⏱️";
 
+  const noDailyQuizAvailable =
+    !dailyQuizLoading && (!dailyQuizData || dailyQuizData?.success === false);
+
+  if (noDailyQuizAvailable) {
+    return (
+      <View
+        style={{
+          backgroundColor: Colors.dark.bg_dark,
+          height: "100%",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <Text style={{ color: Colors.dark.text }}>No Daily Quiz available</Text>
+        <TouchableOpacity
+          style={{
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 999,
+            backgroundColor: Colors.dark.text,
+            opacity:
+              dailyQuizRefetching || progressRefetching || dailyQuizLoading
+                ? 0.7
+                : 1,
+          }}
+          disabled={dailyQuizRefetching || progressRefetching}
+          onPress={() => {
+            refetchDailyQuiz();
+            refetchDailyQuizUserProgress();
+          }}
+          activeOpacity={0.8}
+        >
+          {dailyQuizLoading || dailyQuizUserProgressDataLoading ? (
+            <Loader black={true} />
+          ) : (
+            <Text
+              style={{
+                color: Colors.dark.bg_dark,
+                fontWeight: "600",
+              }}
+            >
+              Reload
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   if (
     !user ||
     dailyQuizLoading ||
+    dailyQuizUserProgressDataLoading ||
     !dailyQuizData ||
-    secondsLeft === null ||
-    !dailyQuizUserProgressData ||
-    dailyQuizUserProgressDataLoading
+    !dailyQuizUserProgressData
   ) {
-    if (dailyQuizData?.success === false)
-      return (
-        <View
-          style={{
-            backgroundColor: Colors.dark.bg_dark,
-            height: "100%",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ color: Colors.dark.text }}>
-            No Daily Quiz available
-          </Text>
-        </View>
-      );
-
     return (
       <View
         style={{

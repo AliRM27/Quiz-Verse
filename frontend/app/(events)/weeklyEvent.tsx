@@ -3,10 +3,9 @@ import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
-  FlatList,
   RefreshControl,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import {
   WeeklyEventResponse,
@@ -17,9 +16,20 @@ import { useUser } from "@/context/userContext";
 import { fetchWeeklyEvent } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
+import { Colors } from "@/constants/Colors";
+import WeeklyEventLogo from "@/assets/svgs/weeklyEvent.svg";
+import { isSmallPhone } from "@/constants/Dimensions";
+import { LineDashed } from "@/components/ui/Line";
+import CircularProgress from "@/components/ui/CircularProgress";
+import { REGULAR_FONT } from "@/constants/Styles";
+import { useTranslation } from "react-i18next";
+import Loader from "@/components/ui/Loader";
+import ArrBack from "@/components/ui/ArrBack";
+import ProgressBar from "@/components/animatinos/progressBar";
 
 const WeeklyEventScreen: React.FC = () => {
   const { token } = useUser();
+  const { t } = useTranslation();
 
   const { data, isLoading, isError, error, refetch, isRefetching } =
     useQuery<WeeklyEventResponse>({
@@ -41,7 +51,6 @@ const WeeklyEventScreen: React.FC = () => {
   const handleNodePress = (node: WeeklyEventNodeSummary) => {
     if (node.status === "locked") return;
 
-    // Navigate to node play screen (stub for now)
     router.push({
       pathname: "/quizLevel/WeeklyEventNodeScreen",
       params: {
@@ -50,37 +59,6 @@ const WeeklyEventScreen: React.FC = () => {
         nodeTitle: node.title,
       },
     });
-  };
-
-  const renderHeader = () => {
-    if (!data) return null;
-    const { event, progress } = data;
-
-    const startDate = new Date(event.startsAt);
-    const endDate = new Date(event.endsAt);
-
-    return (
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>{event.title}</Text>
-        {event.theme?.name ? (
-          <Text style={styles.headerSubtitle}>{event.theme.name}</Text>
-        ) : null}
-        <Text style={styles.headerRange}>
-          {startDate.toLocaleDateString()} – {endDate.toLocaleDateString()}
-        </Text>
-        {event.description ? (
-          <Text style={styles.headerDescription}>{event.description}</Text>
-        ) : null}
-        <View style={styles.progressContainer}>
-          <Text style={styles.progressText}>
-            Progress: {progress.currentNodeIndex}/{data.nodes.length}
-          </Text>
-          {progress.fullCompletionRewardClaimed && (
-            <Text style={styles.completedBadge}>Completed</Text>
-          )}
-        </View>
-      </View>
-    );
   };
 
   const renderNode = ({ item }: { item: WeeklyEventNodeSummary }) => {
@@ -95,6 +73,7 @@ const WeeklyEventScreen: React.FC = () => {
 
     return (
       <TouchableOpacity
+        key={item.index}
         style={[
           styles.nodeCard,
           isCompleted && styles.nodeCardCompleted,
@@ -152,8 +131,7 @@ const WeeklyEventScreen: React.FC = () => {
   if ((isLoading || !token) && !data) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" />
-        <Text style={styles.loadingText}>Loading weekly event...</Text>
+        <Loader />
       </View>
     );
   }
@@ -177,18 +155,96 @@ const WeeklyEventScreen: React.FC = () => {
     );
   }
 
+  const { event, progress } = data;
+  const startDate = new Date(event.startsAt);
+  const endDate = new Date(event.endsAt);
+
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={data.nodes}
-        keyExtractor={(item) => item.index.toString()}
-        renderItem={renderNode}
-        ListHeaderComponent={renderHeader}
-        contentContainerStyle={styles.listContent}
+    <View style={styles.screen}>
+      <ArrBack />
+      <View style={{ alignItems: "center", gap: 20 }}>
+        <WeeklyEventLogo width={250} height={80} />
+        <Text style={[styles.txtMuted, { fontSize: 15 }]}>
+          {startDate.toLocaleDateString()} – {endDate.toLocaleDateString()}
+        </Text>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />
         }
-      />
+      >
+        <View style={styles.headerCard}>
+          <Text style={[styles.txt, styles.headerTitle]}>{event.title}</Text>
+          {event.theme?.name ? (
+            <Text style={[styles.txtAccent, styles.headerSubtitle]}>
+              {event.theme.name}
+            </Text>
+          ) : null}
+          {event.description ? (
+            <Text style={[styles.txtMuted, styles.headerDescription]}>
+              {event.description}
+            </Text>
+          ) : null}
+          <View style={styles.progressRow}>
+            <View style={styles.progressPill}>
+              <Text style={[styles.txt, { fontSize: 17 }]}>
+                {t("progress")}
+              </Text>
+              <LineDashed />
+              <CircularProgress
+                progress={progress.currentNodeIndex}
+                total={data.nodes.length}
+                size={60}
+                strokeWidth={3}
+                fontSize={15}
+                percent={false}
+              />
+            </View>
+            {/* <View style={styles.progressPill}>
+              <Text style={[styles.txt, { fontSize: 14 }]}>Weekly rewards</Text>
+              <LineDashed />
+              <View style={styles.rewardBar}>
+                <ProgressBar
+                  color={Colors.dark.secondary}
+                  progress={progress.currentNodeIndex}
+                  total={data.nodes.length}
+                  height={2}
+                />
+              </View>
+              <Text style={[styles.txtMuted, { fontSize: 12 }]}>
+                {progress.fullCompletionRewardClaimed
+                  ? "All claimed"
+                  : `${progress.currentNodeIndex} / ${data.nodes.length}`}
+              </Text>
+            </View> */}
+          </View>
+          {progress.fullCompletionRewardClaimed && (
+            <Text style={styles.completedBadge}>Completed</Text>
+          )}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={[styles.txt, styles.sectionTitle]}>Nodes</Text>
+          <View style={{ gap: 12 }}>
+            {data.nodes.map((node) =>
+              renderNode({
+                item: node,
+              })
+            )}
+          </View>
+        </View>
+
+        <View style={styles.infoCard}>
+          <Text style={[styles.txt, styles.infoTitle]}>{t("howItWorks")}</Text>
+          <Text style={[styles.txtMuted, styles.infoText]}>
+            {event.description ||
+              "Complete each node to unlock the next and claim the weekly rewards."}
+          </Text>
+        </View>
+      </ScrollView>
     </View>
   );
 };
@@ -217,19 +273,30 @@ function formatNodeType(type: string) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#050816",
+  txt: {
+    color: Colors.dark.text,
+    fontFamily: REGULAR_FONT,
   },
-  listContent: {
-    padding: 16,
+  txtMuted: { color: Colors.dark.text_muted, fontFamily: REGULAR_FONT },
+  txtAccent: { color: Colors.dark.secondary, fontFamily: REGULAR_FONT },
+  screen: {
+    backgroundColor: Colors.dark.bg_dark,
+    height: "100%",
+    alignItems: "center",
+    gap: 20,
+    paddingHorizontal: 20,
+  },
+  scrollContent: {
     paddingBottom: 32,
+    paddingTop: 30,
+    gap: 24,
+    width: "100%",
   },
   centered: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#050816",
+    backgroundColor: Colors.dark.bg_dark,
   },
   loadingText: {
     marginTop: 8,
@@ -251,57 +318,61 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "600",
   },
-  headerContainer: {
-    marginBottom: 16,
+  headerCard: {
+    width: "100%",
     padding: 16,
     borderRadius: 16,
-    backgroundColor: "#111827",
+    backgroundColor: Colors.dark.bg_light,
     borderWidth: 1,
-    borderColor: "#1f2937",
+    borderColor: Colors.dark.border,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#f9fafb",
+    textAlign: "center",
+    marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: "#a5b4fc",
-    marginTop: 4,
-  },
-  headerRange: {
-    fontSize: 12,
-    color: "#9ca3af",
-    marginTop: 4,
+    textAlign: "center",
+    marginTop: 2,
   },
   headerDescription: {
     fontSize: 13,
-    color: "#d1d5db",
     marginTop: 8,
+    textAlign: "center",
   },
-  progressContainer: {
-    marginTop: 12,
+  progressRow: {
+    width: "100%",
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  progressText: {
-    fontSize: 13,
-    color: "#e5e7eb",
+    height: 150,
+    marginTop: 20,
+    gap: 10,
   },
   completedBadge: {
     fontSize: 12,
     color: "#4ade80",
     fontWeight: "600",
+    textAlign: "center",
+    marginTop: 12,
+  },
+  progressPill: {
+    width: "100%",
+    gap: 15,
+    borderRadius: 20,
+    backgroundColor: Colors.dark.bg_light,
+    borderColor: Colors.dark.border,
+    alignItems: "center",
+    padding: isSmallPhone ? 13 : 16,
+    borderWidth: 1,
   },
   nodeCard: {
     flexDirection: "row",
-    padding: 12,
-    marginBottom: 12,
+    padding: 14,
     borderRadius: 16,
-    backgroundColor: "#111827",
+    backgroundColor: Colors.dark.bg_light,
     borderWidth: 1,
-    borderColor: "#1f2937",
+    borderColor: Colors.dark.border,
   },
   nodeCardLocked: {
     opacity: 0.5,
@@ -316,7 +387,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
-    backgroundColor: "#1f2937",
+    backgroundColor: Colors.dark.bg_dark,
   },
   nodeIcon: {
     fontSize: 24,
@@ -331,15 +402,15 @@ const styles = StyleSheet.create({
   },
   nodeIndex: {
     fontSize: 12,
-    color: "#9ca3af",
+    color: Colors.dark.text_muted,
   },
   nodeStatus: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#6b7280",
+    color: Colors.dark.text_muted,
   },
   nodeStatusUnlocked: {
-    color: "#60a5fa",
+    color: Colors.dark.primary,
   },
   nodeStatusCompleted: {
     color: "#22c55e",
@@ -347,12 +418,12 @@ const styles = StyleSheet.create({
   nodeTitle: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#f9fafb",
+    color: Colors.dark.text,
     marginTop: 4,
   },
   nodeDescription: {
     fontSize: 13,
-    color: "#9ca3af",
+    color: Colors.dark.text_muted,
     marginTop: 2,
   },
   nodeFooterRow: {
@@ -363,21 +434,55 @@ const styles = StyleSheet.create({
   },
   nodeType: {
     fontSize: 12,
-    color: "#a5b4fc",
+    color: Colors.dark.secondary,
   },
   playButton: {
     paddingHorizontal: 14,
     paddingVertical: 6,
     borderRadius: 999,
-    backgroundColor: "#6366f1",
+    backgroundColor: Colors.dark.text,
   },
   playButtonCompleted: {
-    backgroundColor: "#374151",
+    backgroundColor: Colors.dark.bg_dark,
   },
   playButtonText: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#f9fafb",
+    color: Colors.dark.bg_dark,
+  },
+  section: {
+    backgroundColor: Colors.dark.bg_light,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.dark.border,
+    padding: 16,
+    gap: 12,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  infoCard: {
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: Colors.dark.bg_light,
+    borderColor: Colors.dark.border,
+    borderWidth: 1,
+  },
+  infoTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  infoText: {
+    fontSize: 12,
+    opacity: 0.8,
+  },
+  rewardBar: {
+    width: "90%",
+    backgroundColor: Colors.dark.border,
+    borderRadius: 6,
+    marginTop: 10,
   },
 });
 
