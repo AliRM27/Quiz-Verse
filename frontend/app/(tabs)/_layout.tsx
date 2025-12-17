@@ -184,7 +184,7 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name={"events"}
+          name="(events)/index"
           options={{
             tabBarIcon({ focused }) {
               return focused ? (
@@ -230,6 +230,19 @@ export default function TabLayout() {
                 <Profile width={iconWidth} />
               );
             },
+          }}
+        />
+        <Tabs.Screen
+          name="(events)/dailyQuiz"
+          options={{
+            // Keep the screen in the tab navigator for the shared tab bar, but hide its button.
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="(events)/weeklyEvent"
+          options={{
+            href: null,
           }}
         />
       </Tabs>

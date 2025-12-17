@@ -15,7 +15,7 @@ import {
 import { useUser } from "@/context/userContext";
 import { fetchWeeklyEvent } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Colors } from "@/constants/Colors";
 import WeeklyEventLogo from "@/assets/svgs/weeklyEvent.svg";
 import { isSmallPhone } from "@/constants/Dimensions";
@@ -25,7 +25,6 @@ import { REGULAR_FONT } from "@/constants/Styles";
 import { useTranslation } from "react-i18next";
 import Loader from "@/components/ui/Loader";
 import ArrBack from "@/components/ui/ArrBack";
-import ProgressBar from "@/components/animatinos/progressBar";
 
 const WeeklyEventScreen: React.FC = () => {
   const { token } = useUser();
@@ -161,7 +160,7 @@ const WeeklyEventScreen: React.FC = () => {
 
   return (
     <View style={styles.screen}>
-      <ArrBack />
+      <ArrBack onPress={() => router.replace("/(tabs)/(events)")} />
       <View style={{ alignItems: "center", gap: 20 }}>
         <WeeklyEventLogo width={250} height={80} />
         <Text style={[styles.txtMuted, { fontSize: 15 }]}>
@@ -172,9 +171,6 @@ const WeeklyEventScreen: React.FC = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />
-        }
       >
         <View style={styles.headerCard}>
           <Text style={[styles.txt, styles.headerTitle]}>{event.title}</Text>
@@ -322,23 +318,23 @@ const styles = StyleSheet.create({
     width: "100%",
     padding: 16,
     borderRadius: 16,
-    backgroundColor: Colors.dark.bg_light,
+    backgroundColor: Colors.dark.bg_dark,
     borderWidth: 1,
-    borderColor: Colors.dark.border,
+    borderColor: Colors.dark.bg_dark,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: "700",
     textAlign: "center",
     marginBottom: 4,
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: 20,
     textAlign: "center",
     marginTop: 2,
   },
   headerDescription: {
-    fontSize: 13,
+    fontSize: 15,
     marginTop: 8,
     textAlign: "center",
   },
@@ -360,8 +356,8 @@ const styles = StyleSheet.create({
     width: "100%",
     gap: 15,
     borderRadius: 20,
-    backgroundColor: Colors.dark.bg_light,
-    borderColor: Colors.dark.border,
+    backgroundColor: Colors.dark.bg,
+    borderColor: Colors.dark.border_muted,
     alignItems: "center",
     padding: isSmallPhone ? 13 : 16,
     borderWidth: 1,
@@ -451,9 +447,9 @@ const styles = StyleSheet.create({
     color: Colors.dark.bg_dark,
   },
   section: {
-    backgroundColor: Colors.dark.bg_light,
+    backgroundColor: Colors.dark.bg_dark,
     borderRadius: 16,
-    borderWidth: 1,
+    borderWidth: 0,
     borderColor: Colors.dark.border,
     padding: 16,
     gap: 12,

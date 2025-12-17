@@ -177,7 +177,7 @@ const dailyQuiz = () => {
         paddingHorizontal: 20,
       }}
     >
-      <ArrBack />
+      <ArrBack onPress={() => router.replace("/(tabs)/(events)")} />
       <View
         style={{
           flexDirection: "row",

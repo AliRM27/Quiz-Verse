@@ -68,7 +68,6 @@ export default function RootLayout() {
                   />
                   <Stack.Screen name="index" />
                   <Stack.Screen name="(settings)/index" />
-                  <Stack.Screen name="(events)/dailyQuiz" />
                   <Stack.Screen name="(quizzes)/collection" />
                   <Stack.Screen
                     name="(quizzes)/quiz"
@@ -102,7 +101,6 @@ export default function RootLayout() {
                   />
                   <Stack.Screen name="+not-found" />
                   <Stack.Screen name="quizLevel/WeeklyEventNodeScreen" />
-                  <Stack.Screen name="(events)/weeklyEvent" />
                 </Stack>
               </UserProvider>
             </GestureHandlerRootView>

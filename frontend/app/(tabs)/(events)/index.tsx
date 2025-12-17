@@ -10,16 +10,20 @@ import { useTranslation } from "react-i18next";
 export default function Events() {
   const { t } = useTranslation();
   const events = [
-    { name: t("dailyQuiz"), icon: DailyQuiz, path: "/(events)/dailyQuiz" },
+    {
+      name: t("dailyQuiz"),
+      icon: DailyQuiz,
+      path: "/(tabs)/(events)/dailyQuiz",
+    },
     {
       name: "Weekly Challenge",
       icon: WeeklyChallange,
-      path: "/(events)/weeklyEvent",
+      path: "/(tabs)/(events)/weeklyEvent",
     },
     {
       name: "Championship",
       icon: Championship,
-      path: "/(evetns)/championship",
+      path: "/(tabs)/(evetns)/championship",
     },
   ];
 
