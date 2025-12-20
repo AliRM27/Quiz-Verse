@@ -18,6 +18,7 @@ import ArrBack from "@/components/ui/ArrBack";
 
 import { LineDashed } from "@/components/ui/Line";
 import Trophy from "@/assets/svgs/trophy.svg";
+import Gem from "@/assets/svgs/gem.svg";
 import Timer from "@/assets/svgs/timer.svg"; // Assuming we have this or similar, otherwise use text/emoji
 import { useState } from "react";
 
@@ -38,16 +39,39 @@ const getIconName = (type?: string): keyof typeof Feather.glyphMap => {
   }
 };
 
+import CircularProgress from "@/components/ui/CircularProgress";
+import ProgressBar from "@/components/animatinos/progressBar";
+
+// ...
+
 const WeeklyEventNodeScreen: React.FC = () => {
   const queryClient = useQueryClient();
-  const { nodeIndex, nodeType, nodeTitle, nodeDescription, nodeIcon } =
-    useLocalSearchParams<{
+  const { 
+    nodeIndex, nodeType, nodeTitle, nodeDescription, nodeIcon, 
+    nodeReward, nodeConfig, questionsCorrect, trophiesCollected 
+  } = useLocalSearchParams<{
       nodeIndex?: string;
       nodeType?: string;
       nodeTitle?: string;
       nodeDescription?: string;
       nodeIcon?: string;
+      nodeReward?: string;
+      nodeConfig?: string;
+      questionsCorrect?: string;
+      trophiesCollected?: string;
     }>();
+
+  // Parse JSON params (with safety)
+  const nodeDataResponse = React.useMemo(() => {
+     try {
+       return {
+         reward: nodeReward ? JSON.parse(nodeReward as string) : null,
+         config: nodeConfig ? JSON.parse(nodeConfig as string) : null
+       }
+     } catch (e) {
+       return { reward: null, config: null };
+     }
+  }, [nodeReward, nodeConfig]);
 
   const resolvedNodeIndex = Number(nodeIndex ?? 0);
   const resolvedNodeTitle = nodeTitle ?? "Weekly Event Node";
@@ -92,34 +116,60 @@ const WeeklyEventNodeScreen: React.FC = () => {
 
       <LineDashed needMargin={true} margin={24} />
 
-      {/* Info Stats Row */}
-      <View style={styles.statsRow}>
-        <View style={styles.statItem}>
-          <Text style={styles.statLabel}>REWARDS</Text>
-          <View style={styles.statValueRow}>
-            <Trophy width={20} height={20} color={Colors.dark.secondary} />
-            <Text style={styles.statValue}>50 XP</Text>
+      <View style={styles.chartsContainer}>
+        {/* Progress Card (Circular) */}
+        <View style={styles.chartCard}>
+          <Text style={styles.chartTitle}>PROGRESS</Text>
+          <LineDashed />
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop:10 }}>
+             <CircularProgress
+                progress={
+                   Math.floor(
+                     ((Number(questionsCorrect) || 0) / (nodeDataResponse.config?.quizConfig?.totalQuestions || 10)) * 100
+                   )
+                }
+                size={60}
+                strokeWidth={3}
+                fontSize={14}
+             />
           </View>
         </View>
 
-        <View style={styles.dividerVertical} />
-
-        <View style={styles.statItem}>
-          <Text style={styles.statLabel}>DIFFICULTY</Text>
-          <View style={styles.statValueRow}>
-             {/* Mock difficulty based on index? */}
-             <Text style={styles.statValue}>{resolvedNodeIndex > 5 ? "Hard" : "Normal"}</Text>
+        {/* Rewards Card (Linear) */}
+        <View style={styles.chartCard}>
+          <Text style={styles.chartTitle}>REWARDS</Text>
+          <LineDashed />
+          <View style={{ width: '100%', marginTop: 20, backgroundColor: Colors.dark.border_muted, borderRadius: 10 }}>
+             <ProgressBar
+               color={Colors.dark.secondary}
+               progress={Number(trophiesCollected) || 0}
+               total={(nodeDataResponse.reward?.trophies || 0)} // Estimate: Completion + 10 Unlock? Or just Completion
+               height={3}
+             />
           </View>
+           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 10 }}>
+              <Text style={styles.chartSubtitle}>
+                {Number(trophiesCollected) || 0} / {(nodeDataResponse.reward?.trophies || 0)}
+              </Text>
+              <Trophy width={14} height={14} color={Colors.dark.secondary} />
+           </View>
         </View>
+      </View>
 
-         <View style={styles.dividerVertical} />
-
-        <View style={styles.statItem}>
-          <Text style={styles.statLabel}>DURATION</Text>
-           <View style={styles.statValueRow}>
-             <Text style={styles.statValue}>~2 min</Text>
-          </View>
-        </View>
+      {/* Basic Info Row (Difficulty, Duration) */}
+      <View style={styles.infoRow}>
+         <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>DIFFICULTY</Text>
+            <Text style={styles.infoValue}>
+               {getDifficultyLabel(nodeDataResponse.config)}
+            </Text>
+         </View>
+         <View style={styles.infoItem}>
+            <Text style={styles.infoLabel}>DURATION</Text>
+            <Text style={styles.infoValue}>
+               {getDurationLabel(nodeDataResponse.config)}
+            </Text>
+         </View>
       </View>
 
       {error && (
@@ -153,15 +203,34 @@ function formatNodeType(type?: string) {
     .join(" ");
 }
 
+function getDifficultyLabel(config: any) {
+  if (config?.quizConfig?.allowedDifficulties?.length > 0) {
+    // Capitalize first letter of the first difficulty
+    const diff = config.quizConfig.allowedDifficulties[0];
+    return diff.charAt(0).toUpperCase() + diff.slice(1);
+  }
+  return "Normal";
+}
+
+function getDurationLabel(config: any) {
+  if (config?.modeConfig?.timeLimitSeconds) {
+    const min = Math.ceil(config.modeConfig.timeLimitSeconds / 60);
+    return `~${min} min`;
+  }
+  return "~2 min";
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.dark.bg,
   },
   content: {
+    flexGrow: 1, // Allow content to expand and push footer down
     paddingTop: 30,
+    gap: 20,
     paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingBottom: 50, // More bottom padding
     alignItems: "center",
   },
   iconContainer: {
@@ -206,40 +275,67 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   
-  // Stats
-  statsRow: {
+  // Charts
+  chartsContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
     width: '100%',
-    marginBottom: 10,
+    gap: 12,
+    marginBottom: 20,
   },
-  statItem: {
+  chartCard: {
+    flex: 1,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 20,
+    padding: 16,
     alignItems: 'center',
-    gap: 5
+    gap: 5,
+    // Shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  statLabel: {
-    fontSize: 10,
+  chartTitle: {
+    fontSize: 12,
     fontWeight: '700',
-    color: Colors.dark.text_muted,
+    color: Colors.dark.text,
+    marginBottom: 8,
     letterSpacing: 1,
   },
-  statValueRow: {
+  chartSubtitle: {
+    fontSize: 12,
+    color: Colors.dark.text_muted,
+    marginTop: 8,
+    fontWeight: '600'
+  },
+  
+  // Info Row
+  infoRow: {
     flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    paddingVertical: 12,
+    borderRadius: 16,
+  },
+  infoItem: {
     alignItems: 'center',
-    gap: 6
+    gap: 4,
   },
-  statValue: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: Colors.dark.text,
+  infoLabel: {
+    fontSize: 10,
+    color: Colors.dark.text_muted,
+    fontWeight: '700',
+    letterSpacing: 1,
   },
-  dividerVertical: {
-      width: 1,
-      height: 30,
-      backgroundColor: Colors.dark.border,
+  infoValue: {
+    fontSize: 14,
+    color: Colors.dark.text,
+    fontWeight: '600',
   },
-
+  
   error: {
     marginTop: 16,
     color: Colors.dark.danger,
@@ -247,7 +343,8 @@ const styles = StyleSheet.create({
   },
   footer: {
     width: "100%",
-    marginTop: 40, 
+    marginTop: "auto", // Push to bottom of flex container
+    paddingTop: 40,    // Space from content above
   },
   button: {
     width: "100%",

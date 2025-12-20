@@ -82,6 +82,10 @@ const WeeklyEventScreen: React.FC = () => {
         nodeTitle: node.title,
         nodeDescription: node.description,
         nodeIcon: node.iconKey,
+        nodeReward: JSON.stringify(node.completionReward),
+        nodeConfig: JSON.stringify(node.config),
+        questionsCorrect: node.questionsCorrect?.toString(),
+        trophiesCollected: node.trophiesCollected?.toString(),
       },
     });
   };
@@ -560,21 +564,22 @@ const styles = StyleSheet.create({
   },
   labelLeft: {
     right: "115%", // Push to left of node
-    alignItems: "flex-end", // Align text to right (towards node)
+    alignItems: "center", // Align text to right (towards node)
   },
   labelRight: {
     left: "115%", // Push to right of node
-    alignItems: "flex-start", // Align text to left (towards node)
+    alignItems: "center", // Align text to left (towards node)
   },
   nodeIndex: {
     color: Colors.dark.secondary,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "bold",
     marginBottom: 2,
+    textAlign: "center"
   },
   nodeTitle: {
     color: Colors.dark.text,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: "600",
     textAlign: "center", // Justify handled by flex-start/end
   },

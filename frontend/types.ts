@@ -77,6 +77,13 @@ export interface WeeklyEventNodeSummary {
   description: string;
   iconKey: string;
   status: WeeklyEventNodeStatus;
+  completionReward?: {
+    trophies: number;
+    gems: number;
+  };
+  config?: any; // Simplified for display purposes
+  questionsCorrect?: number;
+  trophiesCollected?: number;
 }
 
 export interface WeeklyEventInfo {
