@@ -100,7 +100,24 @@ export default function RootLayout() {
                     options={{ animation: "none", gestureEnabled: false }}
                   />
                   <Stack.Screen name="+not-found" />
-                  <Stack.Screen name="quizLevel/WeeklyEventNodeScreen" />
+                  <Stack.Screen
+                    name="quizLevel/WeeklyEventNodeScreen"
+                    options={{
+                      contentStyle: {
+                        backgroundColor: Colors.dark.bg,
+                        height: "100%",
+                      },
+                      presentation: "formSheet",
+                      gestureDirection: "vertical",
+                      animation: "slide_from_bottom",
+                      sheetGrabberVisible: true,
+                      sheetInitialDetentIndex: 0,
+                      sheetAllowedDetents: [1],
+                      sheetCornerRadius: 50,
+                      sheetExpandsWhenScrolledToEdge: true,
+                      sheetElevation: 24,
+                    }}
+                  />
                 </Stack>
               </UserProvider>
             </GestureHandlerRootView>

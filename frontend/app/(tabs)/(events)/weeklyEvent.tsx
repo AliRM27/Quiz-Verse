@@ -1,11 +1,12 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  RefreshControl,
   TouchableOpacity,
   ScrollView,
+  Dimensions,
+  LayoutChangeEvent,
 } from "react-native";
 import {
   WeeklyEventResponse,
@@ -15,22 +16,43 @@ import {
 import { useUser } from "@/context/userContext";
 import { fetchWeeklyEvent } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
-import { router, useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { Colors } from "@/constants/Colors";
 import WeeklyEventLogo from "@/assets/svgs/weeklyEvent.svg";
 import { isSmallPhone } from "@/constants/Dimensions";
 import { LineDashed } from "@/components/ui/Line";
 import CircularProgress from "@/components/ui/CircularProgress";
 import { REGULAR_FONT } from "@/constants/Styles";
+import LockIcon from "@/assets/svgs/lock.svg";
 import { useTranslation } from "react-i18next";
 import Loader from "@/components/ui/Loader";
 import ArrBack from "@/components/ui/ArrBack";
+import Svg, { Path, Defs, LinearGradient, Stop } from "react-native-svg";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+  withDelay,
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics"; 
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// Journey Configuration
+const NODE_SIZE = 80;
+const VERTICAL_SPACING = 140;
+const WAVE_AMPLITUDE = SCREEN_WIDTH * 0.25; // How wide the zigzag goes
+const TOP_PADDING = 40;
+const BOTTOM_PADDING = 80;
 
 const WeeklyEventScreen: React.FC = () => {
   const { token } = useUser();
   const { t } = useTranslation();
+  const [containerHeight, setContainerHeight] = useState(0);
 
-  const { data, isLoading, isError, error, refetch, isRefetching } =
+  const { data, isLoading, isError, error, refetch } =
     useQuery<WeeklyEventResponse>({
       queryKey: ["weeklyEvent"],
       queryFn: fetchWeeklyEvent,
@@ -50,82 +72,125 @@ const WeeklyEventScreen: React.FC = () => {
   const handleNodePress = (node: WeeklyEventNodeSummary) => {
     if (node.status === "locked") return;
 
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft);
+
     router.push({
       pathname: "/quizLevel/WeeklyEventNodeScreen",
       params: {
         nodeIndex: node.index,
         nodeType: node.type,
         nodeTitle: node.title,
+        nodeDescription: node.description,
+        nodeIcon: node.iconKey,
       },
     });
   };
 
-  const renderNode = ({ item }: { item: WeeklyEventNodeSummary }) => {
-    const isUnlocked = item.status === "unlocked";
-    const isCompleted = item.status === "completed";
+  // --- Journey Logic ---
+  const getNodePosition = (index: number) => {
+    // 0 = Center
+    // 1 = Right
+    // 2 = Center
+    // 3 = Left
+    // 4 = Center ...
+    // Using simple Sine wave logic or straight zigzag logic?
+    // Let's do a Sine wave for smoothness.
+    // Period = ? We want it to go Center -> Right -> Center -> Left -> Center in 4 steps?
+    // index: 0(C) -> 1(R) -> 2(C) -> 3(L) -> 4(C)
+    // sin(0) = 0
+    // sin(PI/2) = 1
+    // sin(PI) = 0
+    // sin(3PI/2) = -1
+    // So angle = index * (Math.PI / 2)
+
+    const xOffset = Math.sin(index * (Math.PI / 2)) * WAVE_AMPLITUDE;
+    const x = SCREEN_WIDTH / 2 + xOffset; // Center reference is screen center
+    const y = TOP_PADDING + index * VERTICAL_SPACING;
+    return { x, y };
+  };
+
+  const journeyPath = useMemo(() => {
+    if (!data?.nodes) return "";
+
+    let path = "";
+    data.nodes.forEach((_, i) => {
+      const pos = getNodePosition(i);
+      if (i === 0) {
+        path += `M ${pos.x} ${pos.y} `;
+      } else {
+        // Curve to next point
+        const prevPos = getNodePosition(i - 1);
+        const midY = (prevPos.y + pos.y) / 2;
+        
+        // Cubic bezier for smooth vertical connection
+        // Control point 1: (prevX, midY) - keeps it vertical-ish leaving the node
+        // Control point 2: (currX, midY) - arrives vertical-ish at next node
+        path += `C ${prevPos.x} ${midY}, ${pos.x} ${midY}, ${pos.x} ${pos.y} `;
+      }
+    });
+    return path;
+  }, [data?.nodes]);
+
+
+  const renderNode = (node: WeeklyEventNodeSummary, index: number) => {
+    const { x, y } = getNodePosition(index);
+    const xOffset = x - SCREEN_WIDTH / 2;
+    const isLocked = node.status === "locked";
+
+    // Small position adjust to center the node div (since x,y is center point)
+    const left = x - NODE_SIZE / 2;
+    const top = y - NODE_SIZE / 2;
 
     const statusLabel: Record<WeeklyEventNodeStatus, string> = {
-      locked: "Locked",
-      unlocked: "Ready",
-      completed: "Completed",
+      locked: t("locked") || "Locked",
+      unlocked: t("play") || "Play",
+      completed: t("done") || "Done",
     };
 
+    // Determine label position (Left or Right of the node)
+    let isLabelLeft = false;
+
+    if (xOffset > 10) {
+      isLabelLeft = true;
+    } else if (xOffset < -10) {
+      isLabelLeft = false;
+    } else {
+      isLabelLeft = index % 4 === 0;
+    }
+
     return (
-      <TouchableOpacity
-        key={item.index}
+      <View
+        key={node.index}
         style={[
-          styles.nodeCard,
-          isCompleted && styles.nodeCardCompleted,
-          item.status === "locked" && styles.nodeCardLocked,
+          styles.nodeContainer,
+          { left, top, width: NODE_SIZE, height: NODE_SIZE },
         ]}
-        onPress={() => handleNodePress(item)}
-        activeOpacity={item.status === "locked" ? 1 : 0.8}
       >
-        <View style={styles.nodeIconContainer}>
-          <Text style={styles.nodeIcon}>{item.iconKey || "🎮"}</Text>
+        <JourneyNodeButton
+          node={node}
+          onPress={() => handleNodePress(node)}
+          disabled={isLocked}
+        />
+
+        <View
+          style={[
+            styles.nodeLabelContainer,
+            isLabelLeft ? styles.labelLeft : styles.labelRight,
+          ]}
+        >
+          <Text style={styles.nodeIndex}>Level {index + 1}</Text>
+          <Text
+            style={[styles.nodeTitle, isLocked && styles.textMuted]}
+            numberOfLines={2}
+          >
+            {isLocked ? statusLabel.locked : node.title}
+          </Text>
         </View>
-
-        <View style={styles.nodeContent}>
-          <View style={styles.nodeHeaderRow}>
-            <Text style={styles.nodeIndex}>Node {item.index + 1}</Text>
-            <Text
-              style={[
-                styles.nodeStatus,
-                isUnlocked && styles.nodeStatusUnlocked,
-                isCompleted && styles.nodeStatusCompleted,
-              ]}
-            >
-              {statusLabel[item.status]}
-            </Text>
-          </View>
-
-          <Text style={styles.nodeTitle}>{item.title}</Text>
-          {item.description ? (
-            <Text style={styles.nodeDescription} numberOfLines={2}>
-              {item.description}
-            </Text>
-          ) : null}
-
-          <View style={styles.nodeFooterRow}>
-            <Text style={styles.nodeType}>{formatNodeType(item.type)}</Text>
-
-            {item.status !== "locked" && (
-              <View
-                style={[
-                  styles.playButton,
-                  isCompleted && styles.playButtonCompleted,
-                ]}
-              >
-                <Text style={styles.playButtonText}>
-                  {isCompleted ? "Replay" : "Play"}
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
-      </TouchableOpacity>
+      </View>
     );
   };
+
+  // --- End Journey Logic ---
 
   if ((isLoading || !token) && !data) {
     return (
@@ -157,116 +222,266 @@ const WeeklyEventScreen: React.FC = () => {
   const { event, progress } = data;
   const startDate = new Date(event.startsAt);
   const endDate = new Date(event.endsAt);
+  const totalHeight = TOP_PADDING + data.nodes.length * VERTICAL_SPACING;
 
   return (
     <View style={styles.screen}>
       <ArrBack onPress={() => router.replace("/(tabs)/(events)")} />
-      <View style={{ alignItems: "center", gap: 20 }}>
-        <WeeklyEventLogo width={250} height={80} />
-        <Text style={[styles.txtMuted, { fontSize: 15 }]}>
+
+      {/* Header Section (Static) */}
+      <View style={{ alignItems: "center", gap: 10, marginBottom: 10 }}>
+        <WeeklyEventLogo width={200} height={60} />
+        <Text style={[styles.txtMuted, { fontSize: 13 }]}>
           {startDate.toLocaleDateString()} – {endDate.toLocaleDateString()}
         </Text>
+        <View style={styles.headerCard}>
+          <View style={styles.progressRow}>
+            <View>
+              <Text style={[styles.txt, styles.headerTitle]}>
+                {event.title}
+              </Text>
+              <Text style={[styles.txtMuted, { fontSize: 12 }]}>
+                {event.description}
+              </Text>
+            </View>
+            <CircularProgress
+              progress={progress.fullCompletionRewardClaimed ? 10 : progress.currentNodeIndex}
+              total={data.nodes.length}
+              size={50}
+              strokeWidth={3}
+              fontSize={12}
+              percent={false}
+            />
+          </View>
+          {progress.fullCompletionRewardClaimed && (
+            <Text style={styles.completedBadge}>ALL COMPLETED!</Text>
+          )}
+        </View>
       </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ paddingVertical: 50 }}
+        style={{ width: "100%" }}
       >
-        <View style={styles.headerCard}>
-          <Text style={[styles.txt, styles.headerTitle]}>{event.title}</Text>
-          {event.theme?.name ? (
-            <Text style={[styles.txtAccent, styles.headerSubtitle]}>
-              {event.theme.name}
-            </Text>
-          ) : null}
-          {event.description ? (
-            <Text style={[styles.txtMuted, styles.headerDescription]}>
-              {event.description}
-            </Text>
-          ) : null}
-          <View style={styles.progressRow}>
-            <View style={styles.progressPill}>
-              <Text style={[styles.txt, { fontSize: 17 }]}>
-                {t("progress")}
-              </Text>
-              <LineDashed />
-              <CircularProgress
-                progress={progress.currentNodeIndex}
-                total={data.nodes.length}
-                size={60}
-                strokeWidth={3}
-                fontSize={15}
-                percent={false}
-              />
-            </View>
-            {/* <View style={styles.progressPill}>
-              <Text style={[styles.txt, { fontSize: 14 }]}>Weekly rewards</Text>
-              <LineDashed />
-              <View style={styles.rewardBar}>
-                <ProgressBar
-                  color={Colors.dark.secondary}
-                  progress={progress.currentNodeIndex}
-                  total={data.nodes.length}
-                  height={2}
+        <View
+          style={{ height: totalHeight, width: "100%", position: "relative" }}
+        >
+          {/* Path Background */}
+          <Svg
+            width={SCREEN_WIDTH}
+            height={totalHeight}
+            style={StyleSheet.absoluteFill}
+          >
+            <Defs>
+              <LinearGradient id="pathGradient" x1="0" y1="0" x2="0" y2="1">
+                <Stop
+                  offset="0"
+                  stopColor={Colors.dark.primary}
+                  stopOpacity="0.6"
                 />
-              </View>
-              <Text style={[styles.txtMuted, { fontSize: 12 }]}>
-                {progress.fullCompletionRewardClaimed
-                  ? "All claimed"
-                  : `${progress.currentNodeIndex} / ${data.nodes.length}`}
-              </Text>
-            </View> */}
-          </View>
-          {progress.fullCompletionRewardClaimed && (
-            <Text style={styles.completedBadge}>Completed</Text>
-          )}
-        </View>
+                <Stop
+                  offset="1"
+                  stopColor={Colors.dark.secondary}
+                  stopOpacity="0.2"
+                />
+              </LinearGradient>
+            </Defs>
+            {/* Draw the full path first (background track) */}
+            <Path
+              d={journeyPath}
+              stroke={Colors.dark.border}
+              strokeWidth={14}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
 
-        <View style={styles.section}>
-          <Text style={[styles.txt, styles.sectionTitle]}>Nodes</Text>
-          <View style={{ gap: 12 }}>
-            {data.nodes.map((node) =>
-              renderNode({
-                item: node,
-              })
-            )}
-          </View>
-        </View>
+            {/* Draw the 'active' path - overlay logic is complex for individual segments,
+                     so for now let's just color the whole line slightly or use segments.
+                     Refinement: Draw individual segments to color Completed vs Locked differently?
+                  */}
+            {data.nodes.map((node, i) => {
+              if (i === 0) return null;
+              const prevNode = data.nodes[i - 1];
+              // Connect prevNode to currNode
+              const prevPos = getNodePosition(i - 1);
+              const currPos = getNodePosition(i);
+              const midY = (prevPos.y + currPos.y) / 2;
+              const segmentPath = `M ${prevPos.x} ${prevPos.y} C ${prevPos.x} ${midY}, ${currPos.x} ${midY}, ${currPos.x} ${currPos.y}`;
 
-        <View style={styles.infoCard}>
-          <Text style={[styles.txt, styles.infoTitle]}>{t("howItWorks")}</Text>
-          <Text style={[styles.txtMuted, styles.infoText]}>
-            {event.description ||
-              "Complete each node to unlock the next and claim the weekly rewards."}
-          </Text>
+              const isPathActive =
+                prevNode.status === "completed" ||
+                prevNode.status === "unlocked";
+              // If previous node is completed, the path to the current one is 'traversed' (or at least unlocked)
+
+              return (
+                <Path
+                  key={`path-${i}`}
+                  d={segmentPath}
+                  stroke={isPathActive ? Colors.dark.primary : "transparent"} // Colored overlay
+                  strokeWidth={4}
+                  fill="none"
+                />
+              );
+            })}
+          </Svg>
+
+          {/* Nodes */}
+          {data.nodes.map((node, i) => renderNode(node, i))}
         </View>
       </ScrollView>
     </View>
   );
 };
 
-function formatNodeType(type: string) {
+// 3D Button Component
+import { Feather } from "@expo/vector-icons";
+
+// Map node types to Feather icon names
+const getIconName = (type?: string): keyof typeof Feather.glyphMap => {
   switch (type) {
-    case "mini_quiz":
-      return "Mini Quiz";
-    case "time_challenge":
-      return "Time Challenge";
-    case "true_false_sprint":
-      return "True/False Sprint";
-    case "survival":
-      return "Survival";
-    case "mixed_gauntlet":
-      return "Mixed Gauntlet";
-    case "emoji_puzzle":
-      return "Emoji Puzzle";
-    case "quote_guess":
-      return "Quote Guess";
-    case "vote":
-      return "Vote";
-    default:
-      return type;
+    case "mini_quiz": return "cpu"; // Brain-like
+    case "time_challenge": return "zap";
+    case "true_false_sprint": return "check-square";
+    case "survival": return "shield";
+    case "mixed_gauntlet": return "shuffle";
+    case "emoji_puzzle": return "smile";
+    case "quote_guess": return "message-square";
+    case "vote": return "thumbs-up";
+    default: return "play"; // gamepad isn't in feather, using play or box
   }
-}
+};
+
+const JourneyNodeButton = ({
+  node,
+  onPress,
+  disabled,
+}: {
+  node: WeeklyEventNodeSummary;
+  onPress: () => void;
+  disabled: boolean;
+}) => {
+  const isUnlocked = node.status === "unlocked";
+  const isCompleted = node.status === "completed";
+  const isLocked = node.status === "locked";
+
+  const translateY = useSharedValue(0);
+
+  const handlePressIn = () => {
+    translateY.value = withTiming(6, { duration: 100 });
+    Haptics.selectionAsync();
+  };
+
+  const handlePressOut = () => {
+    translateY.value = withTiming(0, { duration: 100 });
+  };
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }));
+
+  // Colors
+  let mainColor = Colors.dark.bg_light;
+  let depthColor = Colors.dark.border;
+  let borderColor = Colors.dark.border;
+  let iconColor = Colors.dark.text; // Default Icon/Text color
+
+  if (isCompleted) {
+    mainColor = "#22c55e"; // Green
+    depthColor = "#14532d"; // Dark Green
+    borderColor = "#15803d";
+    iconColor = "#ffffff";
+  } else if (isUnlocked) {
+    mainColor = Colors.dark.primary; // Filled Primary
+    depthColor = "#0c4a6e"; // Darker Blue/Cyan shade
+    borderColor = Colors.dark.primary;
+    iconColor = "#ffffff"; // White icon on primary
+  } else {
+    // Locked
+    mainColor = Colors.dark.bg_light;
+    depthColor = "#404040"; // Darker Gray
+    borderColor = Colors.dark.border;
+    iconColor = Colors.dark.text_muted;
+  }
+
+  const iconName = getIconName(node.type);
+
+  return (
+    <View style={{ width: NODE_SIZE, height: NODE_SIZE }}>
+      {/* Depth Layer (Static at bottom) */}
+      <View
+        style={[
+          styles.node3DDepth,
+          {
+            backgroundColor: depthColor,
+            borderColor: borderColor, // Optional: border for the depth too to match
+          },
+        ]}
+      />
+
+      {/* Main Touchable Layer */}
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled}
+        style={{ flex: 1 }}
+      >
+        <Animated.View
+          style={[
+            styles.node3DSurface,
+            animatedStyle,
+            {
+              backgroundColor: mainColor,
+              borderColor: borderColor,
+            },
+          ]}
+        >
+          {isLocked ? (
+            <LockIcon width={24} height={24} color={iconColor} />
+          ) : (
+            <Feather name={iconName} size={32} color={iconColor} />
+          )}
+
+          {/* Glare/Highlight effect for 3D curved look */}
+          <View style={styles.nodeGlare} />
+
+          {/* Pulse effect for current unlocked level - White Glow since bg is primary */}
+          {isUnlocked && <LoopingPulse />}
+        </Animated.View>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const LoopingPulse = () => {
+  const scale = useSharedValue(1);
+
+  // Setup animation loop
+  React.useEffect(() => {
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.2, { duration: 800 }),
+        withTiming(1, { duration: 800 })
+      ),
+      -1, // Infinite
+      true // Reverse
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: 0.5,
+  }));
+
+  return (
+    <Animated.View
+      style={[StyleSheet.absoluteFill, styles.pulseCircle, animatedStyle]}
+    />
+  );
+};
 
 const styles = StyleSheet.create({
   txt: {
@@ -274,29 +489,18 @@ const styles = StyleSheet.create({
     fontFamily: REGULAR_FONT,
   },
   txtMuted: { color: Colors.dark.text_muted, fontFamily: REGULAR_FONT },
-  txtAccent: { color: Colors.dark.secondary, fontFamily: REGULAR_FONT },
+  textMuted: { color: Colors.dark.text_muted },
   screen: {
     backgroundColor: Colors.dark.bg_dark,
     height: "100%",
     alignItems: "center",
-    gap: 20,
-    paddingHorizontal: 20,
-  },
-  scrollContent: {
-    paddingBottom: 32,
-    paddingTop: 30,
-    gap: 24,
-    width: "100%",
+    paddingTop: 10,
   },
   centered: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: Colors.dark.bg_dark,
-  },
-  loadingText: {
-    marginTop: 8,
-    color: "#e5e7eb",
   },
   errorText: {
     color: "#fca5a5",
@@ -315,171 +519,100 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   headerCard: {
-    width: "100%",
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: Colors.dark.bg_dark,
+    width: "90%",
+    padding: 15,
+    borderRadius: 20,
+    backgroundColor: Colors.dark.bg,
     borderWidth: 1,
-    borderColor: Colors.dark.bg_dark,
-  },
-  headerTitle: {
-    fontSize: 25,
-    fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 20,
-    textAlign: "center",
-    marginTop: 2,
-  },
-  headerDescription: {
-    fontSize: 15,
-    marginTop: 8,
-    textAlign: "center",
+    borderColor: Colors.dark.border_muted,
   },
   progressRow: {
-    width: "100%",
     flexDirection: "row",
-    height: 150,
-    marginTop: 20,
+    justifyContent: "space-between",
+    alignItems: "center",
     gap: 10,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    maxWidth: "80%",
   },
   completedBadge: {
     fontSize: 12,
     color: "#4ade80",
     fontWeight: "600",
     textAlign: "center",
-    marginTop: 12,
+    marginTop: 8,
   },
-  progressPill: {
-    width: "100%",
-    gap: 15,
-    borderRadius: 20,
-    backgroundColor: Colors.dark.bg,
-    borderColor: Colors.dark.border_muted,
-    alignItems: "center",
-    padding: isSmallPhone ? 13 : 16,
-    borderWidth: 1,
-  },
-  nodeCard: {
-    flexDirection: "row",
-    padding: 14,
-    borderRadius: 16,
-    backgroundColor: Colors.dark.bg_light,
-    borderWidth: 1,
-    borderColor: Colors.dark.border,
-  },
-  nodeCardLocked: {
-    opacity: 0.5,
-  },
-  nodeCardCompleted: {
-    borderColor: "#22c55e",
-  },
-  nodeIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+
+  // Journey Styles
+  nodeContainer: {
+    position: "absolute",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
-    backgroundColor: Colors.dark.bg_dark,
+    // overflow: 'visible' // Allow labels to spill out
   },
-  nodeIcon: {
-    fontSize: 24,
+  nodeLabelContainer: {
+    position: "absolute",
+    // top: '105%' removed
+    width: 120, // constrain width
+    justifyContent: "center",
   },
-  nodeContent: {
-    flex: 1,
+  labelLeft: {
+    right: "115%", // Push to left of node
+    alignItems: "flex-end", // Align text to right (towards node)
   },
-  nodeHeaderRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  labelRight: {
+    left: "115%", // Push to right of node
+    alignItems: "flex-start", // Align text to left (towards node)
   },
   nodeIndex: {
-    fontSize: 12,
-    color: Colors.dark.text_muted,
-  },
-  nodeStatus: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: Colors.dark.text_muted,
-  },
-  nodeStatusUnlocked: {
-    color: Colors.dark.primary,
-  },
-  nodeStatusCompleted: {
-    color: "#22c55e",
+    color: Colors.dark.secondary,
+    fontSize: 10,
+    fontWeight: "bold",
+    marginBottom: 2,
   },
   nodeTitle: {
-    fontSize: 15,
-    fontWeight: "600",
     color: Colors.dark.text,
-    marginTop: 4,
-  },
-  nodeDescription: {
-    fontSize: 13,
-    color: Colors.dark.text_muted,
-    marginTop: 2,
-  },
-  nodeFooterRow: {
-    flexDirection: "row",
-    marginTop: 8,
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  nodeType: {
     fontSize: 12,
-    color: Colors.dark.secondary,
+    fontWeight: "600",
+    textAlign: "center", // Justify handled by flex-start/end
   },
-  playButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+  // 3D Button Styles
+  node3DDepth: {
+    position: "absolute",
+    bottom: 0, 
+    left: 0,
+    right: 0,
+    top: 6, // Shifted down to appear as depth
     borderRadius: 999,
-    backgroundColor: Colors.dark.text,
+    borderWidth: 0, // Depth doesn't strictly need a border if the color is distinct
   },
-  playButtonCompleted: {
-    backgroundColor: Colors.dark.bg_dark,
+  node3DSurface: {
+    flex: 1,
+    borderRadius: 999,
+    borderWidth: 4,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 6, // Initial offset to show the depth layer
   },
-  playButtonText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: Colors.dark.bg_dark,
+  nodeGlare: {
+      position: 'absolute',
+      top: 5,
+      width: '60%',
+      height: '40%',
+      borderRadius: 20,
+      backgroundColor: 'rgba(255,255,255,0.1)',
   },
-  section: {
-    backgroundColor: Colors.dark.bg_dark,
-    borderRadius: 16,
-    borderWidth: 0,
-    borderColor: Colors.dark.border,
-    padding: 16,
-    gap: 12,
+  nodeEmoji: {
+    fontSize: 32,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  infoCard: {
-    borderRadius: 12,
-    padding: 12,
-    backgroundColor: Colors.dark.bg_light,
-    borderColor: Colors.dark.border,
-    borderWidth: 1,
-  },
-  infoTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  infoText: {
-    fontSize: 12,
-    opacity: 0.8,
-  },
-  rewardBar: {
-    width: "90%",
-    backgroundColor: Colors.dark.border,
-    borderRadius: 6,
-    marginTop: 10,
+  pulseCircle: {
+    borderRadius: 999,
+    backgroundColor: "white", // Glow white on primary background
+    zIndex: -1,
   },
 });
+
 
 export default WeeklyEventScreen;
