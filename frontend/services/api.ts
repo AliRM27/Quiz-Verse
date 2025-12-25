@@ -37,7 +37,7 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const config = error.config;
     if (error.code === "ECONNABORTED") {
       // Only retry once
@@ -52,8 +52,9 @@ api.interceptors.response.use(
         "The server took too long to respond. Please try again."
       );
     } else if (error.response?.status === 401) {
+      await SecureStore.deleteItemAsync("token");
+      await SecureStore.deleteItemAsync("sessionToken");
       router.replace("/(auth)");
-      // Handle invalid/expired token, e.g., redirect to login
     } else if (error.response?.status === 403) {
       Alert.alert(
         "Session Ended",
@@ -142,6 +143,16 @@ export const completeWeeklyEventNode = async (
       score: 100,
       ...payload,
     });
+    return res.data;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
+export const fetchWeeklyNodeQuestions = async (nodeIndex: number) => {
+  try {
+    const res = await api.get(`api/events/weekly/node/${nodeIndex}/questions`);
     return res.data;
   } catch (err) {
     console.log(err);

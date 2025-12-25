@@ -703,6 +703,7 @@ export default function Index() {
                           fontSize: 20,
                           textAlign: "center",
                         },
+                        isSmallPhone && { fontSize: 16 },
                         o.text["en"] === "False" && {
                           color: Colors.dark.danger,
                         },

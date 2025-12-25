@@ -290,6 +290,12 @@ const Result = ({
         }}
       >
         <View style={{ alignItems: "center" }}>
+          <Text style={[styles.txt, { fontSize: 25, fontWeight: "bold" }]}>
+            {quiz.title}
+          </Text>
+          <Text style={[styles.txt_muted, { fontSize: 15, marginTop: 10 }]}>
+            {t(quizProgress.difficulty)}
+          </Text>
           <View style={{ alignItems: "center", flexDirection: "row", gap: 30 }}>
             <View
               style={{
@@ -316,13 +322,6 @@ const Result = ({
               </Text>
             </View>
           </View>
-
-          <Text style={[styles.txt, { fontSize: 25, fontWeight: "bold" }]}>
-            {quiz.title}
-          </Text>
-          <Text style={[styles.txt_muted, { fontSize: 15, marginTop: 10 }]}>
-            {t(quizProgress.difficulty)}
-          </Text>
         </View>
         <View
           style={{

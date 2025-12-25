@@ -7,6 +7,7 @@ import {
   ScrollView,
   Dimensions,
   LayoutChangeEvent,
+  RefreshControl,
 } from "react-native";
 import {
   WeeklyEventResponse,
@@ -267,6 +268,7 @@ const WeeklyEventScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingVertical: 50 }}
         style={{ width: "100%" }}
+        // refreshControl={<RefreshControl refreshing={isLoading} onRefresh={onRefresh} />}
       >
         <View
           style={{ height: totalHeight, width: "100%", position: "relative" }}
@@ -294,7 +296,7 @@ const WeeklyEventScreen: React.FC = () => {
             {/* Draw the full path first (background track) */}
             <Path
               d={journeyPath}
-              stroke={Colors.dark.border}
+              stroke={Colors.dark.border_muted}
               strokeWidth={14}
               fill="none"
               strokeLinecap="round"
@@ -305,7 +307,7 @@ const WeeklyEventScreen: React.FC = () => {
                      so for now let's just color the whole line slightly or use segments.
                      Refinement: Draw individual segments to color Completed vs Locked differently?
                   */}
-            {data.nodes.map((node, i) => {
+            {data.nodes.map((_, i) => {
               if (i === 0) return null;
               const prevNode = data.nodes[i - 1];
               // Connect prevNode to currNode
@@ -323,7 +325,7 @@ const WeeklyEventScreen: React.FC = () => {
                 <Path
                   key={`path-${i}`}
                   d={segmentPath}
-                  stroke={isPathActive ? Colors.dark.primary : "transparent"} // Colored overlay
+                  stroke={isPathActive ? Colors.dark.info : "transparent"} // Colored overlay
                   strokeWidth={4}
                   fill="none"
                 />

@@ -28,8 +28,8 @@ import SliderComponent from "@/components/ui/SliderComponent";
 import * as Haptics from "expo-haptics";
 import Right from "@/assets/svgs/rightAnswers.svg";
 import Wrong from "@/assets/svgs/wrongAnswers.svg";
-import Trophy from "@/assets/svgs/currencyTropht.svg";
-import Gem from "@/assets/svgs/currencyDiamond.svg";
+import Trophy from "@/assets/svgs/trophy.svg";
+import Gem from "@/assets/svgs/gem.svg";
 import LottieView from "lottie-react-native";
 
 const DailyQuiz = () => {
@@ -218,7 +218,6 @@ const DailyQuiz = () => {
           paddingHorizontal: 15,
           backgroundColor: "#131313",
           height: "100%",
-          paddingTop: 40,
         }}
       >
         {/* Header */}
@@ -271,7 +270,7 @@ const DailyQuiz = () => {
             <View
               style={{ alignItems: "center", flexDirection: "row", gap: 10 }}
             >
-              <Trophy />
+              <Trophy color={Colors.dark.secondary} width={25} height={25} />
               <Text style={[styles.txt, { fontSize: 18, fontWeight: "700" }]}>
                 +{result.rewards.trophies}
               </Text>
@@ -279,7 +278,7 @@ const DailyQuiz = () => {
             <View
               style={{ alignItems: "center", flexDirection: "row", gap: 10 }}
             >
-              <Gem />
+              <Gem color={Colors.dark.primary} width={25} height={25} />
               <Text style={[styles.txt, { fontSize: 18, fontWeight: "700" }]}>
                 +{result.rewards.gems}
               </Text>
@@ -845,6 +844,8 @@ const DailyQuiz = () => {
               flexDirection: "row",
               justifyContent: "center",
               gap: 10,
+              alignItems: "center",
+              height: "100%",
             },
             isSmallPhone && {
               flexWrap: "wrap",

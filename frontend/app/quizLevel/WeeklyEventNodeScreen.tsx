@@ -14,7 +14,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { completeWeeklyEventNode } from "@/services/api";
 import { Colors } from "@/constants/Colors";
 import { REGULAR_FONT } from "@/constants/Styles";
-import ArrBack from "@/components/ui/ArrBack";
 
 import { LineDashed } from "@/components/ui/Line";
 import Trophy from "@/assets/svgs/trophy.svg";
@@ -23,19 +22,29 @@ import Timer from "@/assets/svgs/timer.svg"; // Assuming we have this or similar
 import { useState } from "react";
 
 import { Feather } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 // Duplicated mapping for now
 const getIconName = (type?: string): keyof typeof Feather.glyphMap => {
   switch (type) {
-    case "mini_quiz": return "cpu";
-    case "time_challenge": return "zap";
-    case "true_false_sprint": return "check-circle";
-    case "survival": return "shield";
-    case "mixed_gauntlet": return "shuffle";
-    case "emoji_puzzle": return "smile";
-    case "quote_guess": return "message-square";
-    case "vote": return "thumbs-up";
-    default: return "play";
+    case "mini_quiz":
+      return "cpu";
+    case "time_challenge":
+      return "zap";
+    case "true_false_sprint":
+      return "check-square";
+    case "survival":
+      return "shield";
+    case "mixed_gauntlet":
+      return "shuffle";
+    case "emoji_puzzle":
+      return "smile";
+    case "quote_guess":
+      return "message-square";
+    case "vote":
+      return "thumbs-up";
+    default:
+      return "play";
   }
 };
 
@@ -45,37 +54,47 @@ import ProgressBar from "@/components/animatinos/progressBar";
 // ...
 
 const WeeklyEventNodeScreen: React.FC = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { 
-    nodeIndex, nodeType, nodeTitle, nodeDescription, nodeIcon, 
-    nodeReward, nodeConfig, questionsCorrect, trophiesCollected 
+  const {
+    nodeIndex,
+    nodeType,
+    nodeTitle,
+    nodeDescription,
+    nodeIcon,
+    nodeReward,
+    nodeConfig,
+    questionsCorrect,
+    trophiesCollected,
   } = useLocalSearchParams<{
-      nodeIndex?: string;
-      nodeType?: string;
-      nodeTitle?: string;
-      nodeDescription?: string;
-      nodeIcon?: string;
-      nodeReward?: string;
-      nodeConfig?: string;
-      questionsCorrect?: string;
-      trophiesCollected?: string;
-    }>();
+    nodeIndex?: string;
+    nodeType?: string;
+    nodeTitle?: string;
+    nodeDescription?: string;
+    nodeIcon?: string;
+    nodeReward?: string;
+    nodeConfig?: string;
+    questionsCorrect?: string;
+    trophiesCollected?: string;
+  }>();
 
   // Parse JSON params (with safety)
   const nodeDataResponse = React.useMemo(() => {
-     try {
-       return {
-         reward: nodeReward ? JSON.parse(nodeReward as string) : null,
-         config: nodeConfig ? JSON.parse(nodeConfig as string) : null
-       }
-     } catch (e) {
-       return { reward: null, config: null };
-     }
+    try {
+      return {
+        reward: nodeReward ? JSON.parse(nodeReward as string) : null,
+        config: nodeConfig ? JSON.parse(nodeConfig as string) : null,
+      };
+    } catch (e) {
+      return { reward: null, config: null };
+    }
   }, [nodeReward, nodeConfig]);
 
   const resolvedNodeIndex = Number(nodeIndex ?? 0);
   const resolvedNodeTitle = nodeTitle ?? "Weekly Event Node";
 
+  /* 
+  // Mutation removed as completion is handled in Game Screen
   const {
     mutate: completeNode,
     isPending,
@@ -87,11 +106,27 @@ const WeeklyEventNodeScreen: React.FC = () => {
       router.back();
     },
   });
+  */
+  const [isPending, setIsPending] = useState(false); // Mock for UI consistency if needed or just remove loading state usage
+  const error: any = null;
 
   const handleStart = () => {
-    completeNode();
+    // Navigate to Game Screen
+    setIsPending(true);
+    // Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); // Ensure Haptics import or skip if consistent
+    // Just navigate
+    router.replace({
+      pathname: "/quizLevel/weekly/[nodeIndex]",
+      params: {
+        nodeIndex: resolvedNodeIndex,
+        nodeTitle: resolvedNodeTitle,
+        nodeType: nodeType,
+      },
+    });
+
+    setTimeout(() => setIsPending(false), 1000);
   };
-  
+
   const iconName = getIconName(nodeType);
 
   return (
@@ -100,6 +135,7 @@ const WeeklyEventNodeScreen: React.FC = () => {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       collapsable={false}
+      contentInsetAdjustmentBehavior="automatic"
     >
       <View style={styles.iconContainer}>
         <Feather name={iconName} size={48} color={Colors.dark.text} />
@@ -119,57 +155,78 @@ const WeeklyEventNodeScreen: React.FC = () => {
       <View style={styles.chartsContainer}>
         {/* Progress Card (Circular) */}
         <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>PROGRESS</Text>
+          <Text style={styles.chartTitle}>{t("progress")}</Text>
           <LineDashed />
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop:10 }}>
-             <CircularProgress
-                progress={
-                   Math.floor(
-                     ((Number(questionsCorrect) || 0) / (nodeDataResponse.config?.quizConfig?.totalQuestions || 10)) * 100
-                   )
-                }
-                size={60}
-                strokeWidth={3}
-                fontSize={14}
-             />
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              marginTop: 10,
+            }}
+          >
+            <CircularProgress
+              progress={Math.floor(
+                ((Number(questionsCorrect) || 0) /
+                  (nodeDataResponse.config?.quizConfig?.totalQuestions || 10)) *
+                  100
+              )}
+              size={50}
+              strokeWidth={3}
+              fontSize={12}
+            />
           </View>
         </View>
 
         {/* Rewards Card (Linear) */}
         <View style={styles.chartCard}>
-          <Text style={styles.chartTitle}>REWARDS</Text>
+          <Text style={styles.chartTitle}>{t("rewards")}</Text>
           <LineDashed />
-          <View style={{ width: '100%', marginTop: 20, backgroundColor: Colors.dark.border_muted, borderRadius: 10 }}>
-             <ProgressBar
-               color={Colors.dark.secondary}
-               progress={Number(trophiesCollected) || 0}
-               total={(nodeDataResponse.reward?.trophies || 0)} // Estimate: Completion + 10 Unlock? Or just Completion
-               height={3}
-             />
+          <View
+            style={{
+              width: "100%",
+              marginTop: 20,
+              backgroundColor: Colors.dark.border_muted,
+              borderRadius: 10,
+            }}
+          >
+            <ProgressBar
+              color={Colors.dark.secondary}
+              progress={Number(trophiesCollected) || 0}
+              total={nodeDataResponse.reward?.trophies || 0} // Estimate: Completion + 10 Unlock? Or just Completion
+              height={3}
+            />
           </View>
-           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 10 }}>
-              <Text style={styles.chartSubtitle}>
-                {Number(trophiesCollected) || 0} / {(nodeDataResponse.reward?.trophies || 0)}
-              </Text>
-              <Trophy width={14} height={14} color={Colors.dark.secondary} />
-           </View>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 5,
+              marginTop: 10,
+            }}
+          >
+            <Text style={styles.chartSubtitle}>
+              {Number(trophiesCollected) || 0} /{" "}
+              {nodeDataResponse.reward?.trophies || 0}
+            </Text>
+          </View>
         </View>
       </View>
 
       {/* Basic Info Row (Difficulty, Duration) */}
       <View style={styles.infoRow}>
-         <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>DIFFICULTY</Text>
-            <Text style={styles.infoValue}>
-               {getDifficultyLabel(nodeDataResponse.config)}
-            </Text>
-         </View>
-         <View style={styles.infoItem}>
-            <Text style={styles.infoLabel}>DURATION</Text>
-            <Text style={styles.infoValue}>
-               {getDurationLabel(nodeDataResponse.config)}
-            </Text>
-         </View>
+        <View style={styles.infoItem}>
+          <Text style={styles.infoLabel}>DIFFICULTY</Text>
+          <Text style={styles.infoValue}>
+            {getDifficultyLabel(nodeDataResponse.config)}
+          </Text>
+        </View>
+        <View style={styles.infoItem}>
+          <Text style={styles.infoLabel}>DURATION</Text>
+          <Text style={styles.infoValue}>
+            {getDurationLabel(nodeDataResponse.config)}
+          </Text>
+        </View>
       </View>
 
       {error && (
@@ -209,7 +266,7 @@ function getDifficultyLabel(config: any) {
     const diff = config.quizConfig.allowedDifficulties[0];
     return diff.charAt(0).toUpperCase() + diff.slice(1);
   }
-  return "Normal";
+  return "—";
 }
 
 function getDurationLabel(config: any) {
@@ -257,7 +314,7 @@ const styles = StyleSheet.create({
     color: Colors.dark.secondary,
     textTransform: "uppercase",
     letterSpacing: 1,
-    backgroundColor: "rgba(255, 177, 31, 0.1)", 
+    backgroundColor: "rgba(255, 177, 31, 0.1)",
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 999,
@@ -274,20 +331,22 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 24,
   },
-  
+
   // Charts
   chartsContainer: {
-    flexDirection: 'row',
-    width: '100%',
+    flexDirection: "row",
+    width: "100%",
     gap: 12,
     marginBottom: 20,
   },
   chartCard: {
     flex: 1,
-    backgroundColor: 'rgba(255,255,255,0.03)',
-    borderRadius: 20,
+    backgroundColor: Colors.dark.bg,
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
+    borderRadius: 25,
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
     gap: 5,
     // Shadow
     shadowColor: "#000",
@@ -297,45 +356,44 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   chartTitle: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: 600,
     color: Colors.dark.text,
     marginBottom: 8,
-    letterSpacing: 1,
+    fontFamily: REGULAR_FONT,
   },
   chartSubtitle: {
     fontSize: 12,
-    color: Colors.dark.text_muted,
-    marginTop: 8,
-    fontWeight: '600'
+    color: Colors.dark.text,
+    fontWeight: "600",
   },
-  
+
   // Info Row
   infoRow: {
-    flexDirection: 'row',
-    width: '100%',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "space-around",
     marginBottom: 20,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: "rgba(255,255,255,0.03)",
     paddingVertical: 12,
     borderRadius: 16,
   },
   infoItem: {
-    alignItems: 'center',
+    alignItems: "center",
     gap: 4,
   },
   infoLabel: {
     fontSize: 10,
     color: Colors.dark.text_muted,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 1,
   },
   infoValue: {
     fontSize: 14,
     color: Colors.dark.text,
-    fontWeight: '600',
+    fontWeight: "600",
   },
-  
+
   error: {
     marginTop: 16,
     color: Colors.dark.danger,
@@ -344,7 +402,7 @@ const styles = StyleSheet.create({
   footer: {
     width: "100%",
     marginTop: "auto", // Push to bottom of flex container
-    paddingTop: 40,    // Space from content above
+    paddingTop: 40, // Space from content above
   },
   button: {
     width: "100%",

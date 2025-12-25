@@ -118,6 +118,10 @@ export default function RootLayout() {
                       sheetElevation: 24,
                     }}
                   />
+                  <Stack.Screen
+                    name="quizLevel/weekly/[nodeIndex]"
+                    options={{ animation: "none", gestureEnabled: false }}
+                  />
                 </Stack>
               </UserProvider>
             </GestureHandlerRootView>
