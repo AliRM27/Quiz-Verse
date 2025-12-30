@@ -10,24 +10,26 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Button,
 } from "react-native";
-import { useEffect, useRef, useState, useCallback } from "react";
-import { HEIGHT, isSmallPhone, layout, myHeight } from "@/constants/Dimensions";
-import { Colors } from "@/constants/Colors";
-import {
-  router,
-  useLocalSearchParams,
-  Stack,
-  useFocusEffect,
-} from "expo-router";
+import React, { useState, useEffect, useCallback } from "react";
+import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Colors } from "@/constants/Colors";
+import { REGULAR_FONT, ITALIC_FONT } from "@/constants/Styles";
+import { isSmallPhone } from "@/constants/Dimensions";
 import {
   fetchWeeklyNodeQuestions,
   completeWeeklyEventNode,
+  submitWeeklyVote,
 } from "@/services/api";
-import BackArr from "@/assets/svgs/backArr.svg";
-import QuizLogo from "@/components/ui/QuizLogo";
 import { useUser } from "@/context/userContext";
+import { useTranslation } from "react-i18next";
+import SliderComponent from "@/components/ui/SliderComponent";
+import * as Haptics from "expo-haptics";
+import Loader from "@/components/ui/Loader";
+import { useSafeAreaBg } from "@/context/safeAreaContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   QUESTION_TYPES,
   DailyAnswerPayload,
@@ -36,13 +38,7 @@ import {
 import Hint from "@/assets/svgs/hint.svg";
 import Heart from "@/assets/svgs/heartQuiz.svg";
 import CircularProgress from "@/components/ui/CircularProgress";
-import { ITALIC_FONT, REGULAR_FONT } from "@/constants/Styles";
 import { languageMap } from "@/utils/i18n";
-import { useTranslation } from "react-i18next";
-import SliderComponent from "@/components/ui/SliderComponent";
-import * as Haptics from "expo-haptics";
-import Loader from "@/components/ui/Loader";
-import { useSafeAreaBg } from "@/context/safeAreaContext";
 import { Feather } from "@expo/vector-icons";
 import Right from "@/assets/svgs/rightAnswers.svg";
 import Wrong from "@/assets/svgs/wrongAnswers.svg";
@@ -74,6 +70,7 @@ export default function WeeklyGameScreen() {
   const { user, refreshUser: refreshUserContext } = useUser();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const {
     data: questionData,
@@ -99,6 +96,11 @@ export default function WeeklyGameScreen() {
   >([]);
   const [completionResult, setCompletionResult] = useState<any>(null);
 
+  // Vote Mode State
+  const [voteSubmitted, setVoteSubmitted] = useState<boolean>(false);
+  const [voteStats, setVoteStats] = useState<any>(null);
+  const [userVote, setUserVote] = useState<string | null>(null);
+
   // --- Game Mode Integration ---
   const resolvedNodeType = (nodeType as WeeklyEventNodeType) || "mini_quiz";
 
@@ -116,6 +118,21 @@ export default function WeeklyGameScreen() {
       );
     },
   });
+  // Pre-process questions if it's vote mode, we might not have 'questions' array in the same way
+  // But our backend for vote returns { type: 'vote', ... }
+  // Let's normalize.
+  const isVoteMode = questionData?.type === "vote";
+
+  // Initialize vote state from backend data if available
+  useEffect(() => {
+    if (isVoteMode && questionData) {
+      if (questionData.userVote) {
+        setVoteSubmitted(true);
+        setUserVote(questionData.userVote);
+        setVoteStats(questionData.stats);
+      }
+    }
+  }, [isVoteMode, questionData]);
 
   if (isLoading || !user) {
     return (
@@ -125,7 +142,7 @@ export default function WeeklyGameScreen() {
     );
   }
 
-  if (error || !questionData?.questions) {
+  if (error || (!questionData?.questions && !isVoteMode)) {
     return (
       <View style={styles.loadingContainer}>
         <Text style={[styles.txt, { color: "white" }]}>
@@ -143,12 +160,59 @@ export default function WeeklyGameScreen() {
     );
   }
 
-  const questions = questionData.questions;
+  const questions = questionData.questions || [];
   const currQuestion = questions[currQuestionIndex];
-  const isLastQuestion = currQuestionIndex === questions.length - 1;
+  const isLastQuestion =
+    questions.length > 0 ? currQuestionIndex === questions.length - 1 : true;
 
   const handleNextButton = async () => {
-    if (questionLoading || status !== "playing") return;
+    if (questionLoading) return; // Allow interaction even if status not playing for vote?
+    // Actually vote mode might not use the game timer hook the same way if it's just a poll.
+    // If it's a "vote" node, we probably just submit and that's it (complete node).
+
+    if (isVoteMode) {
+      if (!selectedAnswer && !userVote) return;
+
+      setQuestionLoading(true);
+      try {
+        // map selected index to option id
+        if (!voteSubmitted) {
+          const optionId = questionData.options[selectedAnswer!].id;
+          const res = await submitWeeklyVote(Number(nodeIndex), optionId);
+          setVoteStats(res.stats);
+          setUserVote(optionId);
+          setVoteSubmitted(true);
+          setQuestionLoading(false);
+          // Don't auto complete yet, let user see stats then press "Next" to finish node?
+          // Or just finish immediately? usually users want to see the poll result.
+          return;
+        } else {
+          // Already submitted, pressing next means finish node
+          const res = await completeWeeklyEventNode(Number(nodeIndex), {
+            score: 100,
+            questionsCorrect: 1,
+          } as any);
+          await queryClient.invalidateQueries({ queryKey: ["weeklyEvent"] });
+          await refreshUserContext();
+          setCompletionResult({
+            ...res,
+            score: 100, // Dummy score for vote
+            questionsCorrect: 1,
+            totalQuestions: 1,
+            rewardsGranted: res.rewardsGranted,
+          });
+          setShowResult(true);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+      } catch (e) {
+        console.error(e);
+        Alert.alert("Error", "Failed to submit vote.");
+        setQuestionLoading(false);
+      }
+      return;
+    }
+
+    if (status !== "playing") return;
 
     // Validation
     if (
@@ -284,7 +348,7 @@ export default function WeeklyGameScreen() {
         style={{
           paddingHorizontal: 15,
           backgroundColor: "#131313",
-          height: "100%",
+          flex: 1,
           gap: 20,
         }}
       >
@@ -305,153 +369,166 @@ export default function WeeklyGameScreen() {
           {nodeTitle || "Weekly Event"}
         </Text>
 
-        {/* Question Card */}
-        <View style={styles.questionCard}>
-          <Text style={styles.questionIndex}>
-            {t("question")} {currQuestionIndex + 1}
-          </Text>
-          <Text style={styles.questionText}>
-            {currQuestion.question[languageMap[user.language]]}
-          </Text>
-        </View>
+        {/* VOTE MODE UI */}
 
-        <ScrollView
-          scrollEnabled={currQuestion.type === QUESTION_TYPES.MC}
-          contentContainerStyle={[
-            { gap: 15, paddingBottom: 20 },
-            currQuestion.type === QUESTION_TYPES.TF && {
-              flexDirection: "row",
-              justifyContent: "center",
-              gap: 10,
-            },
-          ]}
-        >
-          {/* ... Inputs ... */}
-          {currQuestion.type === QUESTION_TYPES.SA && (
-            <TextInput
-              style={styles.textInput}
-              placeholder="Type answer..."
-              placeholderTextColor={Colors.dark.text_muted}
-              value={shortAnswer}
-              onChangeText={setShortAnswer}
-            />
-          )}
-          {/* ... Other inputs ... */}
-          {currQuestion.type === QUESTION_TYPES.NUM && (
-            <SliderComponent
-              value={sliderValue}
-              setValue={setSliderValue}
-              min={currQuestion.range.min}
-              max={currQuestion.range.max}
-              step={currQuestion.range.step}
-            />
-          )}
-          {currQuestion.type === QUESTION_TYPES.MC &&
-            currQuestion.options.map((o: any, idx: number) => {
-              return (
-                <Pressable
-                  key={idx}
-                  style={[
-                    styles.optionButton,
-                    selectedAnswer === idx && {
-                      backgroundColor: "#232423",
-                      borderColor: "#323333",
-                    },
-                    pressedAnswer === idx && {
-                      shadowOpacity: 0,
-                      elevation: 0,
-                    },
-                  ]}
-                  onPressIn={() => setPressedAnswer(idx)}
-                  onPress={() => {
-                    selectedAnswer === idx
-                      ? setSelectedAnswer(null)
-                      : setSelectedAnswer(idx);
-                    Haptics.selectionAsync();
-                  }}
-                  onPressOut={() => setPressedAnswer(null)}
-                >
-                  <Text
-                    style={[
-                      styles.optionText,
-                      { fontSize: 20 },
-                      isSmallPhone && { fontSize: 16 },
-                      pressedAnswer === idx && {
-                        color: Colors.dark.text_muted,
-                      },
-                    ]}
-                  >
-                    {o.text[languageMap[user.language]]}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          {currQuestion.type === QUESTION_TYPES.TF &&
-            currQuestion.options.map((o: any, idx: number) => {
-              return (
-                <Pressable
-                  key={idx}
-                  style={[
-                    {
-                      borderWidth: 1,
-                      backgroundColor: Colors.dark.bg_light,
-                      borderColor: "#1F1D1D",
-                      padding: 15,
-                      width: "45%",
-                      borderRadius: 50,
-                      elevation: 7,
-                      shadowColor: "black",
-                      shadowOffset: { width: 0, height: 4 },
-                      shadowOpacity: 0.5,
-                      shadowRadius: 1,
-                    },
-                    pressedAnswer === idx && {
-                      shadowOpacity: 0,
-                      elevation: 0,
-                    },
-                    selectedAnswer === idx && {
-                      backgroundColor: "#232423",
-                      borderColor: "#323333",
-                    },
-                  ]}
-                  onPressIn={() => setPressedAnswer(idx)}
-                  onPress={() => {
-                    selectedAnswer === idx
-                      ? setSelectedAnswer(null)
-                      : setSelectedAnswer(idx);
-                    Haptics.selectionAsync();
-                  }}
-                  onPressOut={() => setPressedAnswer(null)}
-                >
-                  <Text
-                    style={[
-                      {
-                        color: Colors.dark.success,
-                        fontSize: 20,
-                        textAlign: "center",
-                        fontFamily: ITALIC_FONT,
-                      },
-                      o.text["en"] === "False" && {
-                        color: Colors.dark.danger,
-                      },
-                      isSmallPhone && { fontSize: 16 },
-                      pressedAnswer === idx &&
-                        o.text["en"] === "False" && {
-                          color: Colors.dark.danger_muted,
-                        },
-                      pressedAnswer === idx &&
-                        o.text["en"] === "True" && {
-                          color: Colors.dark.success_muted,
-                        },
-                    ]}
-                  >
-                    {o.text[languageMap[user.language]]}
-                  </Text>
-                </Pressable>
-              );
-            })}
-        </ScrollView>
+        {nodeType === "vote" ? (
+          <VoteModeView
+            questionData={currQuestion}
+            onAnswer={handleAnswer}
+            onVote={isVoteMode}
+            voteSubmitted={voteSubmitted}
+            isVoteMode={isVoteMode}
+            questionIndex={currQuestionIndex}
+            totalQuestions={questions.length}
+          />
+        ) : (
+          <>
+            <View style={styles.questionCard}>
+              <Text style={styles.questionIndex}>
+                {t("question")} {currQuestionIndex + 1}
+              </Text>
+              <Text style={styles.questionText}>
+                {currQuestion.question[languageMap[user.language]]}
+              </Text>
+            </View>
 
+            <ScrollView
+              scrollEnabled={currQuestion.type === QUESTION_TYPES.MC}
+              contentContainerStyle={[
+                { gap: 15 },
+                currQuestion.type === QUESTION_TYPES.TF && {
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  gap: 10,
+                },
+              ]}
+            >
+              {currQuestion.type === QUESTION_TYPES.SA && (
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Type answer..."
+                  placeholderTextColor={Colors.dark.text_muted}
+                  value={shortAnswer}
+                  onChangeText={setShortAnswer}
+                />
+              )}
+
+              {currQuestion.type === QUESTION_TYPES.NUM && (
+                <SliderComponent
+                  value={sliderValue}
+                  setValue={setSliderValue}
+                  min={currQuestion.range.min}
+                  max={currQuestion.range.max}
+                  step={currQuestion.range.step}
+                />
+              )}
+              {currQuestion.type === QUESTION_TYPES.MC &&
+                currQuestion.options.map((o: any, idx: number) => {
+                  return (
+                    <Pressable
+                      key={idx}
+                      style={[
+                        styles.optionButton,
+                        selectedAnswer === idx && {
+                          backgroundColor: "#232423",
+                          borderColor: "#323333",
+                        },
+                        pressedAnswer === idx && {
+                          shadowOpacity: 0,
+                          elevation: 0,
+                        },
+                      ]}
+                      onPressIn={() => setPressedAnswer(idx)}
+                      onPress={() => {
+                        selectedAnswer === idx
+                          ? setSelectedAnswer(null)
+                          : setSelectedAnswer(idx);
+                        Haptics.selectionAsync();
+                      }}
+                      onPressOut={() => setPressedAnswer(null)}
+                    >
+                      <Text
+                        style={[
+                          styles.optionText,
+                          { fontSize: 20 },
+                          isSmallPhone && { fontSize: 16 },
+                          pressedAnswer === idx && {
+                            color: Colors.dark.text_muted,
+                          },
+                        ]}
+                      >
+                        {o.text[languageMap[user.language]]}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              {currQuestion.type === QUESTION_TYPES.TF &&
+                currQuestion.options.map((o: any, idx: number) => {
+                  return (
+                    <Pressable
+                      key={idx}
+                      style={[
+                        {
+                          borderWidth: 1,
+                          backgroundColor: Colors.dark.bg_light,
+                          borderColor: "#1F1D1D",
+                          padding: 15,
+                          width: "45%",
+                          borderRadius: 50,
+                          elevation: 7,
+                          shadowColor: "black",
+                          shadowOffset: { width: 0, height: 4 },
+                          shadowOpacity: 0.5,
+                          shadowRadius: 1,
+                        },
+                        pressedAnswer === idx && {
+                          shadowOpacity: 0,
+                          elevation: 0,
+                        },
+                        selectedAnswer === idx && {
+                          backgroundColor: "#232423",
+                          borderColor: "#323333",
+                        },
+                      ]}
+                      onPressIn={() => setPressedAnswer(idx)}
+                      onPress={() => {
+                        selectedAnswer === idx
+                          ? setSelectedAnswer(null)
+                          : setSelectedAnswer(idx);
+                        Haptics.selectionAsync();
+                      }}
+                      onPressOut={() => setPressedAnswer(null)}
+                    >
+                      <Text
+                        style={[
+                          {
+                            color: Colors.dark.success,
+                            fontSize: 20,
+                            textAlign: "center",
+                            fontFamily: ITALIC_FONT,
+                          },
+                          o.text["en"] === "False" && {
+                            color: Colors.dark.danger,
+                          },
+                          isSmallPhone && { fontSize: 16 },
+                          pressedAnswer === idx &&
+                            o.text["en"] === "False" && {
+                              color: Colors.dark.danger_muted,
+                            },
+                          pressedAnswer === idx &&
+                            o.text["en"] === "True" && {
+                              color: Colors.dark.success_muted,
+                            },
+                        ]}
+                      >
+                        {o.text[languageMap[user.language]]}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+            </ScrollView>
+          </>
+        )}
         <View
           style={{
             flexDirection: "row",
@@ -463,26 +540,33 @@ export default function WeeklyGameScreen() {
           <TouchableOpacity
             activeOpacity={0.6}
             disabled={
-              !(
-                currQuestionIndex <= questions.length - 1 &&
-                (selectedAnswer !== null ||
-                  shortAnswer.trim() !== "" ||
-                  sliderValue !== -1)
-              ) || questionLoading
+              (!isVoteMode &&
+                !(
+                  currQuestionIndex <= questions.length - 1 &&
+                  (selectedAnswer !== null ||
+                    shortAnswer.trim() !== "" ||
+                    sliderValue !== -1)
+                )) ||
+              (isVoteMode && !selectedAnswer && !voteSubmitted) || // disable if vote mode and nothing selected/voted
+              questionLoading
             }
             onPress={() => handleNextButton()}
           >
             <CircularProgress
               size={isSmallPhone ? 75 : 80}
               strokeWidth={3}
-              progress={currQuestionIndex + 1}
+              progress={
+                isVoteMode ? (voteSubmitted ? 1 : 0) : currQuestionIndex + 1
+              }
               fontSize={isSmallPhone ? 16 : 18}
               percent={false}
-              total={questions.length}
+              total={isVoteMode ? 1 : questions.length}
               arrow={
-                (selectedAnswer !== null ? true : false) ||
-                shortAnswer.trim() !== "" ||
-                sliderValue !== -1
+                isVoteMode
+                  ? selectedAnswer !== null || voteSubmitted
+                  : (selectedAnswer !== null ? true : false) ||
+                    shortAnswer.trim() !== "" ||
+                    sliderValue !== -1
               }
             />
           </TouchableOpacity>
@@ -518,6 +602,102 @@ const ModeHeader = ({ nodeType, timeLeft, lives, maxLives }: any) => {
     );
   }
   return null;
+};
+
+// Vote Component
+const VoteModeView = ({
+  questionData,
+  selectedAnswer,
+  setSelectedAnswer,
+  voteSubmitted,
+  userVote,
+  voteStats,
+}: any) => {
+  const { t } = useTranslation();
+
+  return (
+    <>
+      <View style={styles.questionCard}>
+        <Text style={styles.questionText}>{questionData.question}</Text>
+      </View>
+      <ScrollView contentContainerStyle={{ gap: 15, paddingBottom: 20 }}>
+        {questionData.options.map((opt: any, idx: number) => {
+          const isSelected = selectedAnswer === idx;
+          const isUserChoice = userVote === opt.id;
+          const percent =
+            voteSubmitted && voteStats && voteStats[opt.id]
+              ? voteStats[opt.id].percentage
+              : 0;
+
+          return (
+            <Pressable
+              key={opt.id}
+              disabled={voteSubmitted}
+              style={[
+                styles.optionButton,
+                isSelected &&
+                  !voteSubmitted && {
+                    backgroundColor: "#232423",
+                    borderColor: "#323333",
+                  },
+                // Highlight the one user voted for if submitted
+                isUserChoice && {
+                  borderColor: Colors.dark.success,
+                  borderWidth: 2,
+                },
+              ]}
+              onPress={() => {
+                if (!voteSubmitted) {
+                  setSelectedAnswer(idx === selectedAnswer ? null : idx);
+                  Haptics.selectionAsync();
+                }
+              }}
+            >
+              {/* Background progress bar */}
+              {voteSubmitted && (
+                <View
+                  style={{
+                    marginTop: "auto",
+                    paddingBottom: 20,
+                    width: `${percent}%`,
+                    backgroundColor: isUserChoice
+                      ? "rgba(76, 175, 80, 0.2)"
+                      : "rgba(255, 255, 255, 0.1)",
+                    borderRadius: 50,
+                  }}
+                />
+              )}
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={[
+                    styles.optionText,
+                    { fontSize: 18, zIndex: 1 },
+                    isSmallPhone && { fontSize: 16 },
+                  ]}
+                >
+                  {opt.label}
+                </Text>
+
+                {voteSubmitted && (
+                  <Text style={{ color: "white", fontWeight: "bold" }}>
+                    {percent}%
+                  </Text>
+                )}
+              </View>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </>
+  );
 };
 
 // Inline Result Component
@@ -727,7 +907,12 @@ const styles = StyleSheet.create({
   },
 
   // Method result styles
-  resultContainer: { flex: 1, backgroundColor: "#131313" },
+  resultContainer: {
+    alignItems: "center",
+    height: "100%",
+    gap: 20,
+    backgroundColor: "#131313",
+  },
   resultTitle: {
     fontSize: 28,
     fontFamily: REGULAR_FONT,

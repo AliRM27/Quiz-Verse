@@ -115,16 +115,23 @@ const WeeklyEventNodeScreen: React.FC = () => {
     setIsPending(true);
     // Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); // Ensure Haptics import or skip if consistent
     // Just navigate
-    router.replace({
-      pathname: "/quizLevel/weekly/[nodeIndex]",
-      params: {
-        nodeIndex: resolvedNodeIndex,
-        nodeTitle: resolvedNodeTitle,
-        nodeType: nodeType,
-      },
-    });
 
-    setTimeout(() => setIsPending(false), 1000);
+    router.dismiss();
+
+    setTimeout(
+      () =>
+        router.push({
+          pathname: "/quizLevel/weekly/[nodeIndex]",
+          params: {
+            nodeIndex: resolvedNodeIndex,
+            nodeTitle: resolvedNodeTitle,
+            nodeType: nodeType,
+          },
+        }),
+      0
+    );
+
+    setIsPending(false);
   };
 
   const iconName = getIconName(nodeType);

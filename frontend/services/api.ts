@@ -160,6 +160,18 @@ export const fetchWeeklyNodeQuestions = async (nodeIndex: number) => {
   }
 };
 
+export const submitWeeklyVote = async (nodeIndex: number, optionId: string) => {
+  try {
+    const res = await api.post(`api/events/weekly/node/${nodeIndex}/vote`, {
+      optionId,
+    });
+    return res.data;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 export const fetchUserProgress = async () => {
   try {
     const res = await api.get("api/users/me/progress");
