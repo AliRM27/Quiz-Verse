@@ -40,10 +40,15 @@ import Heart from "@/assets/svgs/heartQuiz.svg";
 import CircularProgress from "@/components/ui/CircularProgress";
 import { languageMap } from "@/utils/i18n";
 import { Feather } from "@expo/vector-icons";
+import {
+  CircleCheckBig,
+  BookOpenCheck,
+  ClipboardCheck,
+} from "lucide-react-native";
 import Right from "@/assets/svgs/rightAnswers.svg";
 import Wrong from "@/assets/svgs/wrongAnswers.svg";
-import Trophy from "@/assets/svgs/currencyTropht.svg";
-import Gem from "@/assets/svgs/currencyDiamond.svg";
+import Trophy from "@/assets/svgs/trophy.svg";
+import Gem from "@/assets/svgs/gem.svg";
 
 // Import custom hook
 import { useGameMode } from "@/hooks/useGameMode";
@@ -104,20 +109,23 @@ export default function WeeklyGameScreen() {
   // --- Game Mode Integration ---
   const resolvedNodeType = (nodeType as WeeklyEventNodeType) || "mini_quiz";
 
+  const handleGameOver = useCallback((reason: "time" | "lives") => {
+    Alert.alert(
+      reason === "time" ? "Time's Up!" : "Game Over!",
+      reason === "time" ? "You ran out of time." : "You ran out of lives.",
+      [{ text: "Try Again", onPress: () => router.back() }]
+    );
+  }, []);
+
   const { status, timeLeft, lives, handleAnswer, stopGame } = useGameMode({
     nodeType: resolvedNodeType,
     config: {
       timeLimitSeconds: questionData?.timeLimit || 60,
       maxLives: 3,
     },
-    onGameOver: (reason) => {
-      Alert.alert(
-        reason === "time" ? "Time's Up!" : "Game Over!",
-        reason === "time" ? "You ran out of time." : "You ran out of lives.",
-        [{ text: "Try Again", onPress: () => router.back() }]
-      );
-    },
+    onGameOver: handleGameOver,
   });
+
   // Pre-process questions if it's vote mode, we might not have 'questions' array in the same way
   // But our backend for vote returns { type: 'vote', ... }
   // Let's normalize.
@@ -161,9 +169,13 @@ export default function WeeklyGameScreen() {
   }
 
   const questions = questionData.questions || [];
-  const currQuestion = questions[currQuestionIndex];
+  const currQuestion = isVoteMode
+    ? questionData // In vote mode, the top level object has question/options
+    : questions[currQuestionIndex];
   const isLastQuestion =
-    questions.length > 0 ? currQuestionIndex === questions.length - 1 : true;
+    !isVoteMode && questions.length > 0
+      ? currQuestionIndex === questions.length - 1
+      : true;
 
   const handleNextButton = async () => {
     if (questionLoading) return; // Allow interaction even if status not playing for vote?
@@ -387,6 +399,19 @@ export default function WeeklyGameScreen() {
               <Text style={styles.questionIndex}>
                 {t("question")} {currQuestionIndex + 1}
               </Text>
+              {currQuestion.sourceQuizTitle && (
+                <Text
+                  style={{
+                    color: Colors.dark.text_muted,
+                    fontSize: 14,
+                    textAlign: "center",
+                    marginBottom: 10,
+                    fontFamily: ITALIC_FONT,
+                  }}
+                >
+                  {currQuestion.sourceQuizTitle}
+                </Text>
+              )}
               <Text style={styles.questionText}>
                 {currQuestion.question[languageMap[user.language]]}
               </Text>
@@ -709,95 +734,284 @@ const WeeklyResult = ({
   nodeTitle,
   t,
 }: any) => {
+  // Calculate total rewards
+  const trophies = (result.rewardsGranted || []).reduce(
+    (acc: number, r: any) => acc + (r.reward?.trophies || 0),
+    0
+  );
+  const gems = (result.rewardsGranted || []).reduce(
+    (acc: number, r: any) => acc + (r.reward?.gems || 0),
+    0
+  );
+
   return (
-    <View style={styles.resultContainer}>
-      <ScrollView
-        contentContainerStyle={{ paddingBottom: 60, alignItems: "center" }}
-      >
-        <Text style={styles.resultTitle}>
-          {t("weeklyEventCompleted") || "Challenge Complete!"}
+    <View
+      style={{
+        paddingHorizontal: 15,
+        backgroundColor: "#131313",
+        height: "100%",
+        paddingTop: 20,
+        paddingBottom: 20,
+      }}
+    >
+      {/* Fixed Header Content */}
+      <View>
+        <Text
+          style={[
+            styles.txt,
+            {
+              fontWeight: "700",
+              fontSize: 24,
+              textAlign: "center",
+              marginBottom: 20,
+              marginTop: 10,
+            },
+          ]}
+        >
+          {nodeTitle || t("weeklyEventCompleted") || "Weekly Event Result"}
         </Text>
 
-        {/* Score Summary */}
-        <View style={styles.resultCard}>
-          <Text style={styles.resultSubtitle}>
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: Colors.dark.border_muted,
+            backgroundColor: Colors.dark.bg_light,
+            borderRadius: 20,
+            padding: 20,
+            marginBottom: 20,
+          }}
+        >
+          <Text
+            style={[
+              styles.txt,
+              {
+                fontSize: 17,
+                textAlign: "center",
+                color: Colors.dark.text,
+                fontWeight: "600",
+              },
+            ]}
+          >
             {result.questionsCorrect === result.totalQuestions
               ? t("perfectScore") || "Perfect Score!"
               : t("wellDone") || "Well Done!"}
           </Text>
 
-          <View style={styles.rewardRow}>
-            <View style={styles.rewardItem}>
-              <Trophy width={24} height={24} />
-              <Text style={styles.rewardText}>
-                +{" "}
-                {(result.rewardsGranted || []).reduce(
-                  (acc: number, r: any) => acc + (r.reward?.trophies || 0),
-                  0
-                )}
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-around",
+              marginTop: 35,
+            }}
+          >
+            <View
+              style={{ alignItems: "center", flexDirection: "row", gap: 10 }}
+            >
+              <Trophy color={Colors.dark.secondary} width={25} height={25} />
+              <Text style={[styles.txt, { fontSize: 18, fontWeight: "700" }]}>
+                +{trophies}
               </Text>
             </View>
-            <View style={styles.rewardItem}>
-              <Gem width={24} height={24} />
-              <Text style={styles.rewardText}>
-                +{" "}
-                {(result.rewardsGranted || []).reduce(
-                  (acc: number, r: any) => acc + (r.reward?.gems || 0),
-                  0
-                )}
+            <View
+              style={{ alignItems: "center", flexDirection: "row", gap: 10 }}
+            >
+              <Gem color={Colors.dark.primary} width={25} height={25} />
+              <Text style={[styles.txt, { fontSize: 18, fontWeight: "700" }]}>
+                +{gems}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* Stats Row */}
-        <View style={styles.statsRow}>
-          <View style={[styles.statBox, { borderColor: Colors.dark.success }]}>
-            <Text style={styles.statNumber}>{result.questionsCorrect}</Text>
-            <Right width={16} height={16} />
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            width: "100%",
+            justifyContent: "space-evenly",
+            marginBottom: 20,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: Colors.dark.success,
+              padding: 10,
+              paddingHorizontal: 15,
+              justifyContent: "space-between",
+              width: 100,
+              borderRadius: 10,
+              backgroundColor: Colors.dark.bg_light,
+            }}
+          >
+            <Text style={[styles.txt, { fontSize: 17, fontWeight: "700" }]}>
+              {result.questionsCorrect}
+            </Text>
+            <Right width={15} height={15} />
           </View>
-          <View style={[styles.statBox, { borderColor: "#920202" }]}>
-            <Text style={styles.statNumber}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: "#920202",
+              padding: 10,
+              paddingHorizontal: 15,
+              justifyContent: "space-between",
+              width: 100,
+              borderRadius: 10,
+              backgroundColor: Colors.dark.bg_light,
+            }}
+          >
+            <Text style={[styles.txt, { fontSize: 17, fontWeight: "700" }]}>
               {result.totalQuestions - result.questionsCorrect}
             </Text>
-            <Wrong width={16} height={16} />
+            <Wrong width={15} height={15} />
           </View>
         </View>
+      </View>
 
-        {/* Wrong Questions Logic reused */}
-        {wrongQuestions.length > 0 && (
-          <View style={{ width: "100%", paddingHorizontal: 20, marginTop: 20 }}>
-            <Text style={styles.sectionHeader}>{t("questionsMissed")}</Text>
+      {/* Scrollable Wrong Questions List */}
+      {wrongQuestions.length > 0 ? (
+        <View style={{ flex: 1, width: "100%" }}>
+          <Text
+            style={[
+              styles.txt,
+              {
+                fontSize: 16,
+                fontWeight: "600",
+                marginBottom: 20,
+                textAlign: "center",
+              },
+            ]}
+          >
+            {t("questionsMissed")}
+          </Text>
+
+          <ScrollView
+            contentContainerStyle={{ gap: 12, paddingBottom: 20 }}
+            showsVerticalScrollIndicator={false}
+          >
             {wrongQuestions.map((item: any, idx: number) => (
-              <View key={idx} style={styles.wrongQuestionCard}>
-                <Text style={styles.wrongQuestionText}>
+              <View
+                key={idx}
+                style={{
+                  borderRadius: 14,
+                  backgroundColor: Colors.dark.bg_light,
+                  padding: 12,
+                  borderWidth: 1,
+                  borderColor: "#1F1D1D",
+                }}
+              >
+                <Text
+                  style={[
+                    {
+                      fontFamily: ITALIC_FONT,
+                      fontSize: 15,
+                      marginBottom: 15,
+                      fontWeight: "600",
+                      color: Colors.dark.text,
+                    },
+                  ]}
+                >
                   {item.question.question[languageMap[user.language]]}
                 </Text>
-                {/* Simplified Answer Display */}
-                <Text style={styles.answerLabel}>
+
+                <Text
+                  style={[
+                    styles.txt,
+                    {
+                      fontSize: 14,
+                      marginBottom: 10,
+                      color: Colors.dark.text_muted,
+                    },
+                  ]}
+                >
                   {t("yourAnswer")}:{" "}
-                  <Text style={{ color: Colors.dark.danger }}>
+                  <Text
+                    style={{
+                      fontFamily: ITALIC_FONT,
+                      color: Colors.dark.danger,
+                    }}
+                  >
                     {getWrongAnswerLabel(item, user.language)}
                   </Text>
                 </Text>
-                <Text style={styles.answerLabel}>
+                <Text
+                  style={[
+                    styles.txt,
+                    {
+                      fontSize: 14,
+                      color: Colors.dark.text_muted,
+                    },
+                  ]}
+                >
                   {t("correctAnswer")}:{" "}
-                  <Text style={{ color: Colors.dark.success }}>
+                  <Text
+                    style={{
+                      fontFamily: ITALIC_FONT,
+                      color: Colors.dark.success,
+                    }}
+                  >
                     {getCorrectAnswerLabel(item, user.language)}
                   </Text>
                 </Text>
               </View>
             ))}
-          </View>
-        )}
+          </ScrollView>
+        </View>
+      ) : null}
 
-        <TouchableOpacity
-          style={styles.homeButton}
-          onPress={() => router.back()}
+      {/* All Correct Message */}
+      {wrongQuestions.length === 0 && (
+        <View
+          style={{
+            marginTop: 70,
+            alignItems: "center",
+            gap: 30,
+          }}
         >
-          <Text style={styles.homeButtonText}>Return to Map</Text>
-        </TouchableOpacity>
-      </ScrollView>
+          <ClipboardCheck size={64} color={Colors.dark.text} strokeWidth={1} />
+          <Text
+            style={[
+              styles.txt,
+              {
+                fontSize: 18,
+                textAlign: "center",
+                color: Colors.dark.text_muted,
+              },
+            ]}
+          >
+            {t("allCorrect") || "All answers correct!"}
+          </Text>
+        </View>
+      )}
+
+      {/* Button fixed at bottom */}
+      <TouchableOpacity
+        style={{
+          marginTop: "auto",
+          width: "100%",
+          backgroundColor: Colors.dark.text,
+          borderRadius: 999,
+          paddingVertical: 15,
+          alignItems: "center",
+          paddingHorizontal: 40,
+        }}
+        onPress={() => router.back()}
+      >
+        <Text
+          style={{
+            color: Colors.dark.bg_dark,
+            fontWeight: "600",
+            fontSize: 18,
+          }}
+        >
+          Return to Map
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -815,6 +1029,9 @@ function getWrongAnswerLabel(item: any, lang: string) {
 }
 
 function getCorrectAnswerLabel(item: any, lang: string) {
+  if (item.question.type === QUESTION_TYPES.NUM) {
+    return item.correctAnswer.numericAnswer;
+  }
   if (item.correctAnswer.correctTextEn) return item.correctAnswer.correctTextEn;
   if (item.correctAnswer.correctOptionIndex !== undefined) {
     return item.question.options[item.correctAnswer.correctOptionIndex]?.text[
@@ -907,89 +1124,5 @@ const styles = StyleSheet.create({
   },
 
   // Method result styles
-  resultContainer: {
-    alignItems: "center",
-    height: "100%",
-    gap: 20,
-    backgroundColor: "#131313",
-  },
-  resultTitle: {
-    fontSize: 28,
-    fontFamily: REGULAR_FONT,
-    fontWeight: "bold",
-    color: "white",
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  resultCard: {
-    width: "90%",
-    backgroundColor: Colors.dark.bg_light,
-    borderRadius: 20,
-    padding: 20,
-    alignItems: "center",
-    borderColor: "#333",
-    borderWidth: 1,
-  },
-  resultSubtitle: {
-    fontSize: 20,
-    color: "white",
-    marginBottom: 15,
-    fontFamily: ITALIC_FONT,
-  },
-  rewardRow: { flexDirection: "row", gap: 20, marginTop: 10 },
-  rewardItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    backgroundColor: "#222",
-    padding: 10,
-    borderRadius: 12,
-  },
-  rewardText: { color: "white", fontSize: 16, fontWeight: "bold" },
-  statsRow: {
-    flexDirection: "row",
-    gap: 20,
-    marginTop: 20,
-    width: "90%",
-    justifyContent: "center",
-  },
-  statBox: {
-    width: 100,
-    height: 80,
-    borderRadius: 16,
-    borderWidth: 2,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#1A1A1A",
-  },
-  statNumber: {
-    fontSize: 24,
-    color: "white",
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  sectionHeader: {
-    fontSize: 18,
-    color: Colors.dark.text_muted,
-    marginBottom: 15,
-    marginLeft: 5,
-  },
-  wrongQuestionCard: {
-    backgroundColor: "#1A1A1A",
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 10,
-    borderColor: "#333",
-    borderWidth: 1,
-  },
-  wrongQuestionText: { color: "white", fontSize: 16, marginBottom: 10 },
-  answerLabel: { fontSize: 14, color: "#999", marginTop: 4 },
-  homeButton: {
-    marginTop: 30,
-    backgroundColor: Colors.dark.secondary,
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 30,
-  },
-  homeButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+  // (All result styles removed as they are now inline to match daily component)
 });

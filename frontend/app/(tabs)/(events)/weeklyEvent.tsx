@@ -37,7 +37,7 @@ import Animated, {
   withTiming,
   withDelay,
 } from "react-native-reanimated";
-import * as Haptics from "expo-haptics"; 
+import * as Haptics from "expo-haptics";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -126,7 +126,7 @@ const WeeklyEventScreen: React.FC = () => {
         // Curve to next point
         const prevPos = getNodePosition(i - 1);
         const midY = (prevPos.y + pos.y) / 2;
-        
+
         // Cubic bezier for smooth vertical connection
         // Control point 1: (prevX, midY) - keeps it vertical-ish leaving the node
         // Control point 2: (currX, midY) - arrives vertical-ish at next node
@@ -135,7 +135,6 @@ const WeeklyEventScreen: React.FC = () => {
     });
     return path;
   }, [data?.nodes]);
-
 
   const renderNode = (node: WeeklyEventNodeSummary, index: number) => {
     const { x, y } = getNodePosition(index);
@@ -250,7 +249,11 @@ const WeeklyEventScreen: React.FC = () => {
               </Text>
             </View>
             <CircularProgress
-              progress={progress.fullCompletionRewardClaimed ? 10 : progress.currentNodeIndex}
+              progress={
+                progress.fullCompletionRewardClaimed
+                  ? 10
+                  : progress.currentNodeIndex
+              }
               total={data.nodes.length}
               size={50}
               strokeWidth={3}
@@ -347,15 +350,24 @@ import { Feather } from "@expo/vector-icons";
 // Map node types to Feather icon names
 const getIconName = (type?: string): keyof typeof Feather.glyphMap => {
   switch (type) {
-    case "mini_quiz": return "cpu"; // Brain-like
-    case "time_challenge": return "zap";
-    case "true_false_sprint": return "check-square";
-    case "survival": return "shield";
-    case "mixed_gauntlet": return "shuffle";
-    case "emoji_puzzle": return "smile";
-    case "quote_guess": return "message-square";
-    case "vote": return "thumbs-up";
-    default: return "play"; // gamepad isn't in feather, using play or box
+    case "mini_quiz":
+      return "cpu"; // Brain-like
+    case "time_challenge":
+      return "zap";
+    case "true_false_sprint":
+      return "check-square";
+    case "survival":
+      return "shield";
+    case "mixed_gauntlet":
+      return "shuffle";
+    case "emoji_puzzle":
+      return "smile";
+    case "quote_guess":
+      return "message-square";
+    case "vote":
+      return "thumbs-up";
+    default:
+      return "play"; // gamepad isn't in feather, using play or box
   }
 };
 
@@ -577,7 +589,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "bold",
     marginBottom: 2,
-    textAlign: "center"
+    textAlign: "center",
   },
   nodeTitle: {
     color: Colors.dark.text,
@@ -588,7 +600,7 @@ const styles = StyleSheet.create({
   // 3D Button Styles
   node3DDepth: {
     position: "absolute",
-    bottom: 0, 
+    bottom: 0,
     left: 0,
     right: 0,
     top: 6, // Shifted down to appear as depth
@@ -604,12 +616,12 @@ const styles = StyleSheet.create({
     marginBottom: 6, // Initial offset to show the depth layer
   },
   nodeGlare: {
-      position: 'absolute',
-      top: 5,
-      width: '60%',
-      height: '40%',
-      borderRadius: 20,
-      backgroundColor: 'rgba(255,255,255,0.1)',
+    position: "absolute",
+    top: 5,
+    width: "60%",
+    height: "40%",
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.1)",
   },
   nodeEmoji: {
     fontSize: 32,
@@ -620,6 +632,5 @@ const styles = StyleSheet.create({
     zIndex: -1,
   },
 });
-
 
 export default WeeklyEventScreen;

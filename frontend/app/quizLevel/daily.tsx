@@ -239,7 +239,7 @@ const DailyQuiz = () => {
         <View
           style={{
             borderWidth: 1,
-            borderColor: "#1F1D1D",
+            borderColor: Colors.dark.border_muted,
             backgroundColor: Colors.dark.bg_light,
             borderRadius: 20,
             padding: 20,
@@ -487,12 +487,13 @@ const DailyQuiz = () => {
         {/* Close button */}
         <TouchableOpacity
           style={{
-            marginTop: 20,
-            marginBottom: 10,
+            marginTop: "auto",
+            width: "100%",
             backgroundColor: Colors.dark.text,
             borderRadius: 999,
-            paddingVertical: 12,
+            paddingVertical: 15,
             alignItems: "center",
+            paddingHorizontal: 40,
           }}
           activeOpacity={0.7}
           onPress={onClose}
@@ -501,7 +502,7 @@ const DailyQuiz = () => {
             style={{
               color: Colors.dark.bg_dark,
               fontWeight: "600",
-              fontSize: 14,
+              fontSize: 18,
             }}
           >
             {t("backToEvents")}
@@ -843,9 +844,6 @@ const DailyQuiz = () => {
             currQuestion.type === QUESTION_TYPES.TF && {
               flexDirection: "row",
               justifyContent: "center",
-              gap: 10,
-              alignItems: "center",
-              height: "100%",
             },
             isSmallPhone && {
               flexWrap: "wrap",

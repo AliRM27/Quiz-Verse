@@ -275,8 +275,8 @@ const dailyQuiz = () => {
                 progress={dailyQuizUserProgressData.correctCount}
                 total={dailyQuizData.quiz.questions.length}
                 size={46}
-                strokeWidth={2}
-                fontSize={11}
+                strokeWidth={3}
+                fontSize={12}
                 percent={false}
               />
             </View>
@@ -321,7 +321,7 @@ const dailyQuiz = () => {
                   color={Colors.dark.secondary}
                   progress={dailyQuizUserProgressData.totalRewards}
                   total={dailyQuizData.quiz.rewards.trophies}
-                  height={2}
+                  height={3}
                 />
               </View>
               <Text style={[styles.txt, { fontSize: 12 }]}>
