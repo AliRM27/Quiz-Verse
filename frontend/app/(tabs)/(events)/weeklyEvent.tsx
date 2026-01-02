@@ -262,7 +262,9 @@ const WeeklyEventScreen: React.FC = () => {
             />
           </View>
           {progress.fullCompletionRewardClaimed && (
-            <Text style={styles.completedBadge}>ALL COMPLETED!</Text>
+            <Text style={styles.completedBadge}>
+              {t("allCompleted").toUpperCase()}
+            </Text>
           )}
         </View>
       </View>
@@ -271,7 +273,9 @@ const WeeklyEventScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingVertical: 50 }}
         style={{ width: "100%" }}
-        // refreshControl={<RefreshControl refreshing={isLoading} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
+        }
       >
         <View
           style={{ height: totalHeight, width: "100%", position: "relative" }}

@@ -108,5 +108,12 @@
   "events": "Events",
   "perfectScore": "Perfect score!",
   "niceTry": "Nice try! Come back tomorrow for a new quiz.",
-  "dailyQuizResult": "Quiz Result"
+  "dailyQuizResult": "Quiz Result",
+  "whatGame": "What Game is this?",
+  "weeklyEventCompleted": "Weekly Event Completed",
+  "wellDone": "Well Done!",
+  "allCompleted": "All Completed!",
+  "difficulty": "Difficulty",
+  "duration": "Duration",
+  "start": "Start"
 }

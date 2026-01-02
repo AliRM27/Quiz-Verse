@@ -108,5 +108,12 @@
   "events": "Ereignisse",
   "perfectScore": "Perfekte Punktzahl!",
   "niceTry": "Guter Versuch! Komm morgen für ein neues Quiz zurück.",
-  "dailyQuizResult": "Quiz Ergebnis"
+  "dailyQuizResult": "Quiz Ergebnis",
+  "whatGame": "Was ist das für ein Spiel?",
+  "weeklyEventCompleted": "Wöchentliches Event abgeschlossen",
+  "wellDone": "Gut gemacht!",
+  "allCompleted": "Alles abgeschlossen!",
+  "difficulty": "Schwierigkeit",
+  "duration": "Dauer",
+  "start": "Beginnen"
 }

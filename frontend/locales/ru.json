@@ -108,5 +108,12 @@
   "events": "События",
   "perfectScore": "Идеальный результат!",
   "niceTry": "Хорошая попытка! Возвращайтесь завтра за новым квизом.",
-  "dailyQuizResult": "Результат квиза"
+  "dailyQuizResult": "Результат квиза",
+  "whatGame": "Что это за игра?",
+  "weeklyEventCompleted": "Еженедельное событие завершено",
+  "wellDone": "Отлично!",
+  "allCompleted": "все завершено!",
+  "difficulty": "Сложность",
+  "duration": "Длительность",
+  "start": "Начать"
 }

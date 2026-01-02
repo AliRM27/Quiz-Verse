@@ -362,7 +362,7 @@ const dailyQuiz = () => {
                   fontSize: 14,
                 }}
               >
-                {t("Start Quiz")}
+                {t("startQuiz")}
               </Text>
             </TouchableOpacity>
           )}

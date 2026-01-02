@@ -175,7 +175,14 @@ const WeeklyEventNodeScreen: React.FC = () => {
             <CircularProgress
               progress={Math.floor(
                 ((Number(questionsCorrect) || 0) /
-                  (nodeDataResponse.config?.quizConfig?.totalQuestions || 10)) *
+                  (nodeType === "vote"
+                    ? 1
+                    : nodeType === "emoji_puzzle"
+                      ? nodeDataResponse.config?.emojiPuzzles?.length || 1
+                      : nodeType === "quote_guess"
+                        ? nodeDataResponse.config?.quotes?.length || 1
+                        : nodeDataResponse.config?.quizConfig?.totalQuestions ||
+                          10)) *
                   100
               )}
               size={50}
@@ -223,13 +230,13 @@ const WeeklyEventNodeScreen: React.FC = () => {
       {/* Basic Info Row (Difficulty, Duration) */}
       <View style={styles.infoRow}>
         <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>DIFFICULTY</Text>
+          <Text style={styles.infoLabel}>{t("difficulty")}</Text>
           <Text style={styles.infoValue}>
-            {getDifficultyLabel(nodeDataResponse.config)}
+            {t(getDifficultyLabel(nodeDataResponse.config))}
           </Text>
         </View>
         <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>DURATION</Text>
+          <Text style={styles.infoLabel}>{t("duration")}</Text>
           <Text style={styles.infoValue}>
             {getDurationLabel(nodeDataResponse.config)}
           </Text>
@@ -251,7 +258,7 @@ const WeeklyEventNodeScreen: React.FC = () => {
           {isPending ? (
             <ActivityIndicator color={Colors.dark.bg} />
           ) : (
-            <Text style={styles.buttonText}>Start Challenge</Text>
+            <Text style={styles.buttonText}>{t("start")}</Text>
           )}
         </TouchableOpacity>
       </View>

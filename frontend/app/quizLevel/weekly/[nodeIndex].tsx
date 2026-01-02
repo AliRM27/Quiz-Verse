@@ -36,7 +36,7 @@ import {
   WeeklyEventNodeType,
 } from "@/types";
 import Hint from "@/assets/svgs/hint.svg";
-import Heart from "@/assets/svgs/heartQuiz.svg";
+import { Heart } from "lucide-react-native";
 import CircularProgress from "@/components/ui/CircularProgress";
 import { languageMap } from "@/utils/i18n";
 import { Feather } from "@expo/vector-icons";
@@ -299,6 +299,13 @@ export default function WeeklyGameScreen() {
 
     // Delay
     setTimeout(async () => {
+      // Check if this move caused game over in survival mode
+      // Note: 'status' here is stale (from closure), so we check the condition manually
+      if (resolvedNodeType === "survival" && !isCorrect && lives <= 1) {
+        setQuestionLoading(false);
+        return; // Game over handled by hook, don't complete
+      }
+
       if (status !== "playing") {
         setQuestionLoading(false);
         return; // Hook handles game over
@@ -386,12 +393,11 @@ export default function WeeklyGameScreen() {
         {nodeType === "vote" ? (
           <VoteModeView
             questionData={currQuestion}
-            onAnswer={handleAnswer}
-            onVote={isVoteMode}
+            selectedAnswer={selectedAnswer}
+            setSelectedAnswer={setSelectedAnswer}
             voteSubmitted={voteSubmitted}
-            isVoteMode={isVoteMode}
-            questionIndex={currQuestionIndex}
-            totalQuestions={questions.length}
+            userVote={userVote}
+            voteStats={voteStats}
           />
         ) : (
           <>
@@ -413,7 +419,9 @@ export default function WeeklyGameScreen() {
                 </Text>
               )}
               <Text style={styles.questionText}>
-                {currQuestion.question[languageMap[user.language]]}
+                {nodeType === "emoji_puzzle"
+                  ? `${t("whatGame")}\n \n ${currQuestion.question[languageMap["English"]]}`
+                  : currQuestion.question[languageMap[user.language]]}
               </Text>
             </View>
 
@@ -482,7 +490,10 @@ export default function WeeklyGameScreen() {
                           },
                         ]}
                       >
-                        {o.text[languageMap[user.language]]}
+                        {nodeType === "quote_guess" ||
+                        nodeType === "emoji_puzzle"
+                          ? o.text[languageMap["English"]]
+                          : o.text[languageMap[user.language]]}
                       </Text>
                     </Pressable>
                   );
@@ -580,9 +591,7 @@ export default function WeeklyGameScreen() {
             <CircularProgress
               size={isSmallPhone ? 75 : 80}
               strokeWidth={3}
-              progress={
-                isVoteMode ? (voteSubmitted ? 1 : 0) : currQuestionIndex + 1
-              }
+              progress={isVoteMode ? 1 : currQuestionIndex + 1}
               fontSize={isSmallPhone ? 16 : 18}
               percent={false}
               total={isVoteMode ? 1 : questions.length}
@@ -617,8 +626,8 @@ const ModeHeader = ({ nodeType, timeLeft, lives, maxLives }: any) => {
         {Array.from({ length: maxLives }).map((_, i) => (
           <Heart
             key={i}
-            width={24}
-            height={24}
+            width={26}
+            height={26}
             color={i < lives ? "#FF4B4B" : "#333"}
             fill={i < lives ? "#FF4B4B" : "none"}
           />
@@ -653,19 +662,28 @@ const VoteModeView = ({
             voteSubmitted && voteStats && voteStats[opt.id]
               ? voteStats[opt.id].percentage
               : 0;
-
           return (
             <Pressable
               key={opt.id}
               disabled={voteSubmitted}
               style={[
                 styles.optionButton,
+                {
+                  overflow: "hidden", // Important for progress bar
+                  padding: 0,
+                  paddingHorizontal: 0,
+                  paddingVertical: 0,
+                  paddingLeft: 0,
+                  paddingRight: 0,
+                  borderWidth: 1,
+                  borderColor: "#323333",
+                  backgroundColor: Colors.dark.bg_light,
+                },
                 isSelected &&
                   !voteSubmitted && {
                     backgroundColor: "#232423",
-                    borderColor: "#323333",
+                    borderColor: Colors.dark.primary,
                   },
-                // Highlight the one user voted for if submitted
                 isUserChoice && {
                   borderColor: Colors.dark.success,
                   borderWidth: 2,
@@ -678,17 +696,18 @@ const VoteModeView = ({
                 }
               }}
             >
-              {/* Background progress bar */}
+              {/* Result Progress Bar Background */}
               {voteSubmitted && (
                 <View
                   style={{
-                    marginTop: "auto",
-                    paddingBottom: 20,
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
                     width: `${percent}%`,
                     backgroundColor: isUserChoice
-                      ? "rgba(76, 175, 80, 0.2)"
-                      : "rgba(255, 255, 255, 0.1)",
-                    borderRadius: 50,
+                      ? "rgba(76, 175, 80, 0.25)" // Greenish for user choice
+                      : "rgba(255, 255, 255, 0.1)", // Grayish for others
                   }}
                 />
               )}
@@ -697,14 +716,21 @@ const VoteModeView = ({
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
-                  width: "100%",
                   alignItems: "center",
+                  width: "100%",
+                  paddingVertical: 18,
+                  paddingHorizontal: 20,
                 }}
               >
                 <Text
                   style={[
                     styles.optionText,
-                    { fontSize: 18, zIndex: 1 },
+                    {
+                      fontSize: 18,
+                      zIndex: 1,
+                      maxWidth: "80%",
+                      color: Colors.dark.text,
+                    },
                     isSmallPhone && { fontSize: 16 },
                   ]}
                 >
@@ -712,9 +738,17 @@ const VoteModeView = ({
                 </Text>
 
                 {voteSubmitted && (
-                  <Text style={{ color: "white", fontWeight: "bold" }}>
-                    {percent}%
-                  </Text>
+                  <View style={{ alignItems: "flex-end" }}>
+                    <Text
+                      style={{
+                        color: Colors.dark.text,
+                        fontWeight: "bold",
+                        fontSize: 16,
+                      }}
+                    >
+                      {percent}%
+                    </Text>
+                  </View>
                 )}
               </View>
             </Pressable>
@@ -726,14 +760,7 @@ const VoteModeView = ({
 };
 
 // Inline Result Component
-const WeeklyResult = ({
-  result,
-  questions,
-  wrongQuestions,
-  user,
-  nodeTitle,
-  t,
-}: any) => {
+const WeeklyResult = ({ result, wrongQuestions, user, nodeTitle, t }: any) => {
   // Calculate total rewards
   const trophies = (result.rewardsGranted || []).reduce(
     (acc: number, r: any) => acc + (r.reward?.trophies || 0),
@@ -750,8 +777,6 @@ const WeeklyResult = ({
         paddingHorizontal: 15,
         backgroundColor: "#131313",
         height: "100%",
-        paddingTop: 20,
-        paddingBottom: 20,
       }}
     >
       {/* Fixed Header Content */}
@@ -1009,7 +1034,7 @@ const WeeklyResult = ({
             fontSize: 18,
           }}
         >
-          Return to Map
+          {t("backToEvents")}
         </Text>
       </TouchableOpacity>
     </View>
