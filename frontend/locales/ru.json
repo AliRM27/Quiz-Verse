@@ -115,5 +115,11 @@
   "allCompleted": "все завершено!",
   "difficulty": "Сложность",
   "duration": "Длительность",
-  "start": "Начать"
+  "start": "Начать",
+  "eventsSubtitle": "Соревнуйся и выигрывай отличные награды",
+  "weeklyChallenge": "Еженедельное испытание",
+  "dailyQuizDescription": "Проверяй свои знания ежедневно и получай награды!",
+  "weeklyEventDescription": "Выполняй еженедельные миссии за эксклюзивные призы!",
+  "championshipDescription": "Соревнуйся с лучшими игроками со всего мира!",
+  "championship": "Чемпионат"
 }

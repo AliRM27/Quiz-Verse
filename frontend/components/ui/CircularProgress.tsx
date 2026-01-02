@@ -26,6 +26,7 @@ const CircularProgress = ({
   select = false,
   showNumbers = false,
   totalNum = 0,
+  color = Colors.dark.border_muted,
 }: {
   size: number;
   strokeWidth: number;
@@ -37,6 +38,7 @@ const CircularProgress = ({
   select?: boolean;
   showNumbers?: boolean;
   totalNum?: number;
+  color?: string;
 }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -85,7 +87,7 @@ const CircularProgress = ({
       <Svg width={size + 1} height={size + 1}>
         {/* Background Circle */}
         <Circle
-          stroke={Colors.dark.border_muted}
+          stroke={color}
           fill="none"
           cx={size / 2}
           cy={size / 2}

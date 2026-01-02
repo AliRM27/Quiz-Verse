@@ -8,9 +8,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
-  ActivityIndicator,
   Alert,
-  Button,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
@@ -29,26 +27,24 @@ import SliderComponent from "@/components/ui/SliderComponent";
 import * as Haptics from "expo-haptics";
 import Loader from "@/components/ui/Loader";
 import { useSafeAreaBg } from "@/context/safeAreaContext";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  QUESTION_TYPES,
-  DailyAnswerPayload,
-  WeeklyEventNodeType,
-} from "@/types";
-import Hint from "@/assets/svgs/hint.svg";
+import { QUESTION_TYPES, WeeklyEventNodeType } from "@/types";
 import { Heart } from "lucide-react-native";
 import CircularProgress from "@/components/ui/CircularProgress";
 import { languageMap } from "@/utils/i18n";
 import { Feather } from "@expo/vector-icons";
-import {
-  CircleCheckBig,
-  BookOpenCheck,
-  ClipboardCheck,
-} from "lucide-react-native";
+import { ClipboardCheck } from "lucide-react-native";
 import Right from "@/assets/svgs/rightAnswers.svg";
 import Wrong from "@/assets/svgs/wrongAnswers.svg";
 import Trophy from "@/assets/svgs/trophy.svg";
 import Gem from "@/assets/svgs/gem.svg";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, {
+  FadeInDown,
+  FadeIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from "react-native-reanimated";
 
 // Import custom hook
 import { useGameMode } from "@/hooks/useGameMode";
@@ -59,7 +55,7 @@ export default function WeeklyGameScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      setSafeBg("#131313");
+      setSafeBg(Colors.dark.bg_dark);
       return () => {
         setSafeBg(Colors.dark.bg_dark);
       };
@@ -75,7 +71,6 @@ export default function WeeklyGameScreen() {
   const { user, refreshUser: refreshUserContext } = useUser();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
 
   const {
     data: questionData,
@@ -126,9 +121,6 @@ export default function WeeklyGameScreen() {
     onGameOver: handleGameOver,
   });
 
-  // Pre-process questions if it's vote mode, we might not have 'questions' array in the same way
-  // But our backend for vote returns { type: 'vote', ... }
-  // Let's normalize.
   const isVoteMode = questionData?.type === "vote";
 
   // Initialize vote state from backend data if available
@@ -142,6 +134,7 @@ export default function WeeklyGameScreen() {
     }
   }, [isVoteMode, questionData]);
 
+  // Loading state
   if (isLoading || !user) {
     return (
       <View style={styles.loadingContainer}>
@@ -150,44 +143,42 @@ export default function WeeklyGameScreen() {
     );
   }
 
+  // Error state
   if (error || (!questionData?.questions && !isVoteMode)) {
     return (
       <View style={styles.loadingContainer}>
-        <Text style={[styles.txt, { color: "white" }]}>
-          Failed to load questions.
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={{ marginTop: 20 }}
+        <Animated.View
+          entering={FadeInDown.springify()}
+          style={styles.errorCard}
         >
-          <Text style={[styles.txt, { color: Colors.dark.secondary }]}>
-            Go Back
-          </Text>
-        </TouchableOpacity>
+          <Feather name="alert-circle" size={48} color="#fca5a5" />
+          <Text style={styles.errorText}>Failed to load questions.</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.retryButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </Animated.View>
       </View>
     );
   }
 
   const questions = questionData.questions || [];
-  const currQuestion = isVoteMode
-    ? questionData // In vote mode, the top level object has question/options
-    : questions[currQuestionIndex];
+  const currQuestion = isVoteMode ? questionData : questions[currQuestionIndex];
   const isLastQuestion =
     !isVoteMode && questions.length > 0
       ? currQuestionIndex === questions.length - 1
       : true;
 
   const handleNextButton = async () => {
-    if (questionLoading) return; // Allow interaction even if status not playing for vote?
-    // Actually vote mode might not use the game timer hook the same way if it's just a poll.
-    // If it's a "vote" node, we probably just submit and that's it (complete node).
+    if (questionLoading) return;
 
     if (isVoteMode) {
       if (!selectedAnswer && !userVote) return;
 
       setQuestionLoading(true);
       try {
-        // map selected index to option id
         if (!voteSubmitted) {
           const optionId = questionData.options[selectedAnswer!].id;
           const res = await submitWeeklyVote(Number(nodeIndex), optionId);
@@ -195,11 +186,8 @@ export default function WeeklyGameScreen() {
           setUserVote(optionId);
           setVoteSubmitted(true);
           setQuestionLoading(false);
-          // Don't auto complete yet, let user see stats then press "Next" to finish node?
-          // Or just finish immediately? usually users want to see the poll result.
           return;
         } else {
-          // Already submitted, pressing next means finish node
           const res = await completeWeeklyEventNode(Number(nodeIndex), {
             score: 100,
             questionsCorrect: 1,
@@ -208,7 +196,7 @@ export default function WeeklyGameScreen() {
           await refreshUserContext();
           setCompletionResult({
             ...res,
-            score: 100, // Dummy score for vote
+            score: 100,
             questionsCorrect: 1,
             totalQuestions: 1,
             rewardsGranted: res.rewardsGranted,
@@ -269,7 +257,6 @@ export default function WeeklyGameScreen() {
         ) !== undefined;
     }
 
-    // Call Hook
     handleAnswer(isCorrect);
 
     if (isCorrect) {
@@ -297,23 +284,19 @@ export default function WeeklyGameScreen() {
       ]);
     }
 
-    // Delay
     setTimeout(async () => {
-      // Check if this move caused game over in survival mode
-      // Note: 'status' here is stale (from closure), so we check the condition manually
       if (resolvedNodeType === "survival" && !isCorrect && lives <= 1) {
         setQuestionLoading(false);
-        return; // Game over handled by hook, don't complete
+        return;
       }
 
       if (status !== "playing") {
         setQuestionLoading(false);
-        return; // Hook handles game over
+        return;
       }
 
       if (isLastQuestion) {
-        stopGame(); // Stop timer
-        // Complete ...
+        stopGame();
         try {
           const finalCorrect = isCorrect
             ? correctAnswersCount + 1
@@ -356,6 +339,7 @@ export default function WeeklyGameScreen() {
         wrongQuestions={wrongQuestions}
         user={user}
         nodeTitle={nodeTitle}
+        nodeType={nodeType}
         t={t}
       />
     );
@@ -363,33 +347,26 @@ export default function WeeklyGameScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View
-        style={{
-          paddingHorizontal: 15,
-          backgroundColor: "#131313",
-          flex: 1,
-          gap: 20,
-        }}
-      >
-        {/* Helper Header for Modes */}
+      <View style={styles.container}>
+        <ArrBack />
+
+        {/* Mode Header */}
         <ModeHeader
           nodeType={resolvedNodeType}
           timeLeft={timeLeft}
           lives={lives}
           maxLives={3}
         />
-        <ArrBack />
-        <Text
-          style={[
-            styles.txt,
-            { fontSize: 20, fontWeight: "600", textAlign: "center" },
-          ]}
+
+        {/* Title */}
+        <Animated.Text
+          entering={FadeInDown.delay(0).springify()}
+          style={styles.screenTitle}
         >
           {nodeTitle || "Weekly Event"}
-        </Text>
+        </Animated.Text>
 
         {/* VOTE MODE UI */}
-
         {nodeType === "vote" ? (
           <VoteModeView
             questionData={currQuestion}
@@ -401,178 +378,112 @@ export default function WeeklyGameScreen() {
           />
         ) : (
           <>
-            <View style={styles.questionCard}>
-              <Text style={styles.questionIndex}>
-                {t("question")} {currQuestionIndex + 1}
-              </Text>
-              {currQuestion.sourceQuizTitle && (
-                <Text
-                  style={{
-                    color: Colors.dark.text_muted,
-                    fontSize: 14,
-                    textAlign: "center",
-                    marginBottom: 10,
-                    fontFamily: ITALIC_FONT,
-                  }}
-                >
-                  {currQuestion.sourceQuizTitle}
-                </Text>
-              )}
-              <Text style={styles.questionText}>
-                {nodeType === "emoji_puzzle"
-                  ? `${t("whatGame")}\n \n ${currQuestion.question[languageMap["English"]]}`
-                  : currQuestion.question[languageMap[user.language]]}
-              </Text>
-            </View>
+            {/* Question Card */}
+            <Animated.View entering={FadeIn.delay(100).springify()}>
+              <LinearGradient
+                colors={["#2a2a3e", "#1a1a2e"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.questionCard}
+              >
+                {/* Question badge */}
+                <View style={styles.questionBadge}>
+                  <Text style={styles.questionBadgeText}>
+                    {t("question")} {currQuestionIndex + 1}
+                  </Text>
+                </View>
 
+                {currQuestion.sourceQuizTitle && (
+                  <Text style={styles.sourceQuizTitle}>
+                    {currQuestion.sourceQuizTitle}
+                  </Text>
+                )}
+
+                <Text style={styles.questionText}>
+                  {nodeType === "emoji_puzzle"
+                    ? `${t("whatGame")}\n \n ${currQuestion.question[languageMap["English"]]}`
+                    : currQuestion.question[languageMap[user.language]]}
+                </Text>
+
+                {/* Decorative elements */}
+                <View style={styles.decorativeCircle1} />
+                <View style={styles.decorativeCircle2} />
+              </LinearGradient>
+            </Animated.View>
+
+            {/* Options */}
             <ScrollView
               scrollEnabled={currQuestion.type === QUESTION_TYPES.MC}
               contentContainerStyle={[
-                { gap: 15 },
-                currQuestion.type === QUESTION_TYPES.TF && {
-                  flexDirection: "row",
-                  justifyContent: "center",
-                  gap: 10,
-                },
+                styles.optionsContainer,
+                currQuestion.type === QUESTION_TYPES.TF && styles.tfContainer,
               ]}
+              showsVerticalScrollIndicator={false}
             >
               {currQuestion.type === QUESTION_TYPES.SA && (
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Type answer..."
-                  placeholderTextColor={Colors.dark.text_muted}
-                  value={shortAnswer}
-                  onChangeText={setShortAnswer}
-                />
+                <Animated.View entering={FadeInDown.delay(150).springify()}>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="Type answer..."
+                    placeholderTextColor={Colors.dark.text_muted}
+                    value={shortAnswer}
+                    onChangeText={setShortAnswer}
+                  />
+                </Animated.View>
               )}
 
               {currQuestion.type === QUESTION_TYPES.NUM && (
-                <SliderComponent
-                  value={sliderValue}
-                  setValue={setSliderValue}
-                  min={currQuestion.range.min}
-                  max={currQuestion.range.max}
-                  step={currQuestion.range.step}
-                />
+                <Animated.View entering={FadeInDown.delay(150).springify()}>
+                  <SliderComponent
+                    value={sliderValue}
+                    setValue={setSliderValue}
+                    min={currQuestion.range.min}
+                    max={currQuestion.range.max}
+                    step={currQuestion.range.step}
+                  />
+                </Animated.View>
               )}
+
               {currQuestion.type === QUESTION_TYPES.MC &&
-                currQuestion.options.map((o: any, idx: number) => {
-                  return (
-                    <Pressable
-                      key={idx}
-                      style={[
-                        styles.optionButton,
-                        selectedAnswer === idx && {
-                          backgroundColor: "#232423",
-                          borderColor: "#323333",
-                        },
-                        pressedAnswer === idx && {
-                          shadowOpacity: 0,
-                          elevation: 0,
-                        },
-                      ]}
-                      onPressIn={() => setPressedAnswer(idx)}
-                      onPress={() => {
-                        selectedAnswer === idx
-                          ? setSelectedAnswer(null)
-                          : setSelectedAnswer(idx);
-                        Haptics.selectionAsync();
-                      }}
-                      onPressOut={() => setPressedAnswer(null)}
-                    >
-                      <Text
-                        style={[
-                          styles.optionText,
-                          { fontSize: 20 },
-                          isSmallPhone && { fontSize: 16 },
-                          pressedAnswer === idx && {
-                            color: Colors.dark.text_muted,
-                          },
-                        ]}
-                      >
-                        {nodeType === "quote_guess" ||
-                        nodeType === "emoji_puzzle"
-                          ? o.text[languageMap["English"]]
-                          : o.text[languageMap[user.language]]}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
+                currQuestion.options.map((o: any, idx: number) => (
+                  <OptionButton
+                    key={idx}
+                    index={idx}
+                    option={o}
+                    isSelected={selectedAnswer === idx}
+                    nodeType={nodeType}
+                    userLanguage={user.language}
+                    onPress={() => {
+                      selectedAnswer === idx
+                        ? setSelectedAnswer(null)
+                        : setSelectedAnswer(idx);
+                      Haptics.selectionAsync();
+                    }}
+                  />
+                ))}
+
               {currQuestion.type === QUESTION_TYPES.TF &&
-                currQuestion.options.map((o: any, idx: number) => {
-                  return (
-                    <Pressable
-                      key={idx}
-                      style={[
-                        {
-                          borderWidth: 1,
-                          backgroundColor: Colors.dark.bg_light,
-                          borderColor: "#1F1D1D",
-                          padding: 15,
-                          width: "45%",
-                          borderRadius: 50,
-                          elevation: 7,
-                          shadowColor: "black",
-                          shadowOffset: { width: 0, height: 4 },
-                          shadowOpacity: 0.5,
-                          shadowRadius: 1,
-                        },
-                        pressedAnswer === idx && {
-                          shadowOpacity: 0,
-                          elevation: 0,
-                        },
-                        selectedAnswer === idx && {
-                          backgroundColor: "#232423",
-                          borderColor: "#323333",
-                        },
-                      ]}
-                      onPressIn={() => setPressedAnswer(idx)}
-                      onPress={() => {
-                        selectedAnswer === idx
-                          ? setSelectedAnswer(null)
-                          : setSelectedAnswer(idx);
-                        Haptics.selectionAsync();
-                      }}
-                      onPressOut={() => setPressedAnswer(null)}
-                    >
-                      <Text
-                        style={[
-                          {
-                            color: Colors.dark.success,
-                            fontSize: 20,
-                            textAlign: "center",
-                            fontFamily: ITALIC_FONT,
-                          },
-                          o.text["en"] === "False" && {
-                            color: Colors.dark.danger,
-                          },
-                          isSmallPhone && { fontSize: 16 },
-                          pressedAnswer === idx &&
-                            o.text["en"] === "False" && {
-                              color: Colors.dark.danger_muted,
-                            },
-                          pressedAnswer === idx &&
-                            o.text["en"] === "True" && {
-                              color: Colors.dark.success_muted,
-                            },
-                        ]}
-                      >
-                        {o.text[languageMap[user.language]]}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
+                currQuestion.options.map((o: any, idx: number) => (
+                  <TFButton
+                    key={idx}
+                    index={idx}
+                    option={o}
+                    isSelected={selectedAnswer === idx}
+                    userLanguage={user.language}
+                    onPress={() => {
+                      selectedAnswer === idx
+                        ? setSelectedAnswer(null)
+                        : setSelectedAnswer(idx);
+                      Haptics.selectionAsync();
+                    }}
+                  />
+                ))}
             </ScrollView>
           </>
         )}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
-            marginTop: "auto",
-            paddingBottom: 20,
-          }}
-        >
+
+        {/* Bottom Navigation */}
+        <View style={styles.bottomNav}>
           <TouchableOpacity
             activeOpacity={0.6}
             disabled={
@@ -583,7 +494,7 @@ export default function WeeklyGameScreen() {
                     shortAnswer.trim() !== "" ||
                     sliderValue !== -1)
                 )) ||
-              (isVoteMode && !selectedAnswer && !voteSubmitted) || // disable if vote mode and nothing selected/voted
+              (isVoteMode && !selectedAnswer && !voteSubmitted) ||
               questionLoading
             }
             onPress={() => handleNextButton()}
@@ -610,29 +521,167 @@ export default function WeeklyGameScreen() {
   );
 }
 
+// Enhanced Option Button Component
+const OptionButton = ({
+  index,
+  option,
+  isSelected,
+  nodeType,
+  userLanguage,
+  onPress,
+}: {
+  index: number;
+  option: any;
+  isSelected: boolean;
+  nodeType: string;
+  userLanguage: string;
+  onPress: () => void;
+}) => {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.97, { damping: 15, stiffness: 300 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+  };
+
+  return (
+    <Animated.View
+      entering={FadeInDown.delay(150 + index * 50).springify()}
+      style={animatedStyle}
+    >
+      <Pressable
+        style={[styles.optionButton, isSelected && styles.optionButtonSelected]}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={onPress}
+      >
+        <View
+          style={[styles.optionIndex, isSelected && styles.optionIndexSelected]}
+        >
+          <Text
+            style={[
+              styles.optionIndexText,
+              isSelected && styles.optionIndexTextSelected,
+            ]}
+          >
+            {String.fromCharCode(65 + index)}
+          </Text>
+        </View>
+        <Text
+          style={[styles.optionText, isSelected && styles.optionTextSelected]}
+        >
+          {nodeType === "quote_guess" || nodeType === "emoji_puzzle"
+            ? option.text[languageMap["English"]]
+            : option.text[languageMap[userLanguage]]}
+        </Text>
+      </Pressable>
+    </Animated.View>
+  );
+};
+
+// True/False Button Component
+const TFButton = ({
+  index,
+  option,
+  isSelected,
+  userLanguage,
+  onPress,
+}: {
+  index: number;
+  option: any;
+  isSelected: boolean;
+  userLanguage: string;
+  onPress: () => void;
+}) => {
+  const isTrue = option.text["en"] === "True";
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  return (
+    <Animated.View
+      entering={FadeInDown.delay(150 + index * 100).springify()}
+      style={[animatedStyle, { width: "48%" }]}
+    >
+      <Pressable
+        style={[
+          styles.tfButton,
+          isTrue ? styles.tfButtonTrue : styles.tfButtonFalse,
+          isSelected && styles.tfButtonSelected,
+        ]}
+        onPressIn={() => {
+          scale.value = withSpring(0.95, { damping: 15, stiffness: 300 });
+        }}
+        onPressOut={() => {
+          scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+        }}
+        onPress={onPress}
+      >
+        <Feather
+          name={isTrue ? "check-circle" : "x-circle"}
+          size={24}
+          color={isTrue ? "#4ade80" : "#f87171"}
+        />
+        <Text
+          style={[
+            styles.tfText,
+            isTrue ? styles.tfTextTrue : styles.tfTextFalse,
+          ]}
+        >
+          {option.text[languageMap[userLanguage]]}
+        </Text>
+      </Pressable>
+    </Animated.View>
+  );
+};
+
 // Mode Header Component
 const ModeHeader = ({ nodeType, timeLeft, lives, maxLives }: any) => {
   if (nodeType === "time_challenge") {
     return (
-      <View style={styles.modeHeader}>
-        <Feather name="clock" size={20} color={Colors.dark.secondary} />
-        <Text style={styles.modeText}>{timeLeft}s</Text>
-      </View>
+      <Animated.View
+        entering={FadeInDown.delay(50).springify()}
+        style={styles.modeHeader}
+      >
+        <LinearGradient
+          colors={["#f59e0b", "#d97706"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.timerBadge}
+        >
+          <Feather name="clock" size={18} color="#fff" />
+          <Text style={styles.timerText}>{timeLeft}s</Text>
+        </LinearGradient>
+      </Animated.View>
     );
   }
   if (nodeType === "survival") {
     return (
-      <View style={styles.modeHeader}>
-        {Array.from({ length: maxLives }).map((_, i) => (
-          <Heart
-            key={i}
-            width={26}
-            height={26}
-            color={i < lives ? "#FF4B4B" : "#333"}
-            fill={i < lives ? "#FF4B4B" : "none"}
-          />
-        ))}
-      </View>
+      <Animated.View
+        entering={FadeInDown.delay(50).springify()}
+        style={styles.modeHeader}
+      >
+        <View style={styles.livesContainer}>
+          {Array.from({ length: maxLives }).map((_, i) => (
+            <Heart
+              key={i}
+              width={28}
+              height={28}
+              color={i < lives ? "#ef4444" : "#333"}
+              fill={i < lives ? "#ef4444" : "none"}
+            />
+          ))}
+        </View>
+      </Animated.View>
     );
   }
   return null;
@@ -647,14 +696,25 @@ const VoteModeView = ({
   userVote,
   voteStats,
 }: any) => {
-  const { t } = useTranslation();
-
   return (
     <>
-      <View style={styles.questionCard}>
-        <Text style={styles.questionText}>{questionData.question}</Text>
-      </View>
-      <ScrollView contentContainerStyle={{ gap: 15, paddingBottom: 20 }}>
+      <Animated.View entering={FadeIn.delay(100).springify()}>
+        <LinearGradient
+          colors={["#2a2a3e", "#1a1a2e"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.questionCard}
+        >
+          <View style={styles.decorativeCircle1} />
+          <View style={styles.decorativeCircle2} />
+          <Text style={styles.questionText}>{questionData.question}</Text>
+        </LinearGradient>
+      </Animated.View>
+
+      <ScrollView
+        contentContainerStyle={{ gap: 12, paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+      >
         {questionData.options.map((opt: any, idx: number) => {
           const isSelected = selectedAnswer === idx;
           const isUserChoice = userVote === opt.id;
@@ -662,96 +722,49 @@ const VoteModeView = ({
             voteSubmitted && voteStats && voteStats[opt.id]
               ? voteStats[opt.id].percentage
               : 0;
-          return (
-            <Pressable
-              key={opt.id}
-              disabled={voteSubmitted}
-              style={[
-                styles.optionButton,
-                {
-                  overflow: "hidden", // Important for progress bar
-                  padding: 0,
-                  paddingHorizontal: 0,
-                  paddingVertical: 0,
-                  paddingLeft: 0,
-                  paddingRight: 0,
-                  borderWidth: 1,
-                  borderColor: "#323333",
-                  backgroundColor: Colors.dark.bg_light,
-                },
-                isSelected &&
-                  !voteSubmitted && {
-                    backgroundColor: "#232423",
-                    borderColor: Colors.dark.primary,
-                  },
-                isUserChoice && {
-                  borderColor: Colors.dark.success,
-                  borderWidth: 2,
-                },
-              ]}
-              onPress={() => {
-                if (!voteSubmitted) {
-                  setSelectedAnswer(idx === selectedAnswer ? null : idx);
-                  Haptics.selectionAsync();
-                }
-              }}
-            >
-              {/* Result Progress Bar Background */}
-              {voteSubmitted && (
-                <View
-                  style={{
-                    position: "absolute",
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: `${percent}%`,
-                    backgroundColor: isUserChoice
-                      ? "rgba(76, 175, 80, 0.25)" // Greenish for user choice
-                      : "rgba(255, 255, 255, 0.1)", // Grayish for others
-                  }}
-                />
-              )}
 
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  width: "100%",
-                  paddingVertical: 18,
-                  paddingHorizontal: 20,
+          return (
+            <Animated.View
+              key={opt.id}
+              entering={FadeInDown.delay(150 + idx * 50).springify()}
+            >
+              <Pressable
+                disabled={voteSubmitted}
+                style={[
+                  styles.voteOption,
+                  isSelected && !voteSubmitted && styles.voteOptionSelected,
+                  isUserChoice && styles.voteOptionUserChoice,
+                ]}
+                onPress={() => {
+                  if (!voteSubmitted) {
+                    setSelectedAnswer(idx === selectedAnswer ? null : idx);
+                    Haptics.selectionAsync();
+                  }
                 }}
               >
-                <Text
-                  style={[
-                    styles.optionText,
-                    {
-                      fontSize: 18,
-                      zIndex: 1,
-                      maxWidth: "80%",
-                      color: Colors.dark.text,
-                    },
-                    isSmallPhone && { fontSize: 16 },
-                  ]}
-                >
-                  {opt.label}
-                </Text>
-
+                {/* Progress bar background */}
                 {voteSubmitted && (
-                  <View style={{ alignItems: "flex-end" }}>
-                    <Text
-                      style={{
-                        color: Colors.dark.text,
-                        fontWeight: "bold",
-                        fontSize: 16,
-                      }}
-                    >
-                      {percent}%
-                    </Text>
-                  </View>
+                  <View
+                    style={[
+                      styles.voteProgressBar,
+                      {
+                        width: `${percent}%`,
+                        backgroundColor: isUserChoice
+                          ? "rgba(76, 175, 80, 0.25)"
+                          : "rgba(255, 255, 255, 0.1)",
+                      },
+                    ]}
+                  />
                 )}
-              </View>
-            </Pressable>
+
+                <View style={styles.voteOptionContent}>
+                  <Text style={styles.voteOptionText}>{opt.label}</Text>
+                  {voteSubmitted && (
+                    <Text style={styles.votePercentage}>{percent}%</Text>
+                  )}
+                </View>
+              </Pressable>
+            </Animated.View>
           );
         })}
       </ScrollView>
@@ -759,9 +772,15 @@ const VoteModeView = ({
   );
 };
 
-// Inline Result Component
-const WeeklyResult = ({ result, wrongQuestions, user, nodeTitle, t }: any) => {
-  // Calculate total rewards
+// Result Component
+const WeeklyResult = ({
+  result,
+  wrongQuestions,
+  user,
+  nodeTitle,
+  nodeType,
+  t,
+}: any) => {
   const trophies = (result.rewardsGranted || []).reduce(
     (acc: number, r: any) => acc + (r.reward?.trophies || 0),
     0
@@ -771,281 +790,154 @@ const WeeklyResult = ({ result, wrongQuestions, user, nodeTitle, t }: any) => {
     0
   );
 
-  return (
-    <View
-      style={{
-        paddingHorizontal: 15,
-        backgroundColor: "#131313",
-        height: "100%",
-      }}
-    >
-      {/* Fixed Header Content */}
-      <View>
-        <Text
-          style={[
-            styles.txt,
-            {
-              fontWeight: "700",
-              fontSize: 24,
-              textAlign: "center",
-              marginBottom: 20,
-              marginTop: 10,
-            },
-          ]}
-        >
-          {nodeTitle || t("weeklyEventCompleted") || "Weekly Event Result"}
-        </Text>
+  const isPerfect = result.questionsCorrect === result.totalQuestions;
 
-        <View
-          style={{
-            borderWidth: 1,
-            borderColor: Colors.dark.border_muted,
-            backgroundColor: Colors.dark.bg_light,
-            borderRadius: 20,
-            padding: 20,
-            marginBottom: 20,
-          }}
+  return (
+    <View style={styles.resultContainer}>
+      {/* Header */}
+      <Animated.Text
+        entering={FadeInDown.delay(0).springify()}
+        style={styles.resultTitle}
+      >
+        {nodeTitle || t("weeklyEventCompleted") || "Weekly Event Result"}
+      </Animated.Text>
+
+      {/* Main Result Card */}
+      <Animated.View entering={FadeInDown.delay(100).springify()}>
+        <LinearGradient
+          colors={isPerfect ? ["#22c55e", "#16a34a"] : ["#f5576c", "#f093fb"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.resultCard}
         >
-          <Text
-            style={[
-              styles.txt,
-              {
-                fontSize: 17,
-                textAlign: "center",
-                color: Colors.dark.text,
-                fontWeight: "600",
-              },
-            ]}
-          >
-            {result.questionsCorrect === result.totalQuestions
+          <View style={styles.decorativeCircle1} />
+          <View style={styles.decorativeCircle2} />
+
+          <LinearGradient
+            colors={["rgba(255,255,255,0.2)", "rgba(255,255,255,0)"]}
+            style={styles.glossOverlay}
+          />
+
+          <Text style={styles.resultMessage}>
+            {isPerfect
               ? t("perfectScore") || "Perfect Score!"
               : t("wellDone") || "Well Done!"}
           </Text>
 
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-around",
-              marginTop: 35,
-            }}
-          >
-            <View
-              style={{ alignItems: "center", flexDirection: "row", gap: 10 }}
-            >
-              <Trophy color={Colors.dark.secondary} width={25} height={25} />
-              <Text style={[styles.txt, { fontSize: 18, fontWeight: "700" }]}>
-                +{trophies}
-              </Text>
+          {/* Rewards */}
+          <View style={styles.rewardsRow}>
+            <View style={styles.rewardItem}>
+              <Trophy color="#FFD700" width={28} height={28} />
+              <Text style={styles.rewardValue}>+{trophies}</Text>
             </View>
-            <View
-              style={{ alignItems: "center", flexDirection: "row", gap: 10 }}
-            >
-              <Gem color={Colors.dark.primary} width={25} height={25} />
-              <Text style={[styles.txt, { fontSize: 18, fontWeight: "700" }]}>
-                +{gems}
-              </Text>
+            <View style={styles.rewardItem}>
+              <Gem color="#60a5fa" width={28} height={28} />
+              <Text style={styles.rewardValue}>+{gems}</Text>
             </View>
           </View>
-        </View>
+        </LinearGradient>
+      </Animated.View>
 
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            width: "100%",
-            justifyContent: "space-evenly",
-            marginBottom: 20,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              borderWidth: 1,
-              borderColor: Colors.dark.success,
-              padding: 10,
-              paddingHorizontal: 15,
-              justifyContent: "space-between",
-              width: 100,
-              borderRadius: 10,
-              backgroundColor: Colors.dark.bg_light,
-            }}
-          >
-            <Text style={[styles.txt, { fontSize: 17, fontWeight: "700" }]}>
-              {result.questionsCorrect}
-            </Text>
-            <Right width={15} height={15} />
-          </View>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              borderWidth: 1,
-              borderColor: "#920202",
-              padding: 10,
-              paddingHorizontal: 15,
-              justifyContent: "space-between",
-              width: 100,
-              borderRadius: 10,
-              backgroundColor: Colors.dark.bg_light,
-            }}
-          >
-            <Text style={[styles.txt, { fontSize: 17, fontWeight: "700" }]}>
-              {result.totalQuestions - result.questionsCorrect}
-            </Text>
-            <Wrong width={15} height={15} />
-          </View>
+      {/* Score Cards */}
+      <Animated.View
+        entering={FadeInDown.delay(200).springify()}
+        style={styles.scoreCardsRow}
+      >
+        <View style={[styles.scoreCard, styles.scoreCardCorrect]}>
+          <Text style={styles.scoreValue}>{result.questionsCorrect}</Text>
+          <Right width={18} height={18} />
         </View>
-      </View>
+        <View style={[styles.scoreCard, styles.scoreCardWrong]}>
+          <Text style={styles.scoreValue}>
+            {result.totalQuestions - result.questionsCorrect}
+          </Text>
+          <Wrong width={18} height={18} />
+        </View>
+      </Animated.View>
 
-      {/* Scrollable Wrong Questions List */}
+      {/* Wrong Questions List */}
       {wrongQuestions.length > 0 ? (
         <View style={{ flex: 1, width: "100%" }}>
-          <Text
-            style={[
-              styles.txt,
-              {
-                fontSize: 16,
-                fontWeight: "600",
-                marginBottom: 20,
-                textAlign: "center",
-              },
-            ]}
+          <Animated.Text
+            entering={FadeInDown.delay(300).springify()}
+            style={styles.wrongQuestionsTitle}
           >
             {t("questionsMissed")}
-          </Text>
+          </Animated.Text>
 
           <ScrollView
             contentContainerStyle={{ gap: 12, paddingBottom: 20 }}
             showsVerticalScrollIndicator={false}
           >
             {wrongQuestions.map((item: any, idx: number) => (
-              <View
+              <Animated.View
                 key={idx}
-                style={{
-                  borderRadius: 14,
-                  backgroundColor: Colors.dark.bg_light,
-                  padding: 12,
-                  borderWidth: 1,
-                  borderColor: "#1F1D1D",
-                }}
+                entering={FadeInDown.delay(350 + idx * 50).springify()}
+                style={styles.wrongQuestionCard}
               >
-                <Text
-                  style={[
-                    {
-                      fontFamily: ITALIC_FONT,
-                      fontSize: 15,
-                      marginBottom: 15,
-                      fontWeight: "600",
-                      color: Colors.dark.text,
-                    },
-                  ]}
-                >
-                  {item.question.question[languageMap[user.language]]}
+                <Text style={styles.wrongQuestionText}>
+                  {nodeType === "emoji_puzzle"
+                    ? `${t("whatGame")} ${item.question.question[languageMap["English"]]}`
+                    : item.question.question[languageMap[user.language]]}
                 </Text>
 
-                <Text
-                  style={[
-                    styles.txt,
-                    {
-                      fontSize: 14,
-                      marginBottom: 10,
-                      color: Colors.dark.text_muted,
-                    },
-                  ]}
-                >
-                  {t("yourAnswer")}:{" "}
-                  <Text
-                    style={{
-                      fontFamily: ITALIC_FONT,
-                      color: Colors.dark.danger,
-                    }}
-                  >
-                    {getWrongAnswerLabel(item, user.language)}
+                <View style={styles.answerRow}>
+                  <Text style={styles.answerLabel}>{t("yourAnswer")}:</Text>
+                  <Text style={styles.answerWrong}>
+                    {getWrongAnswerLabel(item, user.language, nodeType)}
                   </Text>
-                </Text>
-                <Text
-                  style={[
-                    styles.txt,
-                    {
-                      fontSize: 14,
-                      color: Colors.dark.text_muted,
-                    },
-                  ]}
-                >
-                  {t("correctAnswer")}:{" "}
-                  <Text
-                    style={{
-                      fontFamily: ITALIC_FONT,
-                      color: Colors.dark.success,
-                    }}
-                  >
+                </View>
+
+                <View style={styles.answerRow}>
+                  <Text style={styles.answerLabel}>{t("correctAnswer")}:</Text>
+                  <Text style={styles.answerCorrect}>
                     {getCorrectAnswerLabel(item, user.language)}
                   </Text>
-                </Text>
-              </View>
+                </View>
+              </Animated.View>
             ))}
           </ScrollView>
         </View>
-      ) : null}
-
-      {/* All Correct Message */}
-      {wrongQuestions.length === 0 && (
-        <View
-          style={{
-            marginTop: 70,
-            alignItems: "center",
-            gap: 30,
-          }}
+      ) : (
+        <Animated.View
+          entering={FadeInDown.delay(300).springify()}
+          style={styles.allCorrectContainer}
         >
           <ClipboardCheck size={64} color={Colors.dark.text} strokeWidth={1} />
-          <Text
-            style={[
-              styles.txt,
-              {
-                fontSize: 18,
-                textAlign: "center",
-                color: Colors.dark.text_muted,
-              },
-            ]}
-          >
+          <Text style={styles.allCorrectText}>
             {t("allCorrect") || "All answers correct!"}
           </Text>
-        </View>
+        </Animated.View>
       )}
 
-      {/* Button fixed at bottom */}
-      <TouchableOpacity
-        style={{
-          marginTop: "auto",
-          width: "100%",
-          backgroundColor: Colors.dark.text,
-          borderRadius: 999,
-          paddingVertical: 15,
-          alignItems: "center",
-          paddingHorizontal: 40,
-        }}
-        onPress={() => router.back()}
+      {/* Back Button */}
+      <Animated.View
+        entering={FadeInDown.delay(400).springify()}
+        style={{ width: "100%" }}
       >
-        <Text
-          style={{
-            color: Colors.dark.bg_dark,
-            fontWeight: "600",
-            fontSize: 18,
-          }}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          activeOpacity={0.7}
         >
-          {t("backToEvents")}
-        </Text>
-      </TouchableOpacity>
+          <Text style={styles.backButtonText}>{t("backToEvents")}</Text>
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 };
 
-function getWrongAnswerLabel(item: any, lang: string) {
+function getWrongAnswerLabel(item: any, lang: string, nodeType?: string) {
+  // For emoji_puzzle and quote_guess, only English is available
+  const effectiveLang =
+    nodeType === "emoji_puzzle" || nodeType === "quote_guess"
+      ? "English"
+      : lang;
+
   if (item.userAnswer.textAnswer) return item.userAnswer.textAnswer;
   if (item.userAnswer.selectedAnswer !== null) {
     return item.question.options[item.userAnswer.selectedAnswer]?.text[
-      languageMap[lang]
+      languageMap[effectiveLang]
     ];
   }
   if (item.userAnswer.numericAnswer !== -1)
@@ -1069,40 +961,118 @@ function getCorrectAnswerLabel(item: any, lang: string) {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.dark.bg_dark,
+    paddingHorizontal: 16,
+    gap: 16,
+  },
   loadingContainer: {
     flex: 1,
-    backgroundColor: "#131313",
+    backgroundColor: Colors.dark.bg_dark,
     justifyContent: "center",
     alignItems: "center",
   },
-  txt: { fontFamily: REGULAR_FONT, color: Colors.dark.text },
-  questionCard: {
-    borderWidth: 1,
+  errorCard: {
+    alignItems: "center",
+    gap: 16,
+    padding: 32,
     backgroundColor: Colors.dark.bg_light,
-    borderColor: "#1F1D1D",
-    padding: 20,
-    paddingVertical: 40,
-    borderRadius: 20,
-    elevation: 3,
-    shadowColor: "black",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 1,
-    marginBottom: 10,
-    minHeight: "20%",
-    justifyContent: "center",
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
   },
-  questionIndex: {
-    fontFamily: REGULAR_FONT,
+  errorText: {
     color: Colors.dark.text,
-    fontSize: 14,
-    marginTop: 15,
-    fontWeight: 600,
-    position: "absolute",
-    top: -8,
-    left: 12,
+    fontSize: 16,
+    fontWeight: "600",
   },
-  questionText: { fontSize: 22, color: "white", textAlign: "center" },
+  retryButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 999,
+    backgroundColor: "#f5576c",
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+  screenTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: Colors.dark.text,
+    textAlign: "center",
+    fontFamily: REGULAR_FONT,
+  },
+  // Question Card
+  questionCard: {
+    borderRadius: 24,
+    padding: 24,
+    paddingVertical: 36,
+    minHeight: 160,
+    justifyContent: "center",
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  questionBadge: {
+    position: "absolute",
+    top: 12,
+    left: 16,
+    backgroundColor: "rgba(245, 87, 108, 0.2)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(245, 87, 108, 0.3)",
+  },
+  questionBadgeText: {
+    color: "#f5576c",
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  sourceQuizTitle: {
+    color: Colors.dark.text_muted,
+    fontSize: 13,
+    textAlign: "center",
+    marginBottom: 8,
+    fontFamily: ITALIC_FONT,
+  },
+  questionText: {
+    fontSize: 20,
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "500",
+    lineHeight: 28,
+  },
+  decorativeCircle1: {
+    position: "absolute",
+    right: -30,
+    top: -30,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  decorativeCircle2: {
+    position: "absolute",
+    left: -20,
+    bottom: -20,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "rgba(255,255,255,0.03)",
+  },
+  // Options
+  optionsContainer: {
+    gap: 12,
+    paddingBottom: 20,
+  },
+  tfContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12,
+  },
   textInput: {
     width: "100%",
     height: 60,
@@ -1112,42 +1082,302 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     color: "white",
     fontFamily: REGULAR_FONT,
+    backgroundColor: Colors.dark.bg_light,
   },
   optionButton: {
-    width: "100%",
-    borderWidth: 1,
-    backgroundColor: Colors.dark.bg_light,
-    borderColor: "#1F1D1D",
-    padding: 15,
-    paddingLeft: 30,
-    borderRadius: 50,
-    elevation: 7,
-    shadowColor: "black",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.5,
-    shadowRadius: 1,
-    justifyContent: "center",
-  },
-  selectedOption: { backgroundColor: "#232423", borderColor: "#323333" },
-  optionText: {
-    fontSize: 18,
-    color: Colors.dark.text,
-    fontFamily: ITALIC_FONT,
-  },
-  modeHeader: {
     flexDirection: "row",
-    justifyContent: "center",
     alignItems: "center",
-    gap: 10,
-    marginBottom: 10,
+    gap: 14,
+    backgroundColor: Colors.dark.bg_light,
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
+    padding: 16,
+    borderRadius: 16,
   },
-  modeText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "white",
+  optionButtonSelected: {
+    backgroundColor: "rgba(245, 87, 108, 0.15)",
+    borderColor: "#f5576c",
+  },
+  optionIndex: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: Colors.dark.border_muted,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  optionIndexSelected: {
+    backgroundColor: "#f5576c",
+  },
+  optionIndexText: {
+    color: Colors.dark.text_muted,
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  optionIndexTextSelected: {
+    color: "#fff",
+  },
+  optionText: {
+    flex: 1,
+    color: Colors.dark.text,
+    fontSize: 16,
     fontFamily: REGULAR_FONT,
   },
-
-  // Method result styles
-  // (All result styles removed as they are now inline to match daily component)
+  optionTextSelected: {
+    color: "#fff",
+  },
+  // True/False Buttons
+  tfButton: {
+    alignItems: "center",
+    gap: 10,
+    padding: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    backgroundColor: Colors.dark.bg_light,
+  },
+  tfButtonTrue: {
+    borderColor: "rgba(74, 222, 128, 0.3)",
+  },
+  tfButtonFalse: {
+    borderColor: "rgba(248, 113, 113, 0.3)",
+  },
+  tfButtonSelected: {
+    backgroundColor: "rgba(255,255,255,0.1)",
+  },
+  tfText: {
+    fontSize: 16,
+    fontWeight: "600",
+    fontFamily: ITALIC_FONT,
+  },
+  tfTextTrue: {
+    color: "#4ade80",
+  },
+  tfTextFalse: {
+    color: "#f87171",
+  },
+  // Mode Header
+  modeHeader: {
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  timerBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  timerText: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#fff",
+  },
+  livesContainer: {
+    flexDirection: "row",
+    gap: 8,
+    backgroundColor: Colors.dark.bg_light,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
+  },
+  // Bottom Nav
+  bottomNav: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: "auto",
+    paddingBottom: 20,
+  },
+  // Vote Mode
+  voteOption: {
+    backgroundColor: Colors.dark.bg_light,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
+    overflow: "hidden",
+  },
+  voteOptionSelected: {
+    borderColor: Colors.dark.primary,
+    backgroundColor: "rgba(96, 165, 250, 0.1)",
+  },
+  voteOptionUserChoice: {
+    borderColor: "#4ade80",
+    borderWidth: 2,
+  },
+  voteProgressBar: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    bottom: 0,
+  },
+  voteOptionContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 18,
+  },
+  voteOptionText: {
+    color: Colors.dark.text,
+    fontSize: 16,
+    fontWeight: "500",
+    flex: 1,
+  },
+  votePercentage: {
+    color: Colors.dark.text,
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  // Result Screen
+  resultContainer: {
+    flex: 1,
+    backgroundColor: Colors.dark.bg_dark,
+    paddingHorizontal: 16,
+    paddingTop: 20,
+    alignItems: "center",
+  },
+  resultTitle: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: Colors.dark.text,
+    textAlign: "center",
+    marginBottom: 20,
+    fontFamily: REGULAR_FONT,
+  },
+  resultCard: {
+    width: "100%",
+    borderRadius: 24,
+    padding: 24,
+    alignItems: "center",
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    marginBottom: 20,
+  },
+  glossOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "50%",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  resultMessage: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#fff",
+    textAlign: "center",
+    marginBottom: 20,
+    textShadowColor: "rgba(0,0,0,0.2)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  rewardsRow: {
+    flexDirection: "row",
+    gap: 40,
+  },
+  rewardItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  rewardValue: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#fff",
+  },
+  scoreCardsRow: {
+    flexDirection: "row",
+    gap: 16,
+    marginBottom: 24,
+  },
+  scoreCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    backgroundColor: Colors.dark.bg_light,
+    borderWidth: 1,
+  },
+  scoreCardCorrect: {
+    borderColor: "rgba(74, 222, 128, 0.5)",
+  },
+  scoreCardWrong: {
+    borderColor: "rgba(239, 68, 68, 0.5)",
+  },
+  scoreValue: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: Colors.dark.text,
+  },
+  wrongQuestionsTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: Colors.dark.text,
+    marginBottom: 16,
+    textAlign: "center",
+    fontFamily: REGULAR_FONT,
+  },
+  wrongQuestionCard: {
+    backgroundColor: Colors.dark.bg_light,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
+    gap: 10,
+  },
+  wrongQuestionText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: Colors.dark.text,
+    fontFamily: ITALIC_FONT,
+    marginBottom: 8,
+  },
+  answerRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  answerLabel: {
+    color: Colors.dark.text_muted,
+    fontSize: 14,
+    marginRight: 4,
+  },
+  answerWrong: {
+    color: "#f87171",
+    fontSize: 14,
+    fontFamily: ITALIC_FONT,
+  },
+  answerCorrect: {
+    color: "#4ade80",
+    fontSize: 14,
+    fontFamily: ITALIC_FONT,
+  },
+  allCorrectContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 24,
+  },
+  allCorrectText: {
+    fontSize: 18,
+    color: Colors.dark.text_muted,
+    textAlign: "center",
+    fontFamily: REGULAR_FONT,
+  },
+  backButton: {
+    width: "100%",
+    backgroundColor: Colors.dark.text,
+    borderRadius: 999,
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  backButtonText: {
+    color: Colors.dark.bg_dark,
+    fontSize: 16,
+    fontWeight: "700",
+  },
 });

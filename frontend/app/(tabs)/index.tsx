@@ -10,9 +10,7 @@ import { Colors } from "@/constants/Colors";
 import Gem from "@/assets/svgs/gem.svg";
 import Trophy from "@/assets/svgs/trophy.svg";
 import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
-import { layout } from "@/constants/Dimensions";
 import HomePageCards from "@/components/HomePageCards";
-import { WIDTH, HEIGHT, myHeight, myWidth } from "@/constants/Dimensions";
 import Carousel from "@/components/animatinos/Carousel";
 import { useUser } from "@/context/userContext";
 import { useCallback, useState } from "react";
@@ -21,6 +19,9 @@ import { moderateScale } from "react-native-size-matters";
 import { isSmallPhone } from "@/constants/Dimensions";
 import { useFocusEffect } from "expo-router";
 import { useSafeAreaBg } from "@/context/safeAreaContext";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 
 export default function HomeScreen() {
   const { user, loading } = useUser();
@@ -30,138 +31,176 @@ export default function HomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      // When active
       setSafeEdges(["bottom", "top"]);
     }, [])
   );
 
   if (loading || !user) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator color={Colors.dark.primary} size="large" />
       </View>
     );
   }
 
   return (
-    <View
-      style={[
-        {
-          alignItems: "center",
-          gap: 40,
-          height: "100%",
-        },
-        isSmallPhone && { gap: 20 },
-      ]}
-    >
-      <View
-        style={{
-          width: "100%",
-          flexDirection: "row",
-          gap: 20,
-          alignItems: "center",
-          marginTop: 10,
-          justifyContent: "space-around",
-        }}
+    <View style={[styles.container, isSmallPhone && { gap: 16 }]}>
+      {/* Header */}
+      <Animated.View
+        entering={FadeInDown.delay(0).springify()}
+        style={styles.header}
       >
-        <View
-          style={[
-            defaultStyles.containerRow,
-            { gap: HEIGHT * (20 / myHeight), justifyContent: "center" },
-          ]}
+        {/* Profile Section */}
+        <TouchableOpacity
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setIsVisible(true);
+          }}
+          activeOpacity={0.8}
+          style={styles.profileSection}
         >
-          <TouchableOpacity
-            onPress={() => setIsVisible(true)}
-            activeOpacity={0.7}
-            style={{
-              borderWidth: 2,
-              borderColor: user.theme.cardColor,
-              transform: [{ rotate: "45deg" }],
-              padding: 3,
-              borderRadius: 20,
-            }}
-          >
-            <View
-              style={{
-                width: 50,
-                height: 50,
-                transform: [{ rotate: "0deg" }],
-                overflow: "hidden",
-                justifyContent: "center",
-                alignItems: "center",
-                borderRadius: 15,
-              }}
-            >
-              <Image
-                src={user?.profileImage}
-                width={60}
-                height={60}
-                style={{
-                  transform: [{ rotate: "-45deg" }],
-                  aspectRatio: 1 / 1,
-                }}
-              />
-            </View>
-          </TouchableOpacity>
-          <Text
+          <View
             style={[
-              styles.txt,
-              user.name.length > 10 && { fontSize: moderateScale(15) },
+              styles.profileImageWrapper,
+              { borderColor: user.theme.cardColor },
             ]}
           >
-            {user.name}
-          </Text>
-        </View>
-        <View style={{ flexDirection: "row", gap: 10, alignItems: "center" }}>
-          <View style={{ alignItems: "center", flexDirection: "row", gap: 5 }}>
-            <Trophy width={20} height={20} color={Colors.dark.secondary} />
-            <Text style={[styles.txt, { fontWeight: "400" }]}>
-              {user.stars}
-              {/* String(user.stars).slice(0, 1)}.{String(user.stars).slice(1) -> Adding a point to for better visualization of numbers*/}
+            <View style={styles.profileImageContainer}>
+              <Image src={user?.profileImage} style={styles.profileImage} />
+            </View>
+          </View>
+          <View style={styles.userInfo}>
+            <Text
+              style={[
+                styles.userName,
+                user.name.length > 10 && { fontSize: moderateScale(14) },
+              ]}
+              numberOfLines={1}
+            >
+              {user.name}
             </Text>
+            <Text style={styles.welcomeText}>Welcome back!</Text>
           </View>
-          <View style={{ alignItems: "center", flexDirection: "row", gap: 5 }}>
-            <Gem width={20} height={20} color={Colors.dark.primary} />
-            <Text style={[styles.txt, { fontWeight: "400" }]}>{user.gems}</Text>
+        </TouchableOpacity>
+
+        {/* Stats Section */}
+        <View style={styles.statsSection}>
+          <View style={styles.statBadge}>
+            <Trophy width={16} height={16} color={Colors.dark.secondary} />
+            <Text style={styles.statValue}>{user.stars}</Text>
+          </View>
+          <View style={styles.statBadge}>
+            <Gem width={16} height={16} color={Colors.dark.primary} />
+            <Text style={styles.statValue}>{user.gems}</Text>
           </View>
         </View>
-      </View>
-      <Carousel />
-      <View
-        style={{
-          width: "100%",
-        }}
+      </Animated.View>
+
+      {/* Events Carousel */}
+      <Animated.View entering={FadeInDown.delay(100).springify()}>
+        <Carousel />
+      </Animated.View>
+
+      {/* Quiz Cards */}
+      <Animated.View
+        entering={FadeInDown.delay(200).springify()}
+        style={styles.cardsContainer}
       >
         <HomePageCards />
-      </View>
+      </Animated.View>
+
+      {/* Profile Modal */}
       <ProfileCardModal isVisible={isVisible} setIsVisible={setIsVisible} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  txt: {
+  container: {
+    flex: 1,
+    alignItems: "center",
+    gap: 24,
+    paddingTop: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Colors.dark.bg_dark,
+  },
+  // Header
+  header: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+  },
+  profileSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  profileImageWrapper: {
+    borderWidth: 2,
+    transform: [{ rotate: "45deg" }],
+    padding: 3,
+    borderRadius: 18,
+  },
+  profileImageContainer: {
+    width: 48,
+    height: 48,
+    transform: [{ rotate: "0deg" }],
+    overflow: "hidden",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 14,
+    backgroundColor: Colors.dark.bg_light,
+  },
+  profileImage: {
+    width: 58,
+    height: 58,
+    transform: [{ rotate: "-45deg" }],
+  },
+  userInfo: {
+    gap: 2,
+  },
+  userName: {
     color: Colors.dark.text,
-    fontSize: moderateScale(17),
+    fontSize: moderateScale(16),
     fontFamily: REGULAR_FONT,
-    fontWeight: 600,
+    fontWeight: "700",
   },
-  txt_muted: {
+  welcomeText: {
     color: Colors.dark.text_muted,
-    fontSize: 15,
+    fontSize: 12,
     fontFamily: REGULAR_FONT,
   },
-  currency: {
-    textAlign: "right",
-    minWidth: 45,
+  // Stats
+  statsSection: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  statBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: Colors.dark.bg_light,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: Colors.dark.border_muted,
-    padding: 3,
-    borderLeftWidth: 0,
-    borderTopRightRadius: 6,
-    borderBottomRightRadius: 6,
-    color: Colors.dark.text_muted,
-    fontSize: 13,
-    left: -10,
+  },
+  statValue: {
+    color: Colors.dark.text,
+    fontSize: 14,
+    fontFamily: REGULAR_FONT,
+    fontWeight: "600",
+  },
+  // Cards
+  cardsContainer: {
+    width: "100%",
+    flex: 1,
   },
 });

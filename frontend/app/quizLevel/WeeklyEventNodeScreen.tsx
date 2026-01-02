@@ -1,5 +1,4 @@
-// src/screens/WeeklyEventNodeScreen.tsx
-import React from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -8,23 +7,25 @@ import {
   ActivityIndicator,
   ScrollView,
 } from "react-native";
-import { WeeklyEventNodeType } from "@/types";
 import { useLocalSearchParams, router } from "expo-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { completeWeeklyEventNode } from "@/services/api";
 import { Colors } from "@/constants/Colors";
 import { REGULAR_FONT } from "@/constants/Styles";
-
-import { LineDashed } from "@/components/ui/Line";
 import Trophy from "@/assets/svgs/trophy.svg";
-import Gem from "@/assets/svgs/gem.svg";
-import Timer from "@/assets/svgs/timer.svg"; // Assuming we have this or similar, otherwise use text/emoji
-import { useState } from "react";
-
 import { Feather } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import CircularProgress from "@/components/ui/CircularProgress";
+import ProgressBar from "@/components/animatinos/progressBar";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, {
+  FadeInDown,
+  FadeIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 
-// Duplicated mapping for now
+// Icon mapping for node types
 const getIconName = (type?: string): keyof typeof Feather.glyphMap => {
   switch (type) {
     case "mini_quiz":
@@ -48,20 +49,37 @@ const getIconName = (type?: string): keyof typeof Feather.glyphMap => {
   }
 };
 
-import CircularProgress from "@/components/ui/CircularProgress";
-import ProgressBar from "@/components/animatinos/progressBar";
-
-// ...
+// Gradient colors for each node type
+const getGradientColors = (type?: string): [string, string] => {
+  switch (type) {
+    case "mini_quiz":
+      return ["#667eea", "#764ba2"];
+    case "time_challenge":
+      return ["#f59e0b", "#d97706"];
+    case "true_false_sprint":
+      return ["#22c55e", "#16a34a"];
+    case "survival":
+      return ["#ef4444", "#dc2626"];
+    case "mixed_gauntlet":
+      return ["#8b5cf6", "#6d28d9"];
+    case "emoji_puzzle":
+      return ["#f093fb", "#f5576c"];
+    case "quote_guess":
+      return ["#4facfe", "#00f2fe"];
+    case "vote":
+      return ["#a855f7", "#7c3aed"];
+    default:
+      return ["#667eea", "#764ba2"];
+  }
+};
 
 const WeeklyEventNodeScreen: React.FC = () => {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
   const {
     nodeIndex,
     nodeType,
     nodeTitle,
     nodeDescription,
-    nodeIcon,
     nodeReward,
     nodeConfig,
     questionsCorrect,
@@ -78,8 +96,7 @@ const WeeklyEventNodeScreen: React.FC = () => {
     trophiesCollected?: string;
   }>();
 
-  // Parse JSON params (with safety)
-  const nodeDataResponse = React.useMemo(() => {
+  const nodeDataResponse = useMemo(() => {
     try {
       return {
         reward: nodeReward ? JSON.parse(nodeReward as string) : null,
@@ -93,28 +110,26 @@ const WeeklyEventNodeScreen: React.FC = () => {
   const resolvedNodeIndex = Number(nodeIndex ?? 0);
   const resolvedNodeTitle = nodeTitle ?? "Weekly Event Node";
 
-  /* 
-  // Mutation removed as completion is handled in Game Screen
-  const {
-    mutate: completeNode,
-    isPending,
-    error,
-  } = useMutation({
-    mutationFn: () => completeWeeklyEventNode(resolvedNodeIndex),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["weeklyEvent"] });
-      router.back();
-    },
-  });
-  */
-  const [isPending, setIsPending] = useState(false); // Mock for UI consistency if needed or just remove loading state usage
-  const error: any = null;
+  const [isPending, setIsPending] = useState(false);
+
+  // Button animation
+  const buttonScale = useSharedValue(1);
+  const buttonAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: buttonScale.value }],
+  }));
+
+  const handleButtonPressIn = () => {
+    buttonScale.value = withSpring(0.95, { damping: 15, stiffness: 300 });
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const handleButtonPressOut = () => {
+    buttonScale.value = withSpring(1, { damping: 15, stiffness: 300 });
+  };
 
   const handleStart = () => {
-    // Navigate to Game Screen
     setIsPending(true);
-    // Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); // Ensure Haptics import or skip if consistent
-    // Just navigate
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     router.dismiss();
 
@@ -135,133 +150,182 @@ const WeeklyEventNodeScreen: React.FC = () => {
   };
 
   const iconName = getIconName(nodeType);
+  const gradientColors = getGradientColors(nodeType);
+
+  // Calculate progress
+  const totalQuestions =
+    nodeType === "vote"
+      ? 1
+      : nodeType === "emoji_puzzle"
+        ? nodeDataResponse.config?.emojiPuzzles?.length || 1
+        : nodeType === "quote_guess"
+          ? nodeDataResponse.config?.quotes?.length || 1
+          : nodeDataResponse.config?.quizConfig?.totalQuestions || 10;
+
+  const progressPercent = Math.floor(
+    ((Number(questionsCorrect) || 0) / totalQuestions) * 100
+  );
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
-      collapsable={false}
-      contentInsetAdjustmentBehavior="automatic"
     >
-      <View style={styles.iconContainer}>
-        <Feather name={iconName} size={48} color={Colors.dark.text} />
-      </View>
+      {/* Icon with Gradient Background */}
+      <Animated.View entering={FadeInDown.delay(0).springify()}>
+        <LinearGradient
+          colors={gradientColors}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.iconContainer}
+        >
+          <View style={styles.iconGlow} />
+          <Feather name={iconName} size={48} color="#fff" />
+        </LinearGradient>
+      </Animated.View>
 
-      <View style={styles.textContainer}>
-        <Text style={styles.typeBadge}>{formatNodeType(nodeType)}</Text>
+      {/* Text Content */}
+      <Animated.View
+        entering={FadeInDown.delay(100).springify()}
+        style={styles.textContainer}
+      >
+        <View style={[styles.typeBadge, { borderColor: gradientColors[0] }]}>
+          <Text style={[styles.typeBadgeText, { color: gradientColors[0] }]}>
+            {formatNodeType(nodeType)}
+          </Text>
+        </View>
         <Text style={styles.title}>{resolvedNodeTitle}</Text>
         <Text style={styles.description}>
           {nodeDescription ||
             "Complete this challenge to proceed further in the journey."}
         </Text>
-      </View>
+      </Animated.View>
 
-      <LineDashed needMargin={true} margin={24} />
+      {/* Divider */}
+      <Animated.View
+        entering={FadeIn.delay(200).springify()}
+        style={styles.divider}
+      >
+        <View style={styles.dividerLine} />
+        <View
+          style={[styles.dividerDot, { backgroundColor: gradientColors[0] }]}
+        />
+        <View style={styles.dividerLine} />
+      </Animated.View>
 
-      <View style={styles.chartsContainer}>
-        {/* Progress Card (Circular) */}
+      {/* Stats Cards */}
+      <Animated.View
+        entering={FadeInDown.delay(250).springify()}
+        style={styles.chartsContainer}
+      >
+        {/* Progress Card */}
         <View style={styles.chartCard}>
+          <LinearGradient
+            colors={["rgba(255,255,255,0.05)", "rgba(255,255,255,0)"]}
+            style={styles.chartCardGradient}
+          />
           <Text style={styles.chartTitle}>{t("progress")}</Text>
-          <LineDashed />
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              marginTop: 10,
-            }}
-          >
+          <View style={styles.chartContent}>
             <CircularProgress
-              progress={Math.floor(
-                ((Number(questionsCorrect) || 0) /
-                  (nodeType === "vote"
-                    ? 1
-                    : nodeType === "emoji_puzzle"
-                      ? nodeDataResponse.config?.emojiPuzzles?.length || 1
-                      : nodeType === "quote_guess"
-                        ? nodeDataResponse.config?.quotes?.length || 1
-                        : nodeDataResponse.config?.quizConfig?.totalQuestions ||
-                          10)) *
-                  100
-              )}
-              size={50}
-              strokeWidth={3}
-              fontSize={12}
+              progress={progressPercent}
+              size={56}
+              strokeWidth={4}
+              fontSize={14}
+              color={Colors.dark.border_muted}
             />
           </View>
         </View>
 
-        {/* Rewards Card (Linear) */}
+        {/* Rewards Card */}
         <View style={styles.chartCard}>
+          <LinearGradient
+            colors={["rgba(255,255,255,0.05)", "rgba(255,255,255,0)"]}
+            style={styles.chartCardGradient}
+          />
           <Text style={styles.chartTitle}>{t("rewards")}</Text>
-          <LineDashed />
-          <View
-            style={{
-              width: "100%",
-              marginTop: 20,
-              backgroundColor: Colors.dark.border_muted,
-              borderRadius: 10,
-            }}
-          >
-            <ProgressBar
-              color={Colors.dark.secondary}
-              progress={Number(trophiesCollected) || 0}
-              total={nodeDataResponse.reward?.trophies || 0} // Estimate: Completion + 10 Unlock? Or just Completion
-              height={3}
-            />
+          <View style={styles.rewardContent}>
+            <View style={styles.progressBarContainer}>
+              <ProgressBar
+                color={Colors.dark.secondary}
+                progress={Number(trophiesCollected) || 0}
+                total={nodeDataResponse.reward?.trophies || 0}
+                height={6}
+              />
+            </View>
+            <View style={styles.rewardRow}>
+              <Trophy color={Colors.dark.secondary} width={16} height={16} />
+              <Text style={styles.rewardText}>
+                {Number(trophiesCollected) || 0} /{" "}
+                {nodeDataResponse.reward?.trophies || 0}
+              </Text>
+            </View>
           </View>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 5,
-              marginTop: 10,
-            }}
-          >
-            <Text style={styles.chartSubtitle}>
-              {Number(trophiesCollected) || 0} /{" "}
-              {nodeDataResponse.reward?.trophies || 0}
+        </View>
+      </Animated.View>
+
+      {/* Info Row */}
+      <Animated.View
+        entering={FadeInDown.delay(300).springify()}
+        style={styles.infoRow}
+      >
+        <View style={styles.infoItem}>
+          <Feather
+            name="bar-chart-2"
+            size={18}
+            color={Colors.dark.text_muted}
+          />
+          <View>
+            <Text style={styles.infoLabel}>{t("difficulty")}</Text>
+            <Text style={styles.infoValue}>
+              {t(getDifficultyLabel(nodeDataResponse.config))}
             </Text>
           </View>
         </View>
-      </View>
-
-      {/* Basic Info Row (Difficulty, Duration) */}
-      <View style={styles.infoRow}>
+        <View style={styles.infoSeparator} />
         <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>{t("difficulty")}</Text>
-          <Text style={styles.infoValue}>
-            {t(getDifficultyLabel(nodeDataResponse.config))}
-          </Text>
+          <Feather name="clock" size={18} color={Colors.dark.text_muted} />
+          <View>
+            <Text style={styles.infoLabel}>{t("duration")}</Text>
+            <Text style={styles.infoValue}>
+              {getDurationLabel(nodeDataResponse.config)}
+            </Text>
+          </View>
         </View>
-        <View style={styles.infoItem}>
-          <Text style={styles.infoLabel}>{t("duration")}</Text>
-          <Text style={styles.infoValue}>
-            {getDurationLabel(nodeDataResponse.config)}
-          </Text>
-        </View>
-      </View>
+      </Animated.View>
 
-      {error && (
-        <Text style={styles.error}>
-          {error instanceof Error ? error.message : "Failed to start node"}
-        </Text>
-      )}
-
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.button, isPending && styles.buttonDisabled]}
-          onPress={handleStart}
-          disabled={isPending}
-        >
-          {isPending ? (
-            <ActivityIndicator color={Colors.dark.bg} />
-          ) : (
-            <Text style={styles.buttonText}>{t("start")}</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+      {/* Start Button */}
+      <Animated.View
+        entering={FadeInDown.delay(350).springify()}
+        style={styles.footer}
+      >
+        <Animated.View style={buttonAnimatedStyle}>
+          <TouchableOpacity
+            style={styles.button}
+            activeOpacity={1}
+            onPressIn={handleButtonPressIn}
+            onPressOut={handleButtonPressOut}
+            onPress={handleStart}
+            disabled={isPending}
+          >
+            <LinearGradient
+              colors={gradientColors}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.buttonGradient}
+            >
+              {isPending ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <Text style={styles.buttonText}>{t("start")}</Text>
+                  <Feather name="play" size={20} color="#fff" />
+                </>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+        </Animated.View>
+      </Animated.View>
     </ScrollView>
   );
 };
@@ -276,7 +340,6 @@ function formatNodeType(type?: string) {
 
 function getDifficultyLabel(config: any) {
   if (config?.quizConfig?.allowedDifficulties?.length > 0) {
-    // Capitalize first letter of the first difficulty
     const diff = config.quizConfig.allowedDifficulties[0];
     return diff.charAt(0).toUpperCase() + diff.slice(1);
   }
@@ -294,148 +357,203 @@ function getDurationLabel(config: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.dark.bg,
+    backgroundColor: Colors.dark.bg_dark,
   },
   content: {
-    flexGrow: 1, // Allow content to expand and push footer down
-    paddingTop: 30,
-    gap: 20,
+    flexGrow: 1,
+    paddingTop: 40,
+    gap: 24,
     paddingHorizontal: 24,
-    paddingBottom: 50, // More bottom padding
+    paddingBottom: 40,
     alignItems: "center",
   },
+  // Icon
   iconContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: Colors.dark.bg_light,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 24,
-    borderWidth: 1,
-    borderColor: Colors.dark.border,
+    marginBottom: 8,
+    overflow: "hidden",
+    borderWidth: 3,
+    borderColor: "rgba(255,255,255,0.2)",
   },
-  iconEmoji: {
-    fontSize: 48,
+  iconGlow: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "50%",
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderTopLeftRadius: 55,
+    borderTopRightRadius: 55,
   },
+  // Text
   textContainer: {
     alignItems: "center",
     gap: 12,
   },
   typeBadge: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: Colors.dark.secondary,
-    textTransform: "uppercase",
-    letterSpacing: 1,
-    backgroundColor: "rgba(255, 177, 31, 0.1)",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
     borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderWidth: 1,
+  },
+  typeBadgeText: {
+    fontSize: 12,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
   },
   title: {
     fontSize: 28,
-    fontWeight: "700",
+    fontWeight: "800",
     color: Colors.dark.text,
     textAlign: "center",
+    fontFamily: REGULAR_FONT,
   },
   description: {
-    fontSize: 16,
+    fontSize: 15,
     color: Colors.dark.text_muted,
     textAlign: "center",
-    lineHeight: 24,
+    lineHeight: 22,
+    paddingHorizontal: 10,
   },
-
+  // Divider
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    gap: 16,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.dark.border_muted,
+  },
+  dividerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
   // Charts
   chartsContainer: {
     flexDirection: "row",
     width: "100%",
     gap: 12,
-    marginBottom: 20,
   },
   chartCard: {
     flex: 1,
-    backgroundColor: Colors.dark.bg,
+    backgroundColor: Colors.dark.bg_light,
     borderWidth: 1,
     borderColor: Colors.dark.border_muted,
-    borderRadius: 25,
+    borderRadius: 20,
     padding: 16,
     alignItems: "center",
-    gap: 5,
-    // Shadow
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    overflow: "hidden",
+  },
+  chartCardGradient: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 60,
   },
   chartTitle: {
-    fontSize: 14,
-    fontWeight: 600,
-    color: Colors.dark.text,
-    marginBottom: 8,
-    fontFamily: REGULAR_FONT,
-  },
-  chartSubtitle: {
-    fontSize: 12,
-    color: Colors.dark.text,
+    fontSize: 13,
     fontWeight: "600",
+    color: Colors.dark.text_muted,
+    marginBottom: 12,
+    fontFamily: REGULAR_FONT,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
-
+  chartContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  rewardContent: {
+    width: "100%",
+    gap: 10,
+    flex: 1,
+    justifyContent: "center",
+  },
+  progressBarContainer: {
+    width: "100%",
+    backgroundColor: Colors.dark.border_muted,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  rewardRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  rewardText: {
+    fontSize: 14,
+    color: Colors.dark.text,
+    fontWeight: "700",
+  },
   // Info Row
   infoRow: {
     flexDirection: "row",
     width: "100%",
+    alignItems: "center",
     justifyContent: "space-around",
-    marginBottom: 20,
-    backgroundColor: "rgba(255,255,255,0.03)",
-    paddingVertical: 12,
-    borderRadius: 16,
+    backgroundColor: Colors.dark.bg_light,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
   },
   infoItem: {
+    flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 10,
+  },
+  infoSeparator: {
+    width: 1,
+    height: 30,
+    backgroundColor: Colors.dark.border_muted,
   },
   infoLabel: {
-    fontSize: 10,
+    fontSize: 11,
     color: Colors.dark.text_muted,
-    fontWeight: "700",
-    letterSpacing: 1,
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: 15,
     color: Colors.dark.text,
-    fontWeight: "600",
+    fontWeight: "700",
+    marginTop: 2,
   },
-
-  error: {
-    marginTop: 16,
-    color: Colors.dark.danger,
-    textAlign: "center",
-  },
+  // Footer
   footer: {
     width: "100%",
-    marginTop: "auto", // Push to bottom of flex container
-    paddingTop: 40, // Space from content above
+    marginTop: "auto",
+    paddingTop: 20,
   },
   button: {
     width: "100%",
-    backgroundColor: "white", // White Button
-    paddingVertical: 18,
-    borderRadius: 16,
+    borderRadius: 20,
+    overflow: "hidden",
+  },
+  buttonGradient: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "white",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 5,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
+    gap: 10,
+    paddingVertical: 18,
   },
   buttonText: {
-    color: Colors.dark.bg, // Dark text on white button
+    color: "#fff",
     fontSize: 18,
     fontWeight: "700",
   },

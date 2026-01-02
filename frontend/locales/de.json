@@ -115,5 +115,11 @@
   "allCompleted": "Alles abgeschlossen!",
   "difficulty": "Schwierigkeit",
   "duration": "Dauer",
-  "start": "Beginnen"
+  "start": "Beginnen",
+  "eventsSubtitle": "Tritt an und gewinne tolle Belohnungen",
+  "weeklyChallenge": "Wöchentliche Herausforderung",
+  "dailyQuizDescription": "Teste täglich dein Wissen und verdiene Belohnungen!",
+  "weeklyEventDescription": "Erfülle wöchentliche Missionen für exklusive Preise!",
+  "championship": "Championship",
+  "championshipDescription": "Tritt gegen die besten Spieler weltweit an!"
 }

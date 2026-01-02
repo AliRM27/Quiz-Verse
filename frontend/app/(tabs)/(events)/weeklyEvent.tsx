@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
-  LayoutChangeEvent,
   RefreshControl,
 } from "react-native";
 import {
@@ -17,41 +16,53 @@ import {
 import { useUser } from "@/context/userContext";
 import { fetchWeeklyEvent } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Colors } from "@/constants/Colors";
 import WeeklyEventLogo from "@/assets/svgs/weeklyEvent.svg";
-import { isSmallPhone } from "@/constants/Dimensions";
-import { LineDashed } from "@/components/ui/Line";
 import CircularProgress from "@/components/ui/CircularProgress";
 import { REGULAR_FONT } from "@/constants/Styles";
 import LockIcon from "@/assets/svgs/lock.svg";
 import { useTranslation } from "react-i18next";
 import Loader from "@/components/ui/Loader";
 import ArrBack from "@/components/ui/ArrBack";
-import Svg, { Path, Defs, LinearGradient, Stop } from "react-native-svg";
+import Svg, {
+  Path,
+  Defs,
+  LinearGradient as SvgLinearGradient,
+  Stop,
+} from "react-native-svg";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withRepeat,
   withSequence,
   withTiming,
-  withDelay,
+  FadeInDown,
+  FadeIn,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
+import { Feather } from "@expo/vector-icons";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // Journey Configuration
 const NODE_SIZE = 80;
 const VERTICAL_SPACING = 140;
-const WAVE_AMPLITUDE = SCREEN_WIDTH * 0.25; // How wide the zigzag goes
+const WAVE_AMPLITUDE = SCREEN_WIDTH * 0.25;
 const TOP_PADDING = 40;
-const BOTTOM_PADDING = 80;
 
 const WeeklyEventScreen: React.FC = () => {
   const { token } = useUser();
   const { t } = useTranslation();
-  const [containerHeight, setContainerHeight] = useState(0);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Scroll to top on focus
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    }, [])
+  );
 
   const { data, isLoading, isError, error, refetch } =
     useQuery<WeeklyEventResponse>({
@@ -93,23 +104,8 @@ const WeeklyEventScreen: React.FC = () => {
 
   // --- Journey Logic ---
   const getNodePosition = (index: number) => {
-    // 0 = Center
-    // 1 = Right
-    // 2 = Center
-    // 3 = Left
-    // 4 = Center ...
-    // Using simple Sine wave logic or straight zigzag logic?
-    // Let's do a Sine wave for smoothness.
-    // Period = ? We want it to go Center -> Right -> Center -> Left -> Center in 4 steps?
-    // index: 0(C) -> 1(R) -> 2(C) -> 3(L) -> 4(C)
-    // sin(0) = 0
-    // sin(PI/2) = 1
-    // sin(PI) = 0
-    // sin(3PI/2) = -1
-    // So angle = index * (Math.PI / 2)
-
     const xOffset = Math.sin(index * (Math.PI / 2)) * WAVE_AMPLITUDE;
-    const x = SCREEN_WIDTH / 2 + xOffset; // Center reference is screen center
+    const x = SCREEN_WIDTH / 2 + xOffset;
     const y = TOP_PADDING + index * VERTICAL_SPACING;
     return { x, y };
   };
@@ -123,13 +119,8 @@ const WeeklyEventScreen: React.FC = () => {
       if (i === 0) {
         path += `M ${pos.x} ${pos.y} `;
       } else {
-        // Curve to next point
         const prevPos = getNodePosition(i - 1);
         const midY = (prevPos.y + pos.y) / 2;
-
-        // Cubic bezier for smooth vertical connection
-        // Control point 1: (prevX, midY) - keeps it vertical-ish leaving the node
-        // Control point 2: (currX, midY) - arrives vertical-ish at next node
         path += `C ${prevPos.x} ${midY}, ${pos.x} ${midY}, ${pos.x} ${pos.y} `;
       }
     });
@@ -141,7 +132,6 @@ const WeeklyEventScreen: React.FC = () => {
     const xOffset = x - SCREEN_WIDTH / 2;
     const isLocked = node.status === "locked";
 
-    // Small position adjust to center the node div (since x,y is center point)
     const left = x - NODE_SIZE / 2;
     const top = y - NODE_SIZE / 2;
 
@@ -151,9 +141,7 @@ const WeeklyEventScreen: React.FC = () => {
       completed: t("done") || "Done",
     };
 
-    // Determine label position (Left or Right of the node)
     let isLabelLeft = false;
-
     if (xOffset > 10) {
       isLabelLeft = true;
     } else if (xOffset < -10) {
@@ -163,8 +151,9 @@ const WeeklyEventScreen: React.FC = () => {
     }
 
     return (
-      <View
+      <Animated.View
         key={node.index}
+        entering={FadeIn.delay(index * 80).springify()}
         style={[
           styles.nodeContainer,
           { left, top, width: NODE_SIZE, height: NODE_SIZE },
@@ -182,7 +171,9 @@ const WeeklyEventScreen: React.FC = () => {
             isLabelLeft ? styles.labelLeft : styles.labelRight,
           ]}
         >
-          <Text style={styles.nodeIndex}>Level {index + 1}</Text>
+          <View style={styles.levelBadge}>
+            <Text style={styles.levelBadgeText}>Level {index + 1}</Text>
+          </View>
           <Text
             style={[styles.nodeTitle, isLocked && styles.textMuted]}
             numberOfLines={2}
@@ -190,12 +181,11 @@ const WeeklyEventScreen: React.FC = () => {
             {isLocked ? statusLabel.locked : node.title}
           </Text>
         </View>
-      </View>
+      </Animated.View>
     );
   };
 
-  // --- End Journey Logic ---
-
+  // --- Loading State ---
   if ((isLoading || !token) && !data) {
     return (
       <View style={styles.centered}>
@@ -204,21 +194,35 @@ const WeeklyEventScreen: React.FC = () => {
     );
   }
 
+  // --- Error State ---
   if (errorMessage && !data) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.errorText}>{errorMessage}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={onRefresh}>
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
+        <Animated.View
+          entering={FadeInDown.springify()}
+          style={styles.errorCard}
+        >
+          <Feather name="alert-circle" size={48} color="#fca5a5" />
+          <Text style={styles.errorText}>{errorMessage}</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={onRefresh}>
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </Animated.View>
       </View>
     );
   }
 
+  // --- No Data State ---
   if (!data) {
     return (
       <View style={styles.centered}>
-        <Text style={styles.errorText}>No weekly event available.</Text>
+        <Animated.View
+          entering={FadeInDown.springify()}
+          style={styles.errorCard}
+        >
+          <Feather name="calendar" size={48} color={Colors.dark.text_muted} />
+          <Text style={styles.errorText}>No weekly event available.</Text>
+        </Animated.View>
       </View>
     );
   }
@@ -227,56 +231,94 @@ const WeeklyEventScreen: React.FC = () => {
   const startDate = new Date(event.startsAt);
   const endDate = new Date(event.endsAt);
   const totalHeight = TOP_PADDING + data.nodes.length * VERTICAL_SPACING;
+  const completedNodes = data.nodes.filter(
+    (n) => n.status === "completed"
+  ).length;
 
   return (
     <View style={styles.screen}>
       <ArrBack onPress={() => router.replace("/(tabs)/(events)")} />
 
-      {/* Header Section (Static) */}
-      <View style={{ alignItems: "center", gap: 10, marginBottom: 10 }}>
+      {/* Header Section */}
+      <Animated.View
+        entering={FadeInDown.delay(0).springify()}
+        style={styles.headerContainer}
+      >
         <WeeklyEventLogo width={200} height={60} />
-        <Text style={[styles.txtMuted, { fontSize: 13 }]}>
-          {startDate.toLocaleDateString()} – {endDate.toLocaleDateString()}
-        </Text>
-        <View style={styles.headerCard}>
-          <View style={styles.progressRow}>
-            <View>
-              <Text style={[styles.txt, styles.headerTitle]}>
-                {event.title}
-              </Text>
-              <Text style={[styles.txtMuted, { fontSize: 12 }]}>
-                {event.description}
-              </Text>
-            </View>
-            <CircularProgress
-              progress={
-                progress.fullCompletionRewardClaimed
-                  ? 10
-                  : progress.currentNodeIndex
-              }
-              total={data.nodes.length}
-              size={50}
-              strokeWidth={3}
-              fontSize={12}
-              percent={false}
-            />
-          </View>
-          {progress.fullCompletionRewardClaimed && (
-            <Text style={styles.completedBadge}>
-              {t("allCompleted").toUpperCase()}
-            </Text>
-          )}
-        </View>
-      </View>
 
+        {/* Date Badge */}
+        <View style={styles.dateBadge}>
+          <Feather name="calendar" size={14} color={Colors.dark.primary} />
+          <Text style={styles.dateBadgeText}>
+            {startDate.toLocaleDateString()} – {endDate.toLocaleDateString()}
+          </Text>
+        </View>
+      </Animated.View>
+
+      {/* Journey ScrollView */}
       <ScrollView
+        ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingVertical: 50 }}
-        style={{ width: "100%" }}
+        contentContainerStyle={styles.scrollContent}
+        style={styles.scrollView}
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={onRefresh} />
         }
       >
+        {/* Progress Card */}
+        <Animated.View entering={FadeInDown.delay(100).springify()}>
+          <LinearGradient
+            colors={["#f093fb", "#f5576c"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.headerCard}
+          >
+            {/* Decorative circles */}
+            <View style={styles.decorativeCircle1} />
+            <View style={styles.decorativeCircle2} />
+
+            {/* Gloss */}
+            <LinearGradient
+              colors={["rgba(255,255,255,0.2)", "rgba(255,255,255,0)"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={styles.glossOverlay}
+            />
+
+            <View style={styles.progressRow}>
+              <View style={styles.headerTextContainer}>
+                <Text style={styles.headerTitle}>{event.title}</Text>
+                <Text style={styles.headerDescription}>
+                  {event.description}
+                </Text>
+              </View>
+              <View style={styles.progressCircleContainer}>
+                <CircularProgress
+                  progress={
+                    progress.fullCompletionRewardClaimed
+                      ? data.nodes.length
+                      : completedNodes
+                  }
+                  total={data.nodes.length}
+                  size={56}
+                  strokeWidth={4}
+                  fontSize={14}
+                  percent={false}
+                  color="rgba(255,255,255,0.3)"
+                />
+              </View>
+            </View>
+
+            {progress.fullCompletionRewardClaimed && (
+              <View style={styles.completedBadge}>
+                <Feather name="award" size={16} color="#4ade80" />
+                <Text style={styles.completedBadgeText}>
+                  {t("allCompleted").toUpperCase()}
+                </Text>
+              </View>
+            )}
+          </LinearGradient>
+        </Animated.View>
         <View
           style={{ height: totalHeight, width: "100%", position: "relative" }}
         >
@@ -287,37 +329,26 @@ const WeeklyEventScreen: React.FC = () => {
             style={StyleSheet.absoluteFill}
           >
             <Defs>
-              <LinearGradient id="pathGradient" x1="0" y1="0" x2="0" y2="1">
-                <Stop
-                  offset="0"
-                  stopColor={Colors.dark.primary}
-                  stopOpacity="0.6"
-                />
-                <Stop
-                  offset="1"
-                  stopColor={Colors.dark.secondary}
-                  stopOpacity="0.2"
-                />
-              </LinearGradient>
+              <SvgLinearGradient id="pathGradient" x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor="#f093fb" stopOpacity="0.6" />
+                <Stop offset="1" stopColor="#f5576c" stopOpacity="0.2" />
+              </SvgLinearGradient>
             </Defs>
-            {/* Draw the full path first (background track) */}
+
+            {/* Background track */}
             <Path
               d={journeyPath}
               stroke={Colors.dark.border_muted}
-              strokeWidth={14}
+              strokeWidth={16}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
 
-            {/* Draw the 'active' path - overlay logic is complex for individual segments,
-                     so for now let's just color the whole line slightly or use segments.
-                     Refinement: Draw individual segments to color Completed vs Locked differently?
-                  */}
+            {/* Active path segments */}
             {data.nodes.map((_, i) => {
               if (i === 0) return null;
               const prevNode = data.nodes[i - 1];
-              // Connect prevNode to currNode
               const prevPos = getNodePosition(i - 1);
               const currPos = getNodePosition(i);
               const midY = (prevPos.y + currPos.y) / 2;
@@ -326,15 +357,15 @@ const WeeklyEventScreen: React.FC = () => {
               const isPathActive =
                 prevNode.status === "completed" ||
                 prevNode.status === "unlocked";
-              // If previous node is completed, the path to the current one is 'traversed' (or at least unlocked)
 
               return (
                 <Path
                   key={`path-${i}`}
                   d={segmentPath}
-                  stroke={isPathActive ? Colors.dark.info : "transparent"} // Colored overlay
-                  strokeWidth={4}
+                  stroke={isPathActive ? "#f5576c" : "transparent"}
+                  strokeWidth={6}
                   fill="none"
+                  strokeLinecap="round"
                 />
               );
             })}
@@ -348,14 +379,11 @@ const WeeklyEventScreen: React.FC = () => {
   );
 };
 
-// 3D Button Component
-import { Feather } from "@expo/vector-icons";
-
 // Map node types to Feather icon names
 const getIconName = (type?: string): keyof typeof Feather.glyphMap => {
   switch (type) {
     case "mini_quiz":
-      return "cpu"; // Brain-like
+      return "cpu";
     case "time_challenge":
       return "zap";
     case "true_false_sprint":
@@ -371,10 +399,11 @@ const getIconName = (type?: string): keyof typeof Feather.glyphMap => {
     case "vote":
       return "thumbs-up";
     default:
-      return "play"; // gamepad isn't in feather, using play or box
+      return "play";
   }
 };
 
+// Enhanced 3D Button Component
 const JourneyNodeButton = ({
   node,
   onPress,
@@ -403,26 +432,25 @@ const JourneyNodeButton = ({
     transform: [{ translateY: translateY.value }],
   }));
 
-  // Colors
+  // Colors with gradient-matching theme
   let mainColor = Colors.dark.bg_light;
   let depthColor = Colors.dark.border;
   let borderColor = Colors.dark.border;
-  let iconColor = Colors.dark.text; // Default Icon/Text color
+  let iconColor = Colors.dark.text;
 
   if (isCompleted) {
-    mainColor = "#22c55e"; // Green
-    depthColor = "#14532d"; // Dark Green
+    mainColor = "#22c55e";
+    depthColor = "#14532d";
     borderColor = "#15803d";
     iconColor = "#ffffff";
   } else if (isUnlocked) {
-    mainColor = Colors.dark.primary; // Filled Primary
-    depthColor = "#0c4a6e"; // Darker Blue/Cyan shade
-    borderColor = Colors.dark.primary;
-    iconColor = "#ffffff"; // White icon on primary
+    mainColor = "#f5576c";
+    depthColor = "#991b1b";
+    borderColor = "#f5576c";
+    iconColor = "#ffffff";
   } else {
-    // Locked
     mainColor = Colors.dark.bg_light;
-    depthColor = "#404040"; // Darker Gray
+    depthColor = "#404040";
     borderColor = Colors.dark.border;
     iconColor = Colors.dark.text_muted;
   }
@@ -431,14 +459,11 @@ const JourneyNodeButton = ({
 
   return (
     <View style={{ width: NODE_SIZE, height: NODE_SIZE }}>
-      {/* Depth Layer (Static at bottom) */}
+      {/* Depth Layer */}
       <View
         style={[
           styles.node3DDepth,
-          {
-            backgroundColor: depthColor,
-            borderColor: borderColor, // Optional: border for the depth too to match
-          },
+          { backgroundColor: depthColor, borderColor: borderColor },
         ]}
       />
 
@@ -455,10 +480,7 @@ const JourneyNodeButton = ({
           style={[
             styles.node3DSurface,
             animatedStyle,
-            {
-              backgroundColor: mainColor,
-              borderColor: borderColor,
-            },
+            { backgroundColor: mainColor, borderColor: borderColor },
           ]}
         >
           {isLocked ? (
@@ -467,10 +489,10 @@ const JourneyNodeButton = ({
             <Feather name={iconName} size={32} color={iconColor} />
           )}
 
-          {/* Glare/Highlight effect for 3D curved look */}
+          {/* Glare effect */}
           <View style={styles.nodeGlare} />
 
-          {/* Pulse effect for current unlocked level - White Glow since bg is primary */}
+          {/* Pulse effect for unlocked */}
           {isUnlocked && <LoopingPulse />}
         </Animated.View>
       </TouchableOpacity>
@@ -481,15 +503,14 @@ const JourneyNodeButton = ({
 const LoopingPulse = () => {
   const scale = useSharedValue(1);
 
-  // Setup animation loop
   React.useEffect(() => {
     scale.value = withRepeat(
       withSequence(
         withTiming(1.2, { duration: 800 }),
         withTiming(1, { duration: 800 })
       ),
-      -1, // Infinite
-      true // Reverse
+      -1,
+      true
     );
   }, []);
 
@@ -506,15 +527,9 @@ const LoopingPulse = () => {
 };
 
 const styles = StyleSheet.create({
-  txt: {
-    color: Colors.dark.text,
-    fontFamily: REGULAR_FONT,
-  },
-  txtMuted: { color: Colors.dark.text_muted, fontFamily: REGULAR_FONT },
-  textMuted: { color: Colors.dark.text_muted },
   screen: {
+    flex: 1,
     backgroundColor: Colors.dark.bg_dark,
-    height: "100%",
     alignItems: "center",
     paddingTop: 10,
   },
@@ -524,82 +539,193 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: Colors.dark.bg_dark,
   },
+  // Error Card
+  errorCard: {
+    alignItems: "center",
+    gap: 16,
+    padding: 32,
+    backgroundColor: Colors.dark.bg_light,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
+    marginHorizontal: 20,
+  },
   errorText: {
-    color: "#fca5a5",
+    color: Colors.dark.text,
+    fontSize: 16,
     textAlign: "center",
-    paddingHorizontal: 24,
+    fontWeight: "500",
   },
   retryButton: {
-    marginTop: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
     borderRadius: 999,
-    backgroundColor: "#6366f1",
+    backgroundColor: "#f5576c",
   },
   retryButtonText: {
     color: "white",
     fontWeight: "600",
+    fontSize: 14,
   },
-  headerCard: {
-    width: "90%",
-    padding: 15,
+  // Header
+  headerContainer: {
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 16,
+  },
+  dateBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: Colors.dark.bg_light,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: Colors.dark.bg,
     borderWidth: 1,
     borderColor: Colors.dark.border_muted,
+  },
+  dateBadgeText: {
+    color: Colors.dark.text,
+    fontSize: 13,
+    fontWeight: "500",
+  },
+  // Header Card
+  headerCard: {
+    width: SCREEN_WIDTH * 0.9,
+    padding: 20,
+    borderRadius: 24,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  decorativeCircle1: {
+    position: "absolute",
+    right: -30,
+    top: -30,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "rgba(255,255,255,0.1)",
+  },
+  decorativeCircle2: {
+    position: "absolute",
+    left: -20,
+    bottom: -20,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  glossOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "50%",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
   progressRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: 10,
+    gap: 16,
+  },
+  headerTextContainer: {
+    flex: 1,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    maxWidth: "80%",
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#fff",
+    marginBottom: 4,
+    textShadowColor: "rgba(0,0,0,0.2)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  headerDescription: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.85)",
+    lineHeight: 18,
+  },
+  progressCircleContainer: {
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 999,
+    padding: 6,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.2)",
   },
   completedBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    marginTop: 16,
+    backgroundColor: "rgba(74, 222, 128, 0.2)",
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(74, 222, 128, 0.3)",
+  },
+  completedBadgeText: {
     fontSize: 12,
     color: "#4ade80",
-    fontWeight: "600",
-    textAlign: "center",
-    marginTop: 8,
+    fontWeight: "700",
+    letterSpacing: 0.5,
   },
-
-  // Journey Styles
+  // ScrollView
+  scrollView: {
+    width: "100%",
+  },
+  scrollContent: {
+    paddingVertical: 30,
+    gap: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  // Node Styles
   nodeContainer: {
     position: "absolute",
     alignItems: "center",
     justifyContent: "center",
-    // overflow: 'visible' // Allow labels to spill out
   },
   nodeLabelContainer: {
     position: "absolute",
-    // top: '105%' removed
-    width: 120, // constrain width
+    width: 120,
     justifyContent: "center",
+    gap: 4,
   },
   labelLeft: {
-    right: "115%", // Push to left of node
-    alignItems: "center", // Align text to right (towards node)
+    right: "115%",
+    alignItems: "center",
   },
   labelRight: {
-    left: "115%", // Push to right of node
-    alignItems: "center", // Align text to left (towards node)
+    left: "115%",
+    alignItems: "center",
   },
-  nodeIndex: {
-    color: Colors.dark.secondary,
-    fontSize: 12,
-    fontWeight: "bold",
-    marginBottom: 2,
-    textAlign: "center",
+  levelBadge: {
+    backgroundColor: "rgba(245, 87, 108, 0.2)",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "rgba(245, 87, 108, 0.3)",
+  },
+  levelBadgeText: {
+    color: "#f5576c",
+    fontSize: 11,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   nodeTitle: {
     color: Colors.dark.text,
     fontSize: 13,
     fontWeight: "600",
-    textAlign: "center", // Justify handled by flex-start/end
+    textAlign: "center",
+  },
+  textMuted: {
+    color: Colors.dark.text_muted,
   },
   // 3D Button Styles
   node3DDepth: {
@@ -607,9 +733,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    top: 6, // Shifted down to appear as depth
+    top: 6,
     borderRadius: 999,
-    borderWidth: 0, // Depth doesn't strictly need a border if the color is distinct
   },
   node3DSurface: {
     flex: 1,
@@ -617,7 +742,7 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 6, // Initial offset to show the depth layer
+    marginBottom: 6,
   },
   nodeGlare: {
     position: "absolute",
@@ -625,14 +750,11 @@ const styles = StyleSheet.create({
     width: "60%",
     height: "40%",
     borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.1)",
-  },
-  nodeEmoji: {
-    fontSize: 32,
+    backgroundColor: "rgba(255,255,255,0.15)",
   },
   pulseCircle: {
     borderRadius: 999,
-    backgroundColor: "white", // Glow white on primary background
+    backgroundColor: "white",
     zIndex: -1,
   },
 });

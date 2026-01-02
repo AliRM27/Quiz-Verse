@@ -115,5 +115,11 @@
   "allCompleted": "All Completed!",
   "difficulty": "Difficulty",
   "duration": "Duration",
-  "start": "Start"
+  "start": "Start",
+  "eventsSubtitle": "Compete and win amazing rewards",
+  "weeklyChallenge": "Weekly Challenge",
+  "dailyQuizDescription": "Test your knowledge daily and earn rewards!",
+  "weeklyEventDescription": "Complete weekly missions for exclusive prizes!",
+  "championshipDescription": "Compete against the best players worldwide!",
+  "championship": "Championship"
 }
