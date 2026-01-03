@@ -147,18 +147,17 @@ export default function WeeklyGameScreen() {
   if (error || (!questionData?.questions && !isVoteMode)) {
     return (
       <View style={styles.loadingContainer}>
-        <Animated.View
-          entering={FadeInDown.springify()}
-          style={styles.errorCard}
-        >
-          <Feather name="alert-circle" size={48} color="#fca5a5" />
-          <Text style={styles.errorText}>Failed to load questions.</Text>
-          <TouchableOpacity
-            style={styles.retryButton}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.retryButtonText}>Go Back</Text>
-          </TouchableOpacity>
+        <Animated.View entering={FadeInDown.springify()}>
+          <View style={styles.errorCard}>
+            <Feather name="alert-circle" size={48} color="#fca5a5" />
+            <Text style={styles.errorText}>Failed to load questions.</Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.retryButtonText}>Go Back</Text>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       </View>
     );
@@ -359,12 +358,9 @@ export default function WeeklyGameScreen() {
         />
 
         {/* Title */}
-        <Animated.Text
-          entering={FadeInDown.delay(0).springify()}
-          style={styles.screenTitle}
-        >
-          {nodeTitle || "Weekly Event"}
-        </Animated.Text>
+        <Animated.View entering={FadeInDown.delay(0).springify()}>
+          <Text style={styles.screenTitle}>{nodeTitle || "Weekly Event"}</Text>
+        </Animated.View>
 
         {/* VOTE MODE UI */}
         {nodeType === "vote" ? (
@@ -552,36 +548,41 @@ const OptionButton = ({
   };
 
   return (
-    <Animated.View
-      entering={FadeInDown.delay(150 + index * 50).springify()}
-      style={animatedStyle}
-    >
-      <Pressable
-        style={[styles.optionButton, isSelected && styles.optionButtonSelected]}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        onPress={onPress}
-      >
-        <View
-          style={[styles.optionIndex, isSelected && styles.optionIndexSelected]}
+    <Animated.View entering={FadeInDown.delay(150 + index * 50).springify()}>
+      <Animated.View style={animatedStyle}>
+        <Pressable
+          style={[
+            styles.optionButton,
+            isSelected && styles.optionButtonSelected,
+          ]}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          onPress={onPress}
         >
-          <Text
+          <View
             style={[
-              styles.optionIndexText,
-              isSelected && styles.optionIndexTextSelected,
+              styles.optionIndex,
+              isSelected && styles.optionIndexSelected,
             ]}
           >
-            {String.fromCharCode(65 + index)}
+            <Text
+              style={[
+                styles.optionIndexText,
+                isSelected && styles.optionIndexTextSelected,
+              ]}
+            >
+              {String.fromCharCode(65 + index)}
+            </Text>
+          </View>
+          <Text
+            style={[styles.optionText, isSelected && styles.optionTextSelected]}
+          >
+            {nodeType === "quote_guess" || nodeType === "emoji_puzzle"
+              ? option.text[languageMap["English"]]
+              : option.text[languageMap[userLanguage]]}
           </Text>
-        </View>
-        <Text
-          style={[styles.optionText, isSelected && styles.optionTextSelected]}
-        >
-          {nodeType === "quote_guess" || nodeType === "emoji_puzzle"
-            ? option.text[languageMap["English"]]
-            : option.text[languageMap[userLanguage]]}
-        </Text>
-      </Pressable>
+        </Pressable>
+      </Animated.View>
     </Animated.View>
   );
 };
@@ -610,36 +611,38 @@ const TFButton = ({
   return (
     <Animated.View
       entering={FadeInDown.delay(150 + index * 100).springify()}
-      style={[animatedStyle, { width: "48%" }]}
+      style={{ width: "48%" }}
     >
-      <Pressable
-        style={[
-          styles.tfButton,
-          isTrue ? styles.tfButtonTrue : styles.tfButtonFalse,
-          isSelected && styles.tfButtonSelected,
-        ]}
-        onPressIn={() => {
-          scale.value = withSpring(0.95, { damping: 15, stiffness: 300 });
-        }}
-        onPressOut={() => {
-          scale.value = withSpring(1, { damping: 15, stiffness: 300 });
-        }}
-        onPress={onPress}
-      >
-        <Feather
-          name={isTrue ? "check-circle" : "x-circle"}
-          size={24}
-          color={isTrue ? "#4ade80" : "#f87171"}
-        />
-        <Text
+      <Animated.View style={animatedStyle}>
+        <Pressable
           style={[
-            styles.tfText,
-            isTrue ? styles.tfTextTrue : styles.tfTextFalse,
+            styles.tfButton,
+            isTrue ? styles.tfButtonTrue : styles.tfButtonFalse,
+            isSelected && styles.tfButtonSelected,
           ]}
+          onPressIn={() => {
+            scale.value = withSpring(0.95, { damping: 15, stiffness: 300 });
+          }}
+          onPressOut={() => {
+            scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+          }}
+          onPress={onPress}
         >
-          {option.text[languageMap[userLanguage]]}
-        </Text>
-      </Pressable>
+          <Feather
+            name={isTrue ? "check-circle" : "x-circle"}
+            size={24}
+            color={isTrue ? "#4ade80" : "#f87171"}
+          />
+          <Text
+            style={[
+              styles.tfText,
+              isTrue ? styles.tfTextTrue : styles.tfTextFalse,
+            ]}
+          >
+            {option.text[languageMap[userLanguage]]}
+          </Text>
+        </Pressable>
+      </Animated.View>
     </Animated.View>
   );
 };
@@ -648,38 +651,36 @@ const TFButton = ({
 const ModeHeader = ({ nodeType, timeLeft, lives, maxLives }: any) => {
   if (nodeType === "time_challenge") {
     return (
-      <Animated.View
-        entering={FadeInDown.delay(50).springify()}
-        style={styles.modeHeader}
-      >
-        <LinearGradient
-          colors={["#f59e0b", "#d97706"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.timerBadge}
-        >
-          <Feather name="clock" size={18} color="#fff" />
-          <Text style={styles.timerText}>{timeLeft}s</Text>
-        </LinearGradient>
+      <Animated.View entering={FadeInDown.delay(50).springify()}>
+        <View style={styles.modeHeader}>
+          <LinearGradient
+            colors={["#f59e0b", "#d97706"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.timerBadge}
+          >
+            <Feather name="clock" size={18} color="#fff" />
+            <Text style={styles.timerText}>{timeLeft}s</Text>
+          </LinearGradient>
+        </View>
       </Animated.View>
     );
   }
   if (nodeType === "survival") {
     return (
-      <Animated.View
-        entering={FadeInDown.delay(50).springify()}
-        style={styles.modeHeader}
-      >
-        <View style={styles.livesContainer}>
-          {Array.from({ length: maxLives }).map((_, i) => (
-            <Heart
-              key={i}
-              width={28}
-              height={28}
-              color={i < lives ? "#ef4444" : "#333"}
-              fill={i < lives ? "#ef4444" : "none"}
-            />
-          ))}
+      <Animated.View entering={FadeInDown.delay(50).springify()}>
+        <View style={styles.modeHeader}>
+          <View style={styles.livesContainer}>
+            {Array.from({ length: maxLives }).map((_, i) => (
+              <Heart
+                key={i}
+                width={28}
+                height={28}
+                color={i < lives ? "#ef4444" : "#333"}
+                fill={i < lives ? "#ef4444" : "none"}
+              />
+            ))}
+          </View>
         </View>
       </Animated.View>
     );
@@ -795,12 +796,11 @@ const WeeklyResult = ({
   return (
     <View style={styles.resultContainer}>
       {/* Header */}
-      <Animated.Text
-        entering={FadeInDown.delay(0).springify()}
-        style={styles.resultTitle}
-      >
-        {nodeTitle || t("weeklyEventCompleted") || "Weekly Event Result"}
-      </Animated.Text>
+      <Animated.View entering={FadeInDown.delay(0).springify()}>
+        <Text style={styles.resultTitle}>
+          {nodeTitle || t("weeklyEventCompleted") || "Weekly Event Result"}
+        </Text>
+      </Animated.View>
 
       {/* Main Result Card */}
       <Animated.View entering={FadeInDown.delay(100).springify()}>
@@ -839,31 +839,29 @@ const WeeklyResult = ({
       </Animated.View>
 
       {/* Score Cards */}
-      <Animated.View
-        entering={FadeInDown.delay(200).springify()}
-        style={styles.scoreCardsRow}
-      >
-        <View style={[styles.scoreCard, styles.scoreCardCorrect]}>
-          <Text style={styles.scoreValue}>{result.questionsCorrect}</Text>
-          <Right width={18} height={18} />
-        </View>
-        <View style={[styles.scoreCard, styles.scoreCardWrong]}>
-          <Text style={styles.scoreValue}>
-            {result.totalQuestions - result.questionsCorrect}
-          </Text>
-          <Wrong width={18} height={18} />
+      <Animated.View entering={FadeInDown.delay(200).springify()}>
+        <View style={styles.scoreCardsRow}>
+          <View style={[styles.scoreCard, styles.scoreCardCorrect]}>
+            <Text style={styles.scoreValue}>{result.questionsCorrect}</Text>
+            <Right width={18} height={18} />
+          </View>
+          <View style={[styles.scoreCard, styles.scoreCardWrong]}>
+            <Text style={styles.scoreValue}>
+              {result.totalQuestions - result.questionsCorrect}
+            </Text>
+            <Wrong width={18} height={18} />
+          </View>
         </View>
       </Animated.View>
 
       {/* Wrong Questions List */}
       {wrongQuestions.length > 0 ? (
         <View style={{ flex: 1, width: "100%" }}>
-          <Animated.Text
-            entering={FadeInDown.delay(300).springify()}
-            style={styles.wrongQuestionsTitle}
-          >
-            {t("questionsMissed")}
-          </Animated.Text>
+          <Animated.View entering={FadeInDown.delay(300).springify()}>
+            <Text style={styles.wrongQuestionsTitle}>
+              {t("questionsMissed")}
+            </Text>
+          </Animated.View>
 
           <ScrollView
             contentContainerStyle={{ gap: 12, paddingBottom: 20 }}
@@ -873,55 +871,60 @@ const WeeklyResult = ({
               <Animated.View
                 key={idx}
                 entering={FadeInDown.delay(350 + idx * 50).springify()}
-                style={styles.wrongQuestionCard}
               >
-                <Text style={styles.wrongQuestionText}>
-                  {nodeType === "emoji_puzzle"
-                    ? `${t("whatGame")} ${item.question.question[languageMap["English"]]}`
-                    : item.question.question[languageMap[user.language]]}
-                </Text>
-
-                <View style={styles.answerRow}>
-                  <Text style={styles.answerLabel}>{t("yourAnswer")}:</Text>
-                  <Text style={styles.answerWrong}>
-                    {getWrongAnswerLabel(item, user.language, nodeType)}
+                <View style={styles.wrongQuestionCard}>
+                  <Text style={styles.wrongQuestionText}>
+                    {nodeType === "emoji_puzzle"
+                      ? `${t("whatGame")} ${item.question.question[languageMap["English"]]}`
+                      : item.question.question[languageMap[user.language]]}
                   </Text>
-                </View>
 
-                <View style={styles.answerRow}>
-                  <Text style={styles.answerLabel}>{t("correctAnswer")}:</Text>
-                  <Text style={styles.answerCorrect}>
-                    {getCorrectAnswerLabel(item, user.language)}
-                  </Text>
+                  <View style={styles.answerRow}>
+                    <Text style={styles.answerLabel}>{t("yourAnswer")}:</Text>
+                    <Text style={styles.answerWrong}>
+                      {getWrongAnswerLabel(item, user.language, nodeType)}
+                    </Text>
+                  </View>
+
+                  <View style={styles.answerRow}>
+                    <Text style={styles.answerLabel}>
+                      {t("correctAnswer")}:
+                    </Text>
+                    <Text style={styles.answerCorrect}>
+                      {getCorrectAnswerLabel(item, user.language)}
+                    </Text>
+                  </View>
                 </View>
               </Animated.View>
             ))}
           </ScrollView>
         </View>
       ) : (
-        <Animated.View
-          entering={FadeInDown.delay(300).springify()}
-          style={styles.allCorrectContainer}
-        >
-          <ClipboardCheck size={64} color={Colors.dark.text} strokeWidth={1} />
-          <Text style={styles.allCorrectText}>
-            {t("allCorrect") || "All answers correct!"}
-          </Text>
+        <Animated.View entering={FadeInDown.delay(300).springify()}>
+          <View style={styles.allCorrectContainer}>
+            <ClipboardCheck
+              size={64}
+              color={Colors.dark.text}
+              strokeWidth={1}
+            />
+            <Text style={styles.allCorrectText}>
+              {t("allCorrect") || "All answers correct!"}
+            </Text>
+          </View>
         </Animated.View>
       )}
 
       {/* Back Button */}
-      <Animated.View
-        entering={FadeInDown.delay(400).springify()}
-        style={{ width: "100%" }}
-      >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.backButtonText}>{t("backToEvents")}</Text>
-        </TouchableOpacity>
+      <Animated.View entering={FadeInDown.delay(400).springify()}>
+        <View style={{ width: "100%" }}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.backButtonText}>{t("backToEvents")}</Text>
+          </TouchableOpacity>
+        </View>
       </Animated.View>
     </View>
   );
@@ -1235,7 +1238,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.dark.bg_dark,
     paddingHorizontal: 16,
     paddingTop: 20,
-    alignItems: "center",
+    width: "100%",
   },
   resultTitle: {
     fontSize: 24,
@@ -1290,13 +1293,16 @@ const styles = StyleSheet.create({
   },
   scoreCardsRow: {
     flexDirection: "row",
+    justifyContent: "center",
     gap: 16,
     marginBottom: 24,
   },
   scoreCard: {
+    width: "30%",
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    justifyContent: "center",
+    gap: 20,
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 16,
