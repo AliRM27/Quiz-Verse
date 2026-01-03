@@ -123,7 +123,7 @@ const Settings = () => {
           }}
         >
           <TouchableOpacity
-            onPress={() => router.push("/(settings)/chageUsername")}
+            onPress={() => router.push("/(settings)/changeUsername")}
             activeOpacity={0.7}
             style={{
               flexDirection: "row",

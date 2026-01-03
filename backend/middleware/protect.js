@@ -18,6 +18,11 @@ export const protect = async (req, res, next) => {
 
       return next();
     } catch (error) {
+      if (error.name === "TokenExpiredError") {
+        return res
+          .status(401)
+          .json({ message: "Not authorized, token expired" });
+      }
       console.error("Auth middleware error:", error);
       return res.status(401).json({ message: "Not authorized, token failed" });
     }

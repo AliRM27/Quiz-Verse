@@ -8,8 +8,11 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
+  Dimensions,
+  Platform,
+  KeyboardAvoidingView,
 } from "react-native";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { HEIGHT, isSmallPhone, layout, myHeight } from "@/constants/Dimensions";
 import { Colors } from "@/constants/Colors";
 import { router, useLocalSearchParams } from "expo-router";
@@ -41,6 +44,20 @@ import Loader from "@/components/ui/Loader";
 import { useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { useSafeAreaBg } from "@/context/safeAreaContext";
+import { LinearGradient } from "expo-linear-gradient";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, {
+  FadeInDown,
+  FadeInRight,
+  FadeOutLeft,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  withRepeat,
+  withSequence,
+} from "react-native-reanimated";
+import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function Index() {
   const { setSafeBg } = useSafeAreaBg();
@@ -130,6 +147,7 @@ export default function Index() {
       }
     };
   }, [currQuestionIndex, startTime]);
+  const insets = useSafeAreaInsets();
 
   if (loading || isLoading || historyLoading || detailLoading || !user) {
     return (
@@ -421,365 +439,248 @@ export default function Index() {
     );
   }
 
+  const isNextDisabled =
+    !(
+      currQuestionIndex <= currSection.questions.length - 1 &&
+      (selectedAnswer !== null ||
+        shortAnswer.trim() !== "" ||
+        sliderValue !== -1)
+    ) || questionLoading;
+
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View
-        style={{
-          paddingHorizontal: 15,
-          backgroundColor: "#131313",
-          height: "100%",
-          gap: 20,
-        }}
+    <View style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
       >
-        <Pressable
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 15,
-            padding: 5,
-          }}
-          onPress={async () => {
-            try {
-              await updateLastPlayedList();
-              await refreshUser();
-              router.back();
-            } catch (err) {
-              console.log(err);
-            }
-          }}
-        >
-          <BackArr />
-        </Pressable>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            marginTop: 20,
-          }}
-        >
-          <Text
-            style={[
-              styles.txt,
-              {
-                fontSize: 25,
-                fontWeight: "600",
-                width: "70%",
-                marginBottom: 10,
-              },
-              isSmallPhone && { fontSize: 20 },
-            ]}
-          >
-            {data.title}
-          </Text>
-          <View
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 10,
-              width: "25%",
-            }}
-          >
-            <View
-              style={{
-                width: HEIGHT * (60 / myHeight),
-                height: HEIGHT * (60 / myHeight),
-                borderRadius: 10,
-                overflow: "hidden",
-                borderWidth: 1,
-                borderColor: Colors.dark.border,
-              }}
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            {/* Header Section */}
+            <LinearGradient
+              colors={["#1a1a1a", "#131313"]}
+              style={styles.header}
             >
-              <QuizLogo name={data.logoFile} />
-            </View>
-            <View
-              style={{
-                width: "100%",
-                backgroundColor: Colors.dark.border,
-                borderRadius: 6,
-              }}
+              <View style={styles.headerTop}>
+                <TouchableOpacity
+                  onPress={async () => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    try {
+                      await updateLastPlayedList();
+                      await refreshUser();
+                      router.back();
+                    } catch (err) {
+                      console.log(err);
+                    }
+                  }}
+                  style={styles.backButton}
+                >
+                  <Feather name="chevron-left" size={28} color="#fff" />
+                </TouchableOpacity>
+
+                <View style={styles.headerTitleContainer}>
+                  <Text style={styles.headerTitle} numberOfLines={1}>
+                    {data.title}
+                  </Text>
+                  <Text style={styles.headerSubtitle}>
+                    {t(currSection.difficulty)} • {currQuestionIndex + 1}/
+                    {currSection.questions.length}
+                  </Text>
+                </View>
+
+                <View style={styles.logoContainer}>
+                  <QuizLogo name={data.logoFile} />
+                </View>
+              </View>
+
+              {/* Progress Bar
+            <View style={styles.progressContainer}>
+              <View style={styles.progressBarBg}>
+                <Animated.View
+                  style={[
+                    styles.progressBarFill,
+                    {
+                      width: `${((currQuestionIndex + 1) / currSection.questions.length) * 100}%`,
+                    },
+                  ]}
+                />
+              </View>
+            </View> */}
+            </LinearGradient>
+
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.scrollContent}
+              style={{ flex: 1 }}
             >
-              <View
-                style={{
-                  width: `${(currProgress.sections[Number(section)].rewards / data.sections[Number(section)].rewards) * 100}%`,
-                  height: 2,
-                  borderRadius: 6,
-                  backgroundColor: Colors.dark.secondary,
-                }}
-              />
-            </View>
-            <Text
-              style={[
-                styles.txt,
-                user.language === "Русский" && { fontSize: 9 },
-              ]}
-            >
-              {t(currSection.difficulty)}
-            </Text>
-          </View>
-        </View>
-        <View
-          style={{
-            borderWidth: 1,
-            backgroundColor: Colors.dark.bg_light,
-            borderColor: "#1F1D1D",
-            padding: 20,
-            paddingVertical: 40,
-            borderRadius: 20,
-            elevation: 3,
-            shadowColor: "black",
-            shadowOffset: { width: 0, height: 3 },
-            shadowOpacity: 0.5,
-            shadowRadius: 1,
-            marginBottom: 10,
-            minHeight: "20%",
-            justifyContent: "center",
-          }}
-        >
-          <Text
-            style={[
-              styles.txt,
-              {
-                fontSize: 14,
-                marginTop: 15,
-                fontWeight: 600,
-                position: "absolute",
-                top: -8,
-                left: 12,
-              },
-            ]}
-          >
-            {t("question")} {currQuestionIndex + 1}
-          </Text>
-          <Text
-            style={[
-              styles.txt,
-              { fontSize: 25, textAlign: "center" },
-              isSmallPhone && { fontSize: 20 },
-            ]}
-          >
-            {currQuestion.question[languageMap[user.language]]}
-          </Text>
-        </View>
-        <ScrollView
-          scrollEnabled={currQuestion.type === QUESTION_TYPES.MC}
-          contentContainerStyle={[
-            { gap: 15 },
-            currQuestion.type === QUESTION_TYPES.TF && {
-              flexDirection: "row",
-              justifyContent: "center",
-              gap: 10,
-            },
-          ]}
-        >
-          {currQuestion.type === QUESTION_TYPES.SA && (
-            <TextInput
-              selectionColor={Colors.dark.text}
-              placeholder="Type your answer..."
-              placeholderTextColor={Colors.dark.text_muted}
-              value={shortAnswer}
-              onChangeText={(t) => setShortAnswer(t)}
-              autoCorrect={false}
-              autoCapitalize="none"
-              autoFocus
-              style={{
-                width: "100%",
-                height: 60,
-                borderColor: Colors.dark.border_muted,
-                borderWidth: 1,
-                paddingHorizontal: 20,
-                fontSize: 18,
-                borderRadius: 20,
-                color: Colors.dark.text,
-                fontFamily: REGULAR_FONT,
-              }}
-            />
-          )}
-          {currQuestion.type === QUESTION_TYPES.NUM && (
-            <SliderComponent
-              value={sliderValue}
-              setValue={setSliderValue}
-              min={currQuestion.range.min}
-              max={currQuestion.range.max}
-              step={currQuestion.range.step}
-            />
-          )}
-          {currQuestion.type !== QUESTION_TYPES.SA &&
-            currQuestion.type !== QUESTION_TYPES.NUM &&
-            currQuestion.options.map((o: any, index: number) => {
-              if (currQuestion.type === QUESTION_TYPES.MC)
-                return (
-                  <Pressable
-                    key={index}
-                    style={[
-                      {
-                        width: "100%",
-                        borderWidth: 1,
-                        backgroundColor: Colors.dark.bg_light,
-                        borderColor: "#1F1D1D",
-                        padding: 15,
-                        paddingLeft: 30,
-                        borderRadius: 50,
-                        elevation: 7,
-                        shadowColor: "black",
-                        shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.5,
-                        shadowRadius: 1,
-                        justifyContent: "center",
-                      },
-                      pressedAnswer === index && {
-                        shadowOpacity: 0,
-                        elevation: 0,
-                      },
-                      selectedAnswer === index && {
-                        backgroundColor: "#232423",
-                        borderColor: "#323333",
-                      },
-                    ]}
-                    onPressIn={() => setPressedAnswer(index)}
-                    onPress={() => {
-                      selectedAnswer === index
-                        ? setSelectedAnswer(null)
-                        : setSelectedAnswer(index);
-                      Haptics.selectionAsync();
-                    }}
-                    onPressOut={() => setPressedAnswer(null)}
+              {/* Question Card */}
+              <Animated.View
+                entering={FadeInDown.duration(600).springify()}
+                style={styles.questionCard}
+              >
+                <Text style={styles.questionLabel}>
+                  {t("question")} {currQuestionIndex + 1}
+                </Text>
+                <Text
+                  style={[
+                    styles.questionText,
+                    isSmallPhone && { fontSize: 20, lineHeight: 0 },
+                  ]}
+                >
+                  {currQuestion.question[languageMap[user.language]]}
+                </Text>
+              </Animated.View>
+
+              {/* Interaction Area */}
+              <View style={styles.interactionArea}>
+                {currQuestion.type === QUESTION_TYPES.SA && (
+                  <Animated.View entering={FadeInDown.delay(200).duration(500)}>
+                    <TextInput
+                      selectionColor={Colors.dark.text}
+                      placeholder="Type your answer..."
+                      placeholderTextColor={Colors.dark.text_muted}
+                      value={shortAnswer}
+                      onChangeText={(text) => setShortAnswer(text)}
+                      autoCorrect={false}
+                      autoCapitalize="none"
+                      style={styles.textInput}
+                    />
+                  </Animated.View>
+                )}
+
+                {currQuestion.type === QUESTION_TYPES.NUM && (
+                  <Animated.View entering={FadeInDown.delay(200).duration(500)}>
+                    <SliderComponent
+                      value={sliderValue}
+                      setValue={setSliderValue}
+                      min={currQuestion.range.min}
+                      max={currQuestion.range.max}
+                      step={currQuestion.range.step}
+                    />
+                  </Animated.View>
+                )}
+
+                {(currQuestion.type === QUESTION_TYPES.MC ||
+                  currQuestion.type === QUESTION_TYPES.TF) && (
+                  <View
+                    style={
+                      currQuestion.type === QUESTION_TYPES.TF
+                        ? styles.tfRow
+                        : styles.mcColumn
+                    }
                   >
-                    <Text
-                      style={[
-                        styles.txtItalic,
-                        { fontSize: 20 },
-                        isSmallPhone && { fontSize: 16 },
-                        pressedAnswer === index && {
-                          color: Colors.dark.text_muted,
-                        },
-                      ]}
-                    >
-                      {o.text[languageMap[user.language]]}
-                    </Text>
-                  </Pressable>
-                );
-              else if (currQuestion.type === QUESTION_TYPES.TF)
-                return (
-                  <Pressable
-                    key={index}
-                    style={[
-                      {
-                        borderWidth: 1,
-                        backgroundColor: Colors.dark.bg_light,
-                        borderColor: "#1F1D1D",
-                        padding: 15,
-                        width: "45%",
-                        borderRadius: 50,
-                        elevation: 7,
-                        shadowColor: "black",
-                        shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.5,
-                        shadowRadius: 1,
-                      },
-                      pressedAnswer === index && {
-                        shadowOpacity: 0,
-                        elevation: 0,
-                      },
-                      selectedAnswer === index && {
-                        backgroundColor: "#232423",
-                        borderColor: "#323333",
-                      },
-                    ]}
-                    onPressIn={() => setPressedAnswer(index)}
-                    onPress={() => {
-                      selectedAnswer === index
-                        ? setSelectedAnswer(null)
-                        : setSelectedAnswer(index);
-                      Haptics.selectionAsync();
-                    }}
-                    onPressOut={() => setPressedAnswer(null)}
-                  >
-                    <Text
-                      style={[
-                        styles.txtItalic,
-                        {
-                          color: Colors.dark.success,
-                          fontSize: 20,
-                          textAlign: "center",
-                        },
-                        isSmallPhone && { fontSize: 16 },
-                        o.text["en"] === "False" && {
-                          color: Colors.dark.danger,
-                        },
-                        pressedAnswer === index &&
-                          o.text["en"] === "False" && {
-                            color: Colors.dark.danger_muted,
-                          },
-                        pressedAnswer === index &&
-                          o.text["en"] === "True" && {
-                            color: Colors.dark.success_muted,
-                          },
-                      ]}
-                    >
-                      {o.text[languageMap[user.language]]}
-                    </Text>
-                  </Pressable>
-                );
-            })}
-        </ScrollView>
-        <View
-          style={[
-            {
-              flexDirection: "row",
-              justifyContent: "space-around",
-              marginTop: "auto",
-            },
-            isSmallPhone && { paddingBottom: 10 },
-          ]}
+                    {currQuestion.options.map((option: any, index: number) => (
+                      <OptionButton
+                        key={index}
+                        text={option.text[languageMap[user.language]]}
+                        isTF={currQuestion.type === QUESTION_TYPES.TF}
+                        isSelected={selectedAnswer === index}
+                        isFalse={option.text["en"] === "False"}
+                        onPress={() => {
+                          Haptics.selectionAsync();
+                          setSelectedAnswer(
+                            selectedAnswer === index ? null : index
+                          );
+                        }}
+                        index={index}
+                      />
+                    ))}
+                  </View>
+                )}
+              </View>
+            </ScrollView>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+
+      {/* Footer with Circular Progress */}
+      <View style={[styles.footer]}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          disabled={isNextDisabled}
+          onPress={() => handleNextButton()}
         >
-          <View
-            style={{
-              flexDirection: "row",
-              gap: 10,
-              alignItems: "center",
-            }}
-          >
-            <Heart />
-            <Text style={[styles.txt, { fontSize: 20 }]}>2</Text>
-          </View>
-          <TouchableOpacity
-            activeOpacity={0.6}
-            disabled={
-              !(
-                currQuestionIndex <= currSection.questions.length - 1 &&
-                (selectedAnswer !== null ||
-                  shortAnswer.trim() !== "" ||
-                  sliderValue !== -1)
-              ) || questionLoading
-            }
-            onPress={() => handleNextButton()}
-          >
-            <CircularProgress
-              size={isSmallPhone ? 75 : 80}
-              strokeWidth={3}
-              progress={currQuestionIndex + 1}
-              fontSize={isSmallPhone ? 16 : 18}
-              percent={false}
-              total={currSection.questions.length}
-              arrow={
-                (selectedAnswer !== null ? true : false) ||
-                shortAnswer.trim() !== "" ||
-                sliderValue !== -1
-              }
-            />
-          </TouchableOpacity>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-            <Text style={[styles.txt, { fontSize: 20 }]}>3</Text>
-            <Hint />
-          </View>
-        </View>
+          <CircularProgress
+            size={80}
+            strokeWidth={4}
+            progress={currQuestionIndex + 1}
+            total={currSection.questions.length}
+            fontSize={18}
+            percent={false}
+            arrow={!isNextDisabled}
+          />
+        </TouchableOpacity>
       </View>
-    </TouchableWithoutFeedback>
+    </View>
   );
 }
 
+const OptionButton = ({
+  text,
+  isTF,
+  isSelected,
+  isFalse,
+  onPress,
+  index,
+}: any) => {
+  return (
+    <Animated.View
+      entering={FadeInDown.delay(300 + index * 100).springify()}
+      style={[isTF ? styles.tfButtonWrapper : styles.mcButtonWrapper]}
+    >
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={onPress}
+        style={[
+          styles.optionButton,
+          isSelected && styles.optionButtonSelected,
+          isTF && isFalse && isSelected && styles.optionButtonFalse,
+          isTF && !isFalse && isSelected && styles.optionButtonTrue,
+        ]}
+      >
+        <View style={styles.optionContent}>
+          {!isTF && (
+            <View
+              style={[
+                styles.optionIndex,
+                isSelected && styles.optionIndexSelected,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.optionIndexText,
+                  isSelected && styles.optionIndexTextSelected,
+                ]}
+              >
+                {String.fromCharCode(65 + index)}
+              </Text>
+            </View>
+          )}
+          <Text
+            style={[
+              styles.optionText,
+              isSelected && styles.optionTextSelected,
+              isTF && styles.tfOptionText,
+            ]}
+          >
+            {text}
+          </Text>
+        </View>
+        {isSelected && (
+          <View style={styles.selectedIndicator}>
+            <Feather name="check-circle" size={18} color="#fff" />
+          </View>
+        )}
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#131313",
+  },
   txt: {
     fontFamily: REGULAR_FONT,
     color: Colors.dark.text,
@@ -787,5 +688,229 @@ const styles = StyleSheet.create({
   txtItalic: {
     fontFamily: ITALIC_FONT,
     color: Colors.dark.text,
+  },
+  // Header
+  header: {
+    paddingTop: 10,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+  headerTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitleContainer: {
+    flex: 1,
+    marginHorizontal: 15,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#fff",
+    fontFamily: REGULAR_FONT,
+  },
+  headerSubtitle: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.6)",
+    fontFamily: REGULAR_FONT,
+    marginTop: 2,
+  },
+  logoContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: "#222",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    overflow: "hidden",
+  },
+  // Progress Bar
+  progressContainer: {
+    marginBottom: 20,
+  },
+  progressBarBg: {
+    height: 8,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  progressBarFill: {
+    height: "100%",
+    backgroundColor: Colors.dark.secondary,
+    borderRadius: 4,
+  },
+  // Stats Row
+  statsRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  statBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255,255,255,0.08)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+  },
+  statBadgeText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: REGULAR_FONT,
+  },
+  // Scroll Content
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 100,
+  },
+  // Question Card
+  questionCard: {
+    backgroundColor: Colors.dark.bg_light,
+    borderRadius: 24,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+    marginBottom: 30,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  questionLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: Colors.dark.secondary,
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
+    marginBottom: 12,
+  },
+  questionText: {
+    fontSize: 24,
+    lineHeight: 34,
+    color: "#fff",
+    fontFamily: REGULAR_FONT,
+    fontWeight: "600",
+  },
+  // Interaction Area
+  interactionArea: {
+    gap: 16,
+  },
+  textInput: {
+    width: "100%",
+    height: 64,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    paddingHorizontal: 20,
+    fontSize: 18,
+    color: "#fff",
+    fontFamily: REGULAR_FONT,
+  },
+  // Options
+  mcColumn: {
+    gap: 12,
+  },
+  mcButtonWrapper: {
+    width: "100%",
+  },
+  tfRow: {
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "space-between",
+  },
+  tfButtonWrapper: {
+    flex: 1,
+  },
+  optionContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    gap: 15,
+  },
+  optionIndex: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  optionIndexSelected: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderColor: "rgba(255,255,255,0.3)",
+  },
+  optionIndexText: {
+    color: "rgba(255,255,255,0.5)",
+    fontSize: 14,
+    fontWeight: "700",
+    fontFamily: REGULAR_FONT,
+  },
+  optionIndexTextSelected: {
+    color: "#fff",
+  },
+  optionButton: {
+    width: "100%",
+    padding: 16,
+    backgroundColor: "rgba(255,255,255,0.03)",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  optionButtonSelected: {
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderColor: "rgba(255,255,255,0.3)",
+  },
+  optionButtonTrue: {
+    borderColor: Colors.dark.success,
+    backgroundColor: "rgba(76, 175, 80, 0.1)",
+  },
+  optionButtonFalse: {
+    borderColor: Colors.dark.danger,
+    backgroundColor: "rgba(244, 67, 54, 0.1)",
+  },
+  optionText: {
+    fontSize: 17,
+    color: "rgba(255,255,255,0.8)",
+    fontFamily: REGULAR_FONT,
+    flex: 1,
+  },
+  optionTextSelected: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+  tfOptionText: {
+    textAlign: "center",
+    flex: 0,
+    width: "100%",
+  },
+  selectedIndicator: {
+    marginLeft: 10,
+  },
+  // Footer
+  footer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    backgroundColor: "transparent",
   },
 });

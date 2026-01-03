@@ -296,6 +296,7 @@ export const updateProgress = async (req, res) => {
 
     if (quizProgress.questionsCompleted === quiz.questionsTotal) {
       quizProgress.completed = true;
+      user.completedQuizzes.push(quizId);
     }
     if (
       quizProgress.rewardsTotal === quiz.rewardsTotal &&

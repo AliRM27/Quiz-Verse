@@ -11,17 +11,9 @@ import { useUser } from "@/context/userContext";
 import { Colors } from "@/constants/Colors";
 import SettingsIcon from "@/assets/svgs/settings.svg";
 import EditIcon from "@/assets/svgs/edit.svg";
-import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
+import { REGULAR_FONT, ITALIC_FONT } from "@/constants/Styles";
 import QuizLogo from "@/components/ui/QuizLogo";
-import Info from "@/components/ui/Info";
-import {
-  HEIGHT,
-  isSmallPhone,
-  myHeight,
-  myWidth,
-  WIDTH,
-} from "@/constants/Dimensions";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { router } from "expo-router";
 import NextArr from "@/assets/svgs/nextArr.svg";
 import PrevArr from "@/assets/svgs/prevArr.svg";
@@ -33,32 +25,46 @@ import Loader from "@/components/ui/Loader";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserProgress, fetchUserHistory } from "@/services/api";
 import { QuizType } from "@/types";
+import { LinearGradient } from "expo-linear-gradient";
+import Animated, {
+  FadeInDown,
+  FadeIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+import { Feather } from "@expo/vector-icons";
+import Trophy from "@/assets/svgs/trophy.svg";
+import Gem from "@/assets/svgs/gem.svg";
 
 export default function Profile() {
   const { user, loading } = useUser();
   const { t } = useTranslation();
+
   const { data: progressData, isLoading: progressLoading } = useQuery({
     queryKey: ["userProgress"],
     queryFn: fetchUserProgress,
     enabled: !!user?._id,
   });
+
   const { data: historyData, isLoading: historyLoading } = useQuery({
     queryKey: ["userHistory"],
     queryFn: fetchUserHistory,
     enabled: !!user?._id,
   });
+
   const progressList = progressData?.progress || [];
   const lastPlayed = historyData?.lastPlayed || [];
   const [categroyPressed, setCategoryPressed] = useState<string>("");
   const [currIndex, setCurrIndex] = useState<number>(0);
   const [isVisible, setIsVisible] = useState<boolean>(false);
-  const [currLogoFile, setCurrLogoFile] = useState<string>("");
 
   useEffect(() => {
-    if (lastPlayed[0]?.quizId?.logoFile) {
-      setCurrLogoFile(lastPlayed[0].quizId.logoFile);
+    if (user) {
+      setCategoryPressed(t("uncompleted"));
     }
-  }, [lastPlayed]);
+  }, [user]);
 
   const progressMap = useMemo(() => {
     const map = new Map();
@@ -68,15 +74,9 @@ export default function Profile() {
     return map;
   }, [progressList]);
 
-  useEffect(() => {
-    if (user) {
-      setCategoryPressed(t("uncompleted"));
-    }
-  }, [user]);
-
   if (!user || loading || progressLoading || historyLoading)
     return (
-      <View style={{ justifyContent: "center", alignItems: "center" }}>
+      <View style={styles.loadingContainer}>
         <Loader />
       </View>
     );
@@ -106,19 +106,20 @@ export default function Profile() {
 
   const goNext = () => {
     if (currIndex < filteredQuizzes.length - 1) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setCurrIndex(currIndex + 1);
     }
   };
 
   const goPrev = () => {
     if (currIndex > 0) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setCurrIndex(currIndex - 1);
     }
   };
 
-  const currentProgressList = progressMap.get(
-    filteredQuizzes[currIndex]?.quizId._id
-  ) || {
+  const currentQuizData = filteredQuizzes[currIndex];
+  const currentProgressInfo = progressMap.get(currentQuizData?.quizId._id) || {
     questionsCompleted: 0,
     rewardsTotal: 0,
   };
@@ -126,617 +127,667 @@ export default function Profile() {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={[
-        {
-          alignItems: "center",
-          paddingTop: 4,
-        },
-      ]}
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
     >
-      <View
-        style={[
-          defaultStyles.containerRow,
-          {
-            width: "100%",
-            justifyContent: "space-between",
-            paddingHorizontal: 20,
-          },
-        ]}
+      {/* Header Section */}
+      <Animated.View
+        entering={FadeInDown.delay(0).springify()}
+        style={styles.header}
       >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <TouchableOpacity
-            onPress={() => {
-              setIsVisible(true);
-            }}
-            activeOpacity={0.7}
-            style={{
-              borderWidth: 2,
-              borderColor: user.theme.cardColor,
-              transform: [{ rotate: "45deg" }],
-              padding: 3,
-              borderRadius: 20,
-            }}
-          >
-            <View
-              style={{
-                width: 50,
-                height: 50,
-                transform: [{ rotate: "0deg" }],
-                overflow: "hidden",
-                justifyContent: "center",
-                alignItems: "center",
-                borderRadius: 15,
-              }}
-            >
-              <Image
-                src={user?.profileImage}
-                width={60}
-                height={60}
-                style={{
-                  transform: [{ rotate: "-45deg" }],
-                }}
-              />
-            </View>
-          </TouchableOpacity>
-          <Text
-            style={[
-              styles.txt,
-              {
-                fontSize: 18,
-                fontWeight: "600",
-              },
-              user.name.length > 10 && { fontSize: 16 },
-              isSmallPhone && { fontSize: 15 },
-            ]}
-          >
-            {user.name}
-          </Text>
-          {/* <TouchableOpacity
-            activeOpacity={0.7}
-            style={{
-              borderWidth: 1,
-              borderColor: Colors.dark.border,
-              paddingHorizontal: 7,
-              paddingVertical: 6,
-              borderRadius: 15,
-              backgroundColor: Colors.dark.bg_light,
-              minWidth: 50,
-            }}
-          >
-            <Text
-              style={{
-                color: Colors.dark.text,
-
-                fontSize: 16,
-                fontFamily: REGULAR_FONT,
-                fontWeight: "600",
-
-                textAlign: "center",
-              }}
-            >
-              {user.level}
-            </Text>
-          </TouchableOpacity> */}
-        </View>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <TouchableOpacity
-            onPress={() => {
-              router.push("/(settings)/editProfile");
-            }}
-            activeOpacity={0.7}
-            style={[styles.iconBackground, isSmallPhone && { padding: 12 }]}
-          >
-            <EditIcon width={24} height={24} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => router.push("/(settings)")}
-            activeOpacity={0.7}
-            style={[styles.iconBackground, isSmallPhone && { padding: 12 }]}
-          >
-            <SettingsIcon width={24} height={24} />
-          </TouchableOpacity>
-        </View>
-      </View>
-      {lastPlayed.length > 0 && (
-        <View style={{ width: "100%", gap: 20 }}>
-          <Text
-            style={[
-              styles.txt,
-              { fontSize: 18, marginLeft: 10, marginTop: 30 },
-            ]}
-          >
-            {t("lastPlayed")}
-          </Text>
-          <View
-            style={[
-              {
-                flexDirection: "row",
-                width: "100%",
-                borderWidth: 1,
-                borderColor: Colors.dark.border_muted,
-                borderRadius: 10,
-                height: 320,
-              },
-              lastPlayed.length === 0 && { height: 100 },
-            ]}
-          >
-            {lastPlayed.length === 0 ? (
-              <Text
-                style={{
-                  color: Colors.dark.text,
-                  textAlign: "center",
-                  width: "100%",
-                  margin: "auto",
-                  fontSize: 20,
-                  fontFamily: REGULAR_FONT,
-                  fontWeight: "500",
-                }}
-              >
-                Play Quizzes
-              </Text>
-            ) : (
-              lastPlayed.map((quiz: QuizType, index: number) => {
-                const quizId = quiz.quizId;
-                const currentProgress = progressMap.get(quiz.quizId._id) || {
-                  questionsCompleted: 0,
-                  rewardsTotal: 0,
-                };
-                return (
-                  <View
-                    key={index}
-                    style={[
-                      {
-                        width: "50%",
-                        height: "100%",
-                        paddingHorizontal: 20,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: 10,
-                      },
-                      index === 0 && {
-                        borderRightWidth: 1,
-                        borderColor: Colors.dark.border,
-                      },
-                    ]}
-                  >
-                    <View
-                      style={{
-                        width: "100%",
-                        height: "57%",
-                        alignItems: "center",
-                        borderBottomWidth: 1,
-                        borderColor: Colors.dark.border,
-                        gap: 8,
-                      }}
-                    >
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        onPress={() => {
-                          router.push({
-                            pathname: "/(quizzes)/quiz",
-                            params: {
-                              id: quizId._id,
-                            },
-                          });
-                        }}
-                        style={{
-                          borderWidth: 1,
-                          borderColor: Colors.dark.border,
-                          borderRadius: 10,
-                          overflow: "hidden",
-                          height: WIDTH * (100 / myWidth),
-                          width: WIDTH * (100 / myWidth),
-                        }}
-                      >
-                        {quizId.logoFile ? (
-                          <QuizLogo name={quizId.logoFile} />
-                        ) : (
-                          <QuizLogo name={currLogoFile} />
-                        )}
-                      </TouchableOpacity>
-                      <Text
-                        style={[
-                          styles.txt_muted,
-                          { fontSize: 5, textAlign: "center", width: "75%" },
-                        ]}
-                      >
-                        <Info company={quizId.company} title={quizId.title} />
-                      </Text>
-                      <Text
-                        style={[
-                          styles.txt,
-                          {
-                            fontSize: 14,
-                            textAlign: "center",
-                            fontWeight: "600",
-                          },
-                        ]}
-                      >
-                        {quizId.title}
-                      </Text>
-                    </View>
-                    <View style={{ width: "80%", gap: 15 }}>
-                      <View style={{ gap: 5 }}>
-                        <Text style={[styles.txt, { fontSize: 12 }]}>
-                          {t("progress")}
-                        </Text>
-                        <View
-                          style={{
-                            width: "100%",
-                            backgroundColor: Colors.dark.border_muted,
-                            borderRadius: 6,
-                          }}
-                        >
-                          <ProgressBar
-                            color={Colors.dark.text}
-                            height={3}
-                            total={quizId.questionsTotal}
-                            progress={currentProgress?.questionsCompleted}
-                          />
-                        </View>
-                        <Text style={[styles.txt, { fontSize: 10 }]}>
-                          {Math.floor(
-                            (currentProgress?.questionsCompleted /
-                              quizId.questionsTotal) *
-                              100
-                          )}
-                          %
-                        </Text>
-                      </View>
-                      <View style={{ gap: 5 }}>
-                        <Text style={[styles.txt, { fontSize: 12 }]}>
-                          {t("rewards")}
-                        </Text>
-                        <View
-                          style={{
-                            width: "100%",
-                            backgroundColor: Colors.dark.border_muted,
-                            borderRadius: 6,
-                          }}
-                        >
-                          <ProgressBar
-                            color={Colors.dark.secondary}
-                            height={3}
-                            total={quizId.rewardsTotal}
-                            progress={currentProgress?.rewardsTotal}
-                          />
-                        </View>
-                        <Text style={[styles.txt, { fontSize: 10 }]}>
-                          {currentProgress?.rewardsTotal} /{" "}
-                          {quizId.rewardsTotal}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                );
-              })
-            )}
-          </View>
-        </View>
-      )}
-      <View
-        style={{
-          alignSelf: "flex-start",
-          flexDirection: "row",
-          alignItems: "center",
-          marginTop: 30,
-          gap: 20,
-          marginLeft: 10,
-          marginBottom: 20,
-        }}
-      >
-        <Text style={[styles.txt, { fontSize: 18 }]}>{t("yourQuizzes")}</Text>
-        <TouchableOpacity
-          onPress={() => router.push("/(quizzes)/collection")}
-          activeOpacity={0.7}
+        <LinearGradient
+          colors={["#1A1A1A", "#131313"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.headerGradient}
         >
-          <Text
-            style={[
-              styles.txt_muted,
-              { fontSize: 15, textDecorationLine: "underline" },
-            ]}
-          >
-            {t("viewAll")} -{">"}
-          </Text>
-        </TouchableOpacity>
-      </View>
-      <View
-        style={{
-          width: "100%",
-          borderColor: Colors.dark.border_muted,
-          borderWidth: 1,
-          borderRadius: 10,
-          height: 350,
-          padding: 20,
-          justifyContent: "space-between",
-        }}
-      >
-        <View
-          style={[
-            {
-              flexDirection: "row",
-              gap: 20,
-              justifyContent: "center",
-              alignItems: "center",
-            },
-            isSmallPhone && { gap: 10 },
-          ]}
-        >
-          {[t("uncompleted"), t("completed"), t("perfect")].map(
-            (category, index) => (
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => {
-                  setCategoryPressed(category);
-                  setCurrIndex(0);
-                }}
-                key={index}
+          <View style={styles.headerTop}>
+            <TouchableOpacity
+              onPress={() => setIsVisible(true)}
+              activeOpacity={0.8}
+              style={styles.profileImageWrapper}
+            >
+              <View
                 style={[
-                  styles.categoryButton,
-                  category === categroyPressed && {
-                    backgroundColor: Colors.dark.text,
-                  },
+                  styles.profileBorder,
+                  { borderColor: user.theme.cardColor },
                 ]}
               >
-                <Text
-                  style={[
-                    styles.categoryButtonText,
-                    styles.txt,
-                    category === categroyPressed && {
-                      color: Colors.dark.bg,
-                      fontWeight: 600,
-                    },
-                    category === categroyPressed &&
-                      Platform.OS === "android" && { fontWeight: 700 },
-                    { fontSize: 13 },
-                    isSmallPhone && { fontSize: 10 },
-                  ]}
-                >
-                  {category}
-                </Text>
-              </TouchableOpacity>
-            )
-          )}
-        </View>
-        {filteredQuizzes.length > 0 ? (
-          filteredQuizzes[currIndex].quizId.logoFile && (
-            <View
-              style={{
-                flexDirection: "row",
-                gap: 10,
-                alignItems: "center",
-              }}
-            >
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => {
-                  router.push({
-                    pathname: "/(quizzes)/quiz",
-                    params: {
-                      id: filteredQuizzes[currIndex].quizId._id,
-                    },
-                  });
-                }}
-                style={{
-                  width: WIDTH * (150 / myWidth),
-                  height: WIDTH * (150 / myWidth),
-                  borderRadius: 10,
-                  overflow: "hidden",
-                  borderWidth: 1,
-                  borderColor: Colors.dark.border,
-                }}
-              >
-                <QuizLogo name={filteredQuizzes[currIndex].quizId.logoFile} />
-              </TouchableOpacity>
-              <View
-                style={{
-                  gap: 10,
-                }}
-              >
-                <Text
-                  numberOfLines={2}
-                  style={[
-                    styles.txt,
-                    {
-                      fontWeight: 700,
-                      fontSize: 20,
-                      width: WIDTH * (200 / myWidth),
-                    },
-                    isSmallPhone && { fontSize: 16 },
-                  ]}
-                >
-                  {filteredQuizzes[currIndex].quizId.title}
-                </Text>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 25,
-                  }}
-                >
-                  <View
-                    style={[
-                      { width: WIDTH * (120 / myWidth) },
-                      // categroyPressed === t("uncompleted") && {
-                      //   width: WIDTH * (170 / myWidth),
-                      // },
-                    ]}
-                  >
-                    <Text style={[styles.txt]}>{t("progress")}</Text>
-                    <View
-                      style={{
-                        backgroundColor: Colors.dark.border_muted,
-                        borderRadius: 10,
-                        marginVertical: 5,
-                      }}
-                    >
-                      <ProgressBar
-                        color={Colors.dark.text}
-                        total={filteredQuizzes[currIndex].quizId.questionsTotal}
-                        progress={currentProgressList.questionsCompleted}
-                      />
-                    </View>
-                    <Text style={[styles.txt, { fontSize: 10 }]}>
-                      {Math.floor(
-                        (currentProgressList.questionsCompleted /
-                          filteredQuizzes[currIndex].quizId.questionsTotal) *
-                          100
-                      )}
-                      %
-                    </Text>
-
-                    <Text style={[styles.txt, { marginTop: 10 }]}>
-                      {t("rewards")}
-                    </Text>
-                    <View
-                      style={{
-                        backgroundColor: Colors.dark.border_muted,
-                        borderRadius: 10,
-                        marginVertical: 5,
-                      }}
-                    >
-                      <ProgressBar
-                        color={Colors.dark.secondary}
-                        total={filteredQuizzes[currIndex].quizId.rewardsTotal}
-                        progress={currentProgressList.rewardsTotal}
-                      />
-                    </View>
-                    <Text style={[styles.txt, { fontSize: 10 }]}>
-                      {currentProgressList.rewardsTotal} /{" "}
-                      {filteredQuizzes[currIndex].quizId.rewardsTotal}
-                    </Text>
-                  </View>
-
-                  {categroyPressed === t("completed") && (
-                    <View
-                      style={{
-                        borderWidth: 4,
-                        borderColor: Colors.dark.success,
-                        width: 50,
-                        height: 50,
-                        borderRadius: 50,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        style={[
-                          styles.txt,
-                          {
-                            fontSize: 30,
-                            fontWeight: 800,
-                          },
-                        ]}
-                      >
-                        A
-                      </Text>
-                    </View>
-                  )}
-                  {categroyPressed === t("perfect") && (
-                    <View
-                      style={{
-                        borderWidth: 4,
-                        borderColor: "#e31010ff",
-                        width: 50,
-                        height: 50,
-                        borderRadius: 50,
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                    >
-                      <Text
-                        style={[
-                          styles.txt,
-                          {
-                            fontSize: 30,
-                            fontWeight: 800,
-                          },
-                        ]}
-                      >
-                        S
-                      </Text>
-                    </View>
-                  )}
+                <View style={styles.profileInner}>
+                  <Image src={user?.profileImage} style={styles.profileImage} />
                 </View>
               </View>
+            </TouchableOpacity>
+
+            <View style={styles.headerInfo}>
+              <Text style={styles.userName} numberOfLines={1}>
+                {user.name}
+              </Text>
+              <Text style={styles.userTitle}>
+                Level {user.level || 1} Explorer
+              </Text>
             </View>
-          )
-        ) : (
-          <View style={{ alignItems: "center", gap: 10 }}>
-            <BookDashed
-              width={40}
-              height={40}
-              color={Colors.dark.text_muted}
-              fill={"transparent"}
-            />
-            {categroyPressed === t("uncompleted") && (
-              <Text style={styles.txt_muted}>{t("noUncompletedQuizzes")}</Text>
-            )}
-            {categroyPressed === t("completed") && (
-              <Text style={styles.txt_muted}>{t("noCompletedQuizzes")}</Text>
-            )}
-            {categroyPressed === t("perfect") && (
-              <Text style={styles.txt_muted}>{t("noPerfectQuizzes")}</Text>
-            )}
+
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                onPress={() => router.push("/(settings)/editProfile")}
+                style={styles.actionButton}
+              >
+                <EditIcon width={22} height={22} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => router.push("/(settings)")}
+                style={styles.actionButton}
+              >
+                <SettingsIcon width={22} height={22} />
+              </TouchableOpacity>
+            </View>
           </View>
-        )}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            borderWidth: 1,
-            borderColor: Colors.dark.border,
-            padding: 10,
-            borderRadius: 15,
-            width: "80%",
-            alignSelf: "center",
-          }}
+
+          {/* Stats Bar */}
+          <View style={styles.statsBar}>
+            <StatItem
+              icon={
+                <Trophy width={20} height={20} color={Colors.dark.secondary} />
+              }
+              label={user.stars}
+              name={t("rewards")}
+            />
+            <View style={styles.statDivider} />
+            <StatItem
+              icon={<Gem width={20} height={20} color={Colors.dark.primary} />}
+              label={user.gems}
+              name={t("gems")}
+            />
+            <View style={styles.statDivider} />
+            <StatItem
+              icon={<Feather name="award" size={20} color="#fff" />}
+              label={progressList.length}
+              name={t("quizzes")}
+            />
+          </View>
+        </LinearGradient>
+      </Animated.View>
+
+      {/* Last Played Section */}
+      {lastPlayed.length > 0 && (
+        <Animated.View
+          entering={FadeInDown.delay(200).springify()}
+          style={styles.section}
         >
-          <TouchableOpacity onPress={goPrev}>
-            <PrevArr width={20} height={20} />
-          </TouchableOpacity>
-          <Text style={styles.txt_muted}>
-            {filteredQuizzes.length === 0
-              ? 0
-              : filteredQuizzes.length - 1 - currIndex}
-            {filteredQuizzes.length !== 0 && "+"}
-          </Text>
-          <TouchableOpacity onPress={goNext}>
-            <Text style={styles.txt}>
-              <NextArr width={20} height={20} />
-            </Text>
+          <Text style={styles.sectionTitle}>{t("lastPlayed")}</Text>
+          <View style={styles.lastPlayedContainer}>
+            {lastPlayed.slice(0, 2).map((quiz: QuizType, index: number) => (
+              <LastPlayedCard
+                key={index}
+                quiz={quiz}
+                progressMap={progressMap}
+                index={index}
+                t={t}
+              />
+            ))}
+          </View>
+        </Animated.View>
+      )}
+
+      {/* Collection Section */}
+      <Animated.View
+        entering={FadeInDown.delay(300).springify()}
+        style={styles.section}
+      >
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>{t("yourQuizzes")}</Text>
+          <TouchableOpacity
+            onPress={() => router.push("/(quizzes)/collection")}
+          >
+            <Text style={styles.viewAllText}>{t("viewAll")} →</Text>
           </TouchableOpacity>
         </View>
-      </View>
+
+        <View style={styles.collectionContainer}>
+          {/* Category Tabs */}
+          <View style={styles.tabsContainer}>
+            {[t("uncompleted"), t("completed"), t("perfect")].map(
+              (category) => (
+                <TouchableOpacity
+                  key={category}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    setCategoryPressed(category);
+                    setCurrIndex(0);
+                  }}
+                  style={[
+                    styles.tabButton,
+                    categroyPressed === category && styles.tabButtonActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.tabText,
+                      categroyPressed === category && styles.tabTextActive,
+                    ]}
+                  >
+                    {category}
+                  </Text>
+                </TouchableOpacity>
+              )
+            )}
+          </View>
+
+          {/* Collection Showcase */}
+          <View style={styles.showcaseContainer}>
+            {filteredQuizzes.length > 0 ? (
+              <View style={styles.showcaseContent}>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    router.push({
+                      pathname: "/(quizzes)/quiz",
+                      params: { id: currentQuizData.quizId._id },
+                    });
+                  }}
+                  style={styles.showcaseLogoWrapper}
+                >
+                  <QuizLogo name={currentQuizData.quizId.logoFile} />
+                </TouchableOpacity>
+
+                <View style={styles.showcaseInfo}>
+                  <Text style={styles.showcaseTitle} numberOfLines={1}>
+                    {currentQuizData.quizId.title}
+                  </Text>
+
+                  <View style={styles.progressRow}>
+                    <View style={styles.statMini}>
+                      <Text style={styles.statLabelMini}>{t("progress")}</Text>
+                      <View style={styles.miniBar}>
+                        <ProgressBar
+                          color={Colors.dark.text}
+                          total={currentQuizData.quizId.questionsTotal}
+                          progress={currentProgressInfo.questionsCompleted}
+                          height={4}
+                        />
+                      </View>
+                    </View>
+
+                    <View style={styles.statMini}>
+                      <Text style={styles.statLabelMini}>{t("rewards")}</Text>
+                      <View style={styles.miniBar}>
+                        <ProgressBar
+                          color={Colors.dark.secondary}
+                          total={currentQuizData.quizId.rewardsTotal}
+                          progress={currentProgressInfo.rewardsTotal}
+                          height={4}
+                        />
+                      </View>
+                    </View>
+
+                    {categroyPressed === t("completed") && (
+                      <View
+                        style={[
+                          styles.rankBadge,
+                          { borderColor: Colors.dark.success },
+                        ]}
+                      >
+                        <Text style={styles.rankText}>A</Text>
+                      </View>
+                    )}
+                    {categroyPressed === t("perfect") && (
+                      <View
+                        style={[styles.rankBadge, { borderColor: "#ef4444" }]}
+                      >
+                        <Text style={styles.rankText}>S</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View style={styles.emptyState}>
+                <BookDashed width={40} height={40} color={Colors.dark.border} />
+                <Text style={styles.emptyText}>{t("noQuizzes")}</Text>
+              </View>
+            )}
+
+            {/* Pagination */}
+            <View style={styles.pagination}>
+              <TouchableOpacity onPress={goPrev} disabled={currIndex === 0}>
+                <PrevArr
+                  width={20}
+                  height={20}
+                  color={
+                    currIndex === 0 ? Colors.dark.border : Colors.dark.text
+                  }
+                />
+              </TouchableOpacity>
+
+              <View style={styles.pageIndicator}>
+                <Text style={styles.pageText}>
+                  {filteredQuizzes.length === 0 ? 0 : currIndex + 1} /{" "}
+                  {filteredQuizzes.length}
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={goNext}
+                disabled={
+                  currIndex === filteredQuizzes.length - 1 ||
+                  filteredQuizzes.length === 0
+                }
+              >
+                <NextArr
+                  width={20}
+                  height={20}
+                  color={
+                    currIndex === filteredQuizzes.length - 1 ||
+                    filteredQuizzes.length === 0
+                      ? Colors.dark.border
+                      : Colors.dark.text
+                  }
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Animated.View>
+
       <ProfileCardModal isVisible={isVisible} setIsVisible={setIsVisible} />
     </ScrollView>
   );
 }
 
+// Sub-components
+const StatItem = ({ icon, label, name }: any) => (
+  <View style={styles.statItem}>
+    {icon}
+    <Text style={styles.statValue}>{label}</Text>
+    <Text style={styles.statLabel}>{name}</Text>
+  </View>
+);
+
+const LastPlayedCard = ({ quiz, progressMap, index, t }: any) => {
+  const quizId = quiz.quizId;
+  const progress = progressMap.get(quizId._id) || {
+    questionsCompleted: 0,
+    rewardsTotal: 0,
+  };
+
+  const percent = Math.floor(
+    (progress.questionsCompleted / quizId.questionsTotal) * 100
+  );
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() => {
+        router.push({
+          pathname: "/(quizzes)/quiz",
+          params: { id: quizId._id },
+        });
+      }}
+      style={[
+        styles.lastPlayedCard,
+        index === 0 && styles.lastPlayedCardBorder,
+      ]}
+    >
+      <View style={styles.lpHeader}>
+        <View style={styles.lpLogoWrapper}>
+          <QuizLogo name={quizId.logoFile} />
+        </View>
+        <Text style={styles.lpTitle} numberOfLines={2}>
+          {quizId.title}
+        </Text>
+      </View>
+
+      <View style={styles.lpStats}>
+        <View style={styles.lpStatItem}>
+          <Text style={styles.lpStatLabel}>{t("progress")}</Text>
+          <View style={styles.lpBar}>
+            <ProgressBar
+              color={Colors.dark.text}
+              height={4}
+              total={quizId.questionsTotal}
+              progress={progress.questionsCompleted}
+            />
+          </View>
+          <Text style={styles.lpPercent}>{percent}%</Text>
+        </View>
+
+        <View style={styles.lpStatItem}>
+          <Text style={styles.lpStatLabel}>{t("rewards")}</Text>
+          <View style={styles.lpBar}>
+            <ProgressBar
+              color={Colors.dark.secondary}
+              height={4}
+              total={quizId.rewardsTotal}
+              progress={progress.rewardsTotal}
+            />
+          </View>
+          <Text style={styles.lpPercent}>
+            {progress.rewardsTotal}/{quizId.rewardsTotal}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
 const styles = StyleSheet.create({
-  iconBackground: {
-    padding: 14,
+  container: {
+    flex: 1,
+    backgroundColor: Colors.dark.bg_dark,
+  },
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Colors.dark.bg_dark,
+  },
+  // Header
+  header: {
+    width: "100%",
+    marginBottom: 20,
+  },
+  headerGradient: {
+    paddingTop: Platform.OS === "ios" ? 20 : 10,
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+  },
+  headerTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    marginBottom: 24,
+  },
+  profileImageWrapper: {
+    transform: [{ rotate: "45deg" }],
+    padding: 3,
+  },
+  profileBorder: {
+    borderWidth: 3,
+    borderRadius: 22,
+    padding: 3,
+  },
+  profileInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 16,
+    overflow: "hidden",
+    backgroundColor: "rgba(255,255,255,0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  profileImage: {
+    width: 76,
+    height: 76,
+    transform: [{ rotate: "-45deg" }],
+  },
+  headerInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: "#fff",
+    fontFamily: REGULAR_FONT,
+  },
+  userTitle: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.7)",
+    fontFamily: REGULAR_FONT,
+    marginTop: 2,
+  },
+  headerActions: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  actionButton: {
+    padding: 10,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    borderRadius: 14,
+  },
+  // Stats Bar
+  statsBar: {
+    flexDirection: "row",
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderRadius: 24,
+    paddingVertical: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  statItem: {
+    flex: 1,
+    alignItems: "center",
+    gap: 4,
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: "#fff",
+    fontFamily: REGULAR_FONT,
+  },
+  statLabel: {
+    fontSize: 11,
+    color: "rgba(255,255,255,0.6)",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    fontWeight: "600",
+  },
+  statDivider: {
+    width: 1,
+    height: "60%",
+    backgroundColor: "rgba(255,255,255,0.1)",
+    alignSelf: "center",
+  },
+  // Sections
+  section: {
+    paddingHorizontal: 16,
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: Colors.dark.text,
+    fontFamily: REGULAR_FONT,
+    marginBottom: 16,
+  },
+  viewAllText: {
+    color: Colors.dark.text_muted,
+    fontSize: 14,
+    textDecorationLine: "underline",
+    marginBottom: 16,
+  },
+  // Last Played
+  lastPlayedContainer: {
+    flexDirection: "row",
+    backgroundColor: Colors.dark.bg_light,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: Colors.dark.border_muted,
-    borderRadius: 15,
+    overflow: "hidden",
   },
-  txt: {
+  lastPlayedCard: {
+    flex: 1,
+    padding: 16,
+    gap: 12,
+  },
+  lastPlayedCardBorder: {
+    borderRightWidth: 1,
+    borderColor: Colors.dark.border_muted,
+  },
+  lpHeader: {
+    alignItems: "center",
+    gap: 10,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderColor: Colors.dark.border_muted,
+  },
+  lpLogoWrapper: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
+  },
+  lpTitle: {
+    fontSize: 14,
+    fontWeight: "700",
     color: Colors.dark.text,
-    fontFamily: REGULAR_FONT,
+    textAlign: "center",
+    height: 34,
   },
-  txt_muted: {
+  lpStats: {
+    gap: 10,
+  },
+  lpStatItem: {
+    gap: 4,
+  },
+  lpStatLabel: {
+    fontSize: 11,
+    color: Colors.dark.text_muted,
+    textTransform: "uppercase",
+  },
+  lpBar: {
+    backgroundColor: Colors.dark.border_muted,
+    borderRadius: 4,
+  },
+  lpPercent: {
+    fontSize: 10,
+    color: Colors.dark.text,
+    fontWeight: "600",
+  },
+  // Collection
+  collectionContainer: {
+    backgroundColor: Colors.dark.bg_light,
+    borderRadius: 24,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
+  },
+  tabsContainer: {
+    flexDirection: "row",
+    gap: 8,
+    backgroundColor: Colors.dark.bg_dark,
+    padding: 4,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+    borderRadius: 12,
+  },
+  tabButtonActive: {
+    backgroundColor: Colors.dark.text,
+  },
+  tabText: {
+    fontSize: 12,
+    color: Colors.dark.text_muted,
+    fontWeight: "600",
+  },
+  tabTextActive: {
+    color: Colors.dark.bg,
+    fontWeight: "800",
+  },
+  showcaseContainer: {
+    minHeight: 180,
+    justifyContent: "space-between",
+  },
+  showcaseContent: {
+    flexDirection: "row",
+    gap: 16,
+    alignItems: "center",
+  },
+  showcaseLogoWrapper: {
+    width: 120,
+    height: 120,
+    borderRadius: 16,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
+  },
+  showcaseInfo: {
+    flex: 1,
+    gap: 12,
+  },
+  showcaseTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: Colors.dark.text,
+  },
+  progressRow: {
+    gap: 10,
+  },
+  statMini: {
+    gap: 4,
+  },
+  statLabelMini: {
+    fontSize: 10,
+    color: Colors.dark.text_muted,
+    textTransform: "uppercase",
+  },
+  miniBar: {
+    backgroundColor: Colors.dark.border_muted,
+    borderRadius: 4,
+  },
+  rankBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 3,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    right: 0,
+    top: -40,
+  },
+  rankText: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: Colors.dark.text,
+  },
+  pagination: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderColor: Colors.dark.border_muted,
+  },
+  pageIndicator: {
+    backgroundColor: Colors.dark.bg_dark,
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  pageText: {
+    fontSize: 13,
     color: Colors.dark.text_muted,
     fontFamily: REGULAR_FONT,
+    fontWeight: "600",
   },
-  categoryButton: {
-    borderWidth: 1,
-    borderColor: Colors.dark.border,
-    backgroundColor: Colors.dark.bg_dark,
-    paddingVertical: 6,
-    paddingHorizontal: 15,
-    borderRadius: 13,
+  emptyState: {
+    height: 140,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
   },
-  categoryButtonText: {
-    color: Colors.dark.text,
+  emptyText: {
+    fontSize: 14,
+    color: Colors.dark.text_muted,
+    fontFamily: REGULAR_FONT,
   },
 });

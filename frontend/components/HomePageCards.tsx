@@ -269,7 +269,7 @@ export default function HomePageCards() {
                 color={Colors.dark.secondary}
                 total={quiz?.rewardsTotal || 0}
                 progress={currentProgress?.rewardsTotal || 0}
-                height={6}
+                height={4}
               />
             </View>
             <Text style={styles.rewardText}>

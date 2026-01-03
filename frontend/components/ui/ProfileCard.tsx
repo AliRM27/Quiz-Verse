@@ -12,18 +12,18 @@ import {
 } from "react-native";
 import ColorPicker from "./ColorPicker";
 import Pencil from "@/assets/svgs/pencil.svg";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { updateUser } from "@/services/api";
 import { useTranslation } from "react-i18next";
 import * as Haptics from "expo-haptics";
 import Loader from "./Loader";
+import { LinearGradient } from "expo-linear-gradient";
 import {
-  HEIGHT,
-  isSmallPhone,
-  myHeight,
-  myWidth,
-  WIDTH,
-} from "@/constants/Dimensions";
+  Ionicons,
+  MaterialCommunityIcons,
+  FontAwesome6,
+} from "@expo/vector-icons";
+import { HEIGHT, isSmallPhone } from "@/constants/Dimensions";
 
 // ✅ Reanimated imports
 import Animated, {
@@ -47,9 +47,9 @@ const ProfileCard = ({
     "#FF6B6B",
     "#4ECDC4",
     "#FFD93D",
-    "#1A535C",
+    "#4A00E0",
     "#FF9F1A",
-    "green",
+    "#00C853",
   ];
 
   const [isVisible, setIsVisible] = useState<boolean>(false);
@@ -57,40 +57,36 @@ const ProfileCard = ({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { t } = useTranslation();
 
-  const date: string[] = user.firstLogIn.split("T", 1)[0].split("-");
+  const dateParts = user.firstLogIn.split("T")[0].split("-");
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+  const formattedDate = `${dateParts[2]} ${monthNames[parseInt(dateParts[1]) - 1]} ${dateParts[0]}`;
 
-  const month = {
-    "1": "Jan.",
-    "2": "Febr.",
-    "3": "Mar.",
-    "4": "Apr.",
-    "5": "May",
-    "6": "June",
-    "7": "Jule",
-    "8": "Aug.",
-    "9": "Sept.",
-    "10": "Oct.",
-    "11": "Nov.",
-    "12": "Dec.",
-  };
   // UI-thread color state
   const fromColor = useSharedValue(selectedColor);
   const toColor = useSharedValue(selectedColor);
   const progress = useSharedValue(1);
 
   useEffect(() => {
-    // stop any running transition
     cancelAnimation(progress);
-
-    // move current target to "from", new pick to "to"
     fromColor.value = toColor.value;
     toColor.value = selectedColor;
-
     progress.value = 0;
     progress.value = withTiming(1, { duration: 300 });
   }, [selectedColor]);
 
-  // ✅ Animated theme color computed from progress
   const animatedTheme = useAnimatedStyle(() => {
     const c = interpolateColor(
       progress.value,
@@ -118,251 +114,153 @@ const ProfileCard = ({
     return { color: c };
   });
 
+  const StatItem = ({ icon, value, label, iconType = "Ionicons" }: any) => (
+    <View style={styles.statItem}>
+      <View style={styles.statIconContainer}>
+        {iconType === "Ionicons" && (
+          <Ionicons name={icon} size={18} color={selectedColor} />
+        )}
+        {iconType === "Material" && (
+          <MaterialCommunityIcons name={icon} size={18} color={selectedColor} />
+        )}
+        {iconType === "FontAwesome" && (
+          <FontAwesome6 name={icon} size={16} color={selectedColor} />
+        )}
+      </View>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{t(label)}</Text>
+    </View>
+  );
   return (
-    <View style={styles.card}>
-      {isEditable && (
-        <Modal
-          transparent
-          animationType="slide"
-          visible={isVisible}
-          onRequestClose={() => setIsVisible(false)}
-        >
-          <View
-            style={{
-              height: "100%",
-              justifyContent: "flex-end",
-              alignItems: "center",
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: Colors.dark.bg_light,
-                width: "100%",
-                alignItems: "center",
-                padding: 20,
-                height: "50%",
-                gap: 10,
-                borderRadius: 50,
-              }}
-            >
-              <Text
-                style={[
-                  styles.text,
-                  { fontSize: 25, fontWeight: 600 },
-                  isSmallPhone && { fontSize: 22 },
-                  Platform.OS === "android" && { fontWeight: "bold" },
-                ]}
-              >
-                {t("chooseTheme")}
-              </Text>
-
-              <ColorPicker
-                colors={colors}
-                selectedColor={selectedColor}
-                setSelectedColor={setSelectedColor} // animation triggers automatically
-              />
-
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 20,
-                  marginTop: "auto",
-                  paddingBottom: 20,
-                }}
-              >
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  style={[
-                    styles.button,
-                    {
-                      width: "45%",
-                      backgroundColor: Colors.dark.bg_light,
-                      borderWidth: 1,
-                      borderColor: Colors.dark.border,
-                    },
-                  ]}
-                  onPress={() => {
-                    setIsVisible(false);
-                    setSelectedColor(user.theme.cardColor);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.text,
-                      {
-                        color: Colors.dark.text,
-                        fontSize: 18,
-                        textAlign: "center",
-                      },
-                      isSmallPhone && { fontSize: 16 },
-                    ]}
-                  >
-                    {t("close")}
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  style={[
-                    styles.button,
-                    { width: "45%" },
-                    isLoading && { paddingVertical: 5 },
-                    user.theme.cardColor === selectedColor && { opacity: 0.5 },
-                  ]}
-                  disabled={user.theme.cardColor === selectedColor || isLoading}
-                  onPress={async () => {
-                    setIsLoading(true);
-                    try {
-                      user.theme.cardColor = selectedColor;
-                      await updateUser(user);
-                      Haptics.notificationAsync(
-                        Haptics.NotificationFeedbackType.Success
-                      );
-                    } catch (err) {
-                      console.log(err);
-                    } finally {
-                      setIsVisible(false);
-                    }
-                    setIsLoading(false);
-                  }}
-                >
-                  {isLoading ? (
-                    <Loader black />
-                  ) : (
-                    <Text
-                      style={[
-                        styles.text,
-                        { color: "black", fontSize: 18 },
-                        isSmallPhone && { fontSize: 16 },
-                      ]}
-                    >
-                      {t("save")}
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
-      )}
-
-      {/* ✅ Animate the top figure background */}
-      <Animated.View
-        style={[
-          styles.figure,
-          animatedTheme,
-          { alignItems: "flex-end", padding: 10 },
-        ]}
+    <View style={styles.cardWrapper}>
+      <LinearGradient
+        colors={[selectedColor + "20", selectedColor + "05"]}
+        style={styles.card}
       >
         {isEditable && (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => setIsVisible(true)}
-            style={{ backgroundColor: "#D9D9D9", padding: 7, borderRadius: 15 }}
+          <Modal
+            transparent
+            animationType="slide"
+            visible={isVisible}
+            onRequestClose={() => setIsVisible(false)}
           >
-            <Pencil color={Colors.dark.bg_dark} width={20} height={20} />
-          </TouchableOpacity>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>{t("chooseTheme")}</Text>
+                <ColorPicker
+                  colors={colors}
+                  selectedColor={selectedColor}
+                  setSelectedColor={setSelectedColor}
+                />
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={styles.modalCancel}
+                    onPress={() => {
+                      setIsVisible(false);
+                      setSelectedColor(user.theme.cardColor);
+                    }}
+                  >
+                    <Text style={styles.modalCancelText}>{t("close")}</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={[styles.modalSave, isLoading && { opacity: 0.5 }]}
+                    disabled={
+                      user.theme.cardColor === selectedColor || isLoading
+                    }
+                    onPress={async () => {
+                      setIsLoading(true);
+                      try {
+                        user.theme.cardColor = selectedColor;
+                        await updateUser(user);
+                        Haptics.notificationAsync(
+                          Haptics.NotificationFeedbackType.Success
+                        );
+                      } catch (err) {
+                        console.log(err);
+                      } finally {
+                        setIsVisible(false);
+                      }
+                      setIsLoading(false);
+                    }}
+                  >
+                    {isLoading ? (
+                      <Loader black />
+                    ) : (
+                      <Text style={styles.modalSaveText}>{t("save")}</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
         )}
-      </Animated.View>
 
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          width: "100%",
-        }}
-      >
-        <View style={{ gap: 10 }}>
-          {/* ✅ Animate username color */}
-          <Animated.Text
-            style={[
-              styles.text,
-              animatedText,
-              {
-                fontSize: 25,
-                fontWeight: 600,
-              },
-              isSmallPhone && { fontSize: 22 },
-              usernameValue.length > 10 && { fontSize: 18 },
-            ]}
-          >
-            {usernameValue}
-          </Animated.Text>
-
-          {/* ✅ Animate subtitle color */}
-          <Animated.Text
-            style={[
-              styles.text,
-              animatedText,
-              { fontSize: 17 },
-              isSmallPhone && { fontSize: 15 },
-            ]}
-          >
-            {t(user.title).toUpperCase()}
-          </Animated.Text>
+        {/* Top Section: Avatar & Info */}
+        <View style={styles.header}>
+          <Animated.View style={[styles.avatarContainer, animatedBorder]}>
+            <Image source={{ uri: user?.profileImage }} style={styles.avatar} />
+          </Animated.View>
+          <View style={styles.userInfo}>
+            <Animated.Text
+              style={[styles.username, animatedText]}
+              numberOfLines={1}
+            >
+              {usernameValue}
+            </Animated.Text>
+            <Animated.Text style={[styles.userTitle, animatedText]}>
+              {t(user.title).toUpperCase()}
+            </Animated.Text>
+          </View>
+          {isEditable && (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setIsVisible(true)}
+              style={styles.editButton}
+            >
+              <Pencil color="#fff" width={16} height={16} />
+            </TouchableOpacity>
+          )}
         </View>
 
-        {/* ✅ Animate diamond border */}
-        <Animated.View
-          style={[
-            {
-              borderWidth: 2,
-              transform: [{ rotate: "45deg" }],
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 20,
-              width: 54,
-              height: 54,
-            },
-            animatedBorder,
-          ]}
-        >
-          <View
-            style={{
-              width: 43,
-              height: 43,
-              transform: [{ rotate: "0deg" }],
-              overflow: "hidden",
-              justifyContent: "center",
-              alignItems: "center",
-              borderRadius: 15,
-            }}
+        {/* Middle Section: Stats Bar */}
+        <View style={styles.statsBar}>
+          <StatItem
+            icon="book-outline"
+            value={user.unlockedQuizzesCount || 0}
+            label="unlocked"
+          />
+          <StatItem
+            icon="checkmark-circle-outline"
+            value={user.completedQuizzesCount || 0}
+            label="completed"
+          />
+          <StatItem icon="star-outline" value={user.level} label="level" />
+          <StatItem
+            icon="flame-outline"
+            value={user.dailyQuizStreak}
+            label="streak"
+          />
+        </View>
+
+        {/* Bottom Section: Membership Badge */}
+        <View style={styles.footer}>
+          <LinearGradient
+            colors={[selectedColor + "30", selectedColor + "10"]}
+            style={styles.membershipBadge}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
           >
-            <Image
-              src={user?.profileImage}
-              width={50}
-              height={50}
-              style={{ transform: [{ rotate: "-45deg" }], aspectRatio: 1 / 1 }}
-            />
-          </View>
-        </Animated.View>
-      </View>
-
-      {/* ✅ Animate bottom badge border + text + square */}
-      <Animated.View
-        style={[
-          {
-            flexDirection: "row",
-            borderWidth: 1,
-            alignItems: "center",
-            paddingHorizontal: 10,
-            gap: 10,
-            borderRadius: 10,
-            marginTop: "auto",
-          },
-          animatedBorder,
-        ]}
-      >
-        <Animated.Text style={[styles.text, animatedText, { fontWeight: 600 }]}>
-          QV
-        </Animated.Text>
-
-        <Animated.View style={[{ height: 22, width: 22 }, animatedTheme]} />
-
-        <Animated.Text style={[styles.text, animatedText, { fontWeight: 600 }]}>
-          {date[2]} {month[date[1] as keyof typeof month]} {date[0]}
-        </Animated.Text>
-      </Animated.View>
+            <Text style={styles.badgeText}>QV MEMBER</Text>
+            <View style={styles.badgeDivider} />
+            <Text style={styles.badgeDate}>
+              SINCE {formattedDate.toUpperCase()}
+            </Text>
+          </LinearGradient>
+        </View>
+      </LinearGradient>
     </View>
   );
 };
@@ -370,43 +268,183 @@ const ProfileCard = ({
 export default ProfileCard;
 
 const styles = StyleSheet.create({
-  text: { color: Colors.dark.text, fontFamily: REGULAR_FONT },
-  text_muted: { color: Colors.dark.text_muted, fontFamily: REGULAR_FONT },
-  card: {
-    padding: 17,
-    gap: 20,
-    width: "78%",
-    height: HEIGHT * 0.5,
-    backgroundColor: "#D9D9D9",
-    borderRadius: 15,
-    alignItems: "center",
-  },
-  figure: {
-    width: "100%",
-    height: "55%",
-    backgroundColor: "#E39595",
-    borderTopRightRadius: 10,
-    borderBottomLeftRadius: 10,
-    borderTopLeftRadius: 65,
-    borderBottomRightRadius: 65,
-  },
-  input: {
-    paddingHorizontal: 20,
-    width: "100%",
-    color: Colors.dark.text,
-    fontSize: 18,
-    height: 55,
-    borderRadius: 35,
+  cardWrapper: {
+    width: "90%",
+    borderRadius: 24,
+    overflow: "hidden",
+    backgroundColor: "#1A1A1A",
     borderWidth: 1,
-    backgroundColor: Colors.dark.bg_light,
+    borderColor: "rgba(255,255,255,0.1)",
   },
-  button: {
-    backgroundColor: Colors.dark.text,
+  card: {
+    padding: 24,
+    height: HEIGHT * 0.45,
+    justifyContent: "space-between",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  avatarContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2,
+    padding: 2,
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  avatar: {
     width: "100%",
-    paddingVertical: 15,
-    marginTop: "auto",
-    borderRadius: 35,
+    height: "100%",
+    borderRadius: 30,
+  },
+  userInfo: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  username: {
+    fontSize: 22,
+    fontWeight: "700",
+    fontFamily: REGULAR_FONT,
+    color: "#fff",
+  },
+  userTitle: {
+    fontSize: 12,
+    fontWeight: "600",
+    fontFamily: REGULAR_FONT,
+    color: "rgba(255,255,255,0.5)",
+    marginTop: 2,
+    letterSpacing: 1,
+  },
+  editButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.1)",
     alignItems: "center",
     justifyContent: "center",
+  },
+  statsBar: {
+    flexDirection: "row",
+    backgroundColor: "rgba(255,255,255,0.03)",
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+    justifyContent: "space-around",
+  },
+  statItem: {
+    alignItems: "center",
+    gap: 4,
+  },
+  statIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 2,
+  },
+  statValue: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#fff",
+    fontFamily: REGULAR_FONT,
+  },
+  statLabel: {
+    fontSize: 10,
+    color: "rgba(255,255,255,0.4)",
+    textTransform: "uppercase",
+    fontFamily: REGULAR_FONT,
+    letterSpacing: 0.5,
+  },
+  footer: {
+    alignItems: "center",
+  },
+  membershipBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "rgba(255,255,255,0.8)",
+    fontFamily: REGULAR_FONT,
+    letterSpacing: 1,
+  },
+  badgeDivider: {
+    width: 1,
+    height: 12,
+    backgroundColor: "rgba(255,255,255,0.2)",
+  },
+  badgeDate: {
+    fontSize: 10,
+    color: "rgba(255,255,255,0.5)",
+    fontFamily: REGULAR_FONT,
+    letterSpacing: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.8)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#1A1A1A",
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    padding: 32,
+    paddingBottom: Platform.OS === "ios" ? 48 : 32,
+    gap: 24,
+    borderTopWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#fff",
+    fontFamily: REGULAR_FONT,
+    textAlign: "center",
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: 16,
+  },
+  modalCancel: {
+    flex: 1,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  modalCancelText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+    fontFamily: REGULAR_FONT,
+  },
+  modalSave: {
+    flex: 1,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalSaveText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#000",
+    fontFamily: REGULAR_FONT,
   },
 });
