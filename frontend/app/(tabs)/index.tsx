@@ -17,8 +17,8 @@ import { useCallback, useState } from "react";
 import ProfileCardModal from "@/components/ui/ProfileCardModal";
 import { moderateScale } from "react-native-size-matters";
 import { isSmallPhone } from "@/constants/Dimensions";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "expo-router";
-import { useSafeAreaBg } from "@/context/safeAreaContext";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -27,13 +27,7 @@ export default function HomeScreen() {
   const { user, loading } = useUser();
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
-  const { setSafeEdges } = useSafeAreaBg();
-
-  useFocusEffect(
-    useCallback(() => {
-      setSafeEdges(["bottom", "top"]);
-    }, [])
-  );
+  const insets = useSafeAreaInsets();
 
   if (loading || !user) {
     return (
@@ -44,7 +38,13 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={[styles.container, isSmallPhone && { gap: 16 }]}>
+    <View
+      style={[
+        styles.container,
+        { paddingTop: insets.top + 10, paddingBottom: insets.bottom },
+        isSmallPhone && { gap: 16 },
+      ]}
+    >
       {/* Header */}
       <Animated.View
         entering={FadeInDown.delay(0).springify()}
@@ -120,7 +120,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     gap: 24,
-    paddingTop: 10,
   },
   loadingContainer: {
     flex: 1,

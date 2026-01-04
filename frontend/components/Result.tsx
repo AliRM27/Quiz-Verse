@@ -28,9 +28,20 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchUserProgressDetail } from "@/services/api";
 import { languageMap } from "@/utils/i18n";
 import { LinearGradient } from "expo-linear-gradient";
-import Animated, { FadeInDown, FadeIn, ZoomIn } from "react-native-reanimated";
+import Animated, {
+  FadeInDown,
+  FadeIn,
+  ZoomIn,
+  useSharedValue,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  interpolate,
+  interpolateColor,
+  Extrapolate,
+} from "react-native-reanimated";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const RewardItem = ({
   name,
@@ -164,7 +175,57 @@ const Result = ({
   const [value, setValue] = useState<number>(0);
   const [rewardsValue, setRewardsValue] = useState<number>(0);
   const scrollViewRef = useRef<ScrollView | null>(null);
+  const insets = useSafeAreaInsets();
   const [showWrongQuestions, setShowWrongQuestions] = useState(false);
+  const scrollY = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  const statusBarAnimatedStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      scrollY.value,
+      [0, 100],
+      ["#4A00E0", "#131313"]
+    );
+    return {
+      backgroundColor,
+    };
+  });
+
+  const stickyHeaderStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollY.value,
+      [100, 150],
+      [0, 1],
+      Extrapolate.CLAMP
+    );
+    const translateY = interpolate(
+      scrollY.value,
+      [100, 150],
+      [-20, 0],
+      Extrapolate.CLAMP
+    );
+    return {
+      opacity,
+      transform: [{ translateY }],
+    };
+  });
+
+  const headerParallaxStyle = useAnimatedStyle(() => {
+    const scale = interpolate(
+      scrollY.value,
+      [-100, 0],
+      [1.2, 1],
+      Extrapolate.CLAMP
+    );
+    return {
+      transform: [{ scale }],
+    };
+  });
 
   const { data: detailData, isLoading: detailLoading } = useQuery({
     queryKey: ["userProgressDetail", quiz._id],
@@ -207,7 +268,7 @@ const Result = ({
 
   if (detailLoading || !userProgress || !user) {
     return (
-      <View style={styles.loaderContainer}>
+      <View style={[styles.loaderContainer, { paddingTop: insets.top }]}>
         <Loader />
       </View>
     );
@@ -215,41 +276,83 @@ const Result = ({
 
   return (
     <View style={styles.container} collapsable={false}>
-      <ScrollView
-        ref={scrollViewRef}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+      {/* Dynamic Status Bar Background */}
+      <Animated.View
+        style={[
+          styles.statusBarBackground,
+          { height: insets.top },
+          statusBarAnimatedStyle,
+        ]}
+      />
+
+      {/* Sticky Top Bar (fades in) */}
+      <Animated.View
+        style={[
+          styles.stickyHeader,
+          { paddingTop: insets.top },
+          stickyHeaderStyle,
+        ]}
       >
-        {/* Celebration Header */}
         <LinearGradient
           colors={["#4A00E0", "#8E2DE2"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.celebrationHeader}
-        >
-          <Animated.View
-            entering={ZoomIn.duration(800)}
-            style={styles.logoBadge}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={styles.stickyHeaderContent}>
+          <QuizLogo
+            name={quiz.logoFile}
+            style={{ width: 30, height: 30, borderRadius: 15 }}
+          />
+          <Text style={styles.stickyHeaderTitle} numberOfLines={1}>
+            {quiz.title}
+          </Text>
+        </View>
+      </Animated.View>
+
+      <Animated.ScrollView
+        ref={scrollViewRef as any}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* Celebration Header */}
+        <Animated.View style={headerParallaxStyle}>
+          <LinearGradient
+            colors={["#4A00E0", "#8E2DE2"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.celebrationHeader, { paddingTop: insets.top + 20 }]}
           >
-            <QuizLogo name={quiz.logoFile} style={{ borderRadius: 50 }} />
-          </Animated.View>
-          <Animated.View
-            entering={FadeInDown.delay(300)}
-            style={{ alignItems: "center" }}
-          >
-            <Text style={styles.completeTitle}>{t("completed")}</Text>
-            <Text style={styles.quizTitle}>{quiz.title}</Text>
-            {timeNumber > 0 && (
-              <View style={styles.timeTakenBadge}>
-                <Feather name="clock" size={14} color="rgba(255,255,255,0.8)" />
-                <Text style={styles.timeTakenText}>
-                  {Math.floor(timeNumber / 60)}:
-                  {String(timeNumber % 60).padStart(2, "0")}
-                </Text>
-              </View>
-            )}
-          </Animated.View>
-        </LinearGradient>
+            <Animated.View
+              entering={ZoomIn.duration(800)}
+              style={styles.logoBadge}
+            >
+              <QuizLogo name={quiz.logoFile} style={{ borderRadius: 50 }} />
+            </Animated.View>
+            <Animated.View
+              entering={FadeInDown.delay(300)}
+              style={{ alignItems: "center" }}
+            >
+              <Text style={styles.completeTitle}>{t("completed")}</Text>
+              <Text style={styles.quizTitle}>{quiz.title}</Text>
+              {timeNumber > 0 && (
+                <View style={styles.timeTakenBadge}>
+                  <Feather
+                    name="clock"
+                    size={14}
+                    color="rgba(255,255,255,0.8)"
+                  />
+                  <Text style={styles.timeTakenText}>
+                    {Math.floor(timeNumber / 60)}:
+                    {String(timeNumber % 60).padStart(2, "0")}
+                  </Text>
+                </View>
+              )}
+            </Animated.View>
+          </LinearGradient>
+        </Animated.View>
 
         {/* Stats Summary Row */}
         <View style={styles.statsSummaryRow}>
@@ -451,10 +554,10 @@ const Result = ({
             )}
           </Animated.View>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* Footer Actions */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>
         <TouchableOpacity
           onPress={async () => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -504,9 +607,38 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 120,
   },
+  statusBarBackground: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
+  },
+  stickyHeader: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 15,
+    height: 100, // Approximate height, including insets
+    overflow: "hidden",
+  },
+  stickyHeaderContent: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    paddingHorizontal: 20,
+  },
+  stickyHeaderTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
+    maxWidth: "70%",
+  },
   // Header
   celebrationHeader: {
-    paddingTop: 60,
     paddingBottom: 40,
     alignItems: "center",
     borderBottomLeftRadius: 40,

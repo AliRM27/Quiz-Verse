@@ -10,7 +10,7 @@ import {
   Pressable,
 } from "react-native";
 import ArrBack from "@/components/ui/ArrBack";
-import { useSafeAreaBg } from "@/context/safeAreaContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 import React, {
   useCallback,
@@ -49,7 +49,6 @@ import { Feather } from "@expo/vector-icons";
 import { ClipboardCheck } from "lucide-react-native";
 
 const DailyQuiz = () => {
-  const { setSafeBg } = useSafeAreaBg();
   const [currQuestionIndex, setCurrQuestionIndex] = useState<number>(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [sliderValue, setSliderValue] = useState<number>(-1);
@@ -87,14 +86,7 @@ const DailyQuiz = () => {
 
   const queryClient = useQueryClient();
 
-  useFocusEffect(
-    useCallback(() => {
-      setSafeBg(Colors.dark.bg_dark);
-      return () => {
-        setSafeBg(Colors.dark.bg_dark);
-      };
-    }, [])
-  );
+  const insets = useSafeAreaInsets();
 
   const { data: dailyQuizData, isLoading: dailyQuizLoading } = useQuery({
     queryKey: ["dailyQuiz"],
@@ -109,7 +101,7 @@ const DailyQuiz = () => {
 
   if (!dailyQuizData || dailyQuizLoading || !user) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
         <Loader />
       </View>
     );
@@ -232,7 +224,7 @@ const DailyQuiz = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top }]}>
         <ArrBack />
 
         {/* Title */}
@@ -343,7 +335,7 @@ const DailyQuiz = () => {
         </ScrollView>
 
         {/* Bottom Navigation */}
-        <View style={[styles.bottomNav, isSmallPhone && { paddingBottom: 10 }]}>
+        <View style={[styles.bottomNav, { paddingBottom: insets.bottom + 10 }]}>
           <TouchableOpacity
             activeOpacity={0.6}
             disabled={
@@ -516,6 +508,7 @@ const Result: React.FC<ResultProps> = ({
   language,
   t,
 }) => {
+  const insets = useSafeAreaInsets();
   const wrongResults = result.results.filter((r) => !r.isCorrect);
 
   const getUserIndexFromResult = (r: any) =>
@@ -525,7 +518,7 @@ const Result: React.FC<ResultProps> = ({
     null;
 
   return (
-    <View style={styles.resultContainer}>
+    <View style={[styles.resultContainer, { paddingTop: insets.top }]}>
       {/* Header */}
       <Animated.Text
         entering={FadeInDown.delay(0).springify()}
@@ -709,6 +702,7 @@ const StreakScreen: React.FC<StreakScreenProps> = ({
   onClose,
   t,
 }) => {
+  const insets = useSafeAreaInsets();
   const fireAnimation = useMemo(
     () => require("@/assets/animations/Fire.json"),
     []
@@ -745,7 +739,7 @@ const StreakScreen: React.FC<StreakScreenProps> = ({
   }
 
   return (
-    <View style={styles.streakContainer}>
+    <View style={[styles.streakContainer, { paddingTop: insets.top }]}>
       {/* Animation */}
       <Animated.View
         entering={FadeInDown.delay(0).springify()}
@@ -859,6 +853,7 @@ const styles = StyleSheet.create({
     color: Colors.dark.text,
     textAlign: "center",
     fontFamily: REGULAR_FONT,
+    marginTop: 10,
   },
   // Question Card
   questionCard: {
@@ -873,8 +868,8 @@ const styles = StyleSheet.create({
   },
   questionBadge: {
     position: "absolute",
-    top: 12,
-    left: 16,
+    top: 8,
+    left: 8,
     backgroundColor: "rgba(255,255,255,0.2)",
     paddingHorizontal: 12,
     paddingVertical: 6,

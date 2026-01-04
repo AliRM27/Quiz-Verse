@@ -8,6 +8,7 @@ import {
   Dimensions,
   RefreshControl,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   WeeklyEventResponse,
   WeeklyEventNodeSummary,
@@ -55,14 +56,7 @@ const TOP_PADDING = 40;
 const WeeklyEventScreen: React.FC = () => {
   const { token } = useUser();
   const { t } = useTranslation();
-  const scrollViewRef = useRef<ScrollView>(null);
-
-  // Scroll to top on focus
-  useFocusEffect(
-    useCallback(() => {
-      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
-    }, [])
-  );
+  const insets = useSafeAreaInsets();
 
   const { data, isLoading, isError, error, refetch } =
     useQuery<WeeklyEventResponse>({
@@ -188,7 +182,7 @@ const WeeklyEventScreen: React.FC = () => {
   // --- Loading State ---
   if ((isLoading || !token) && !data) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <Loader />
       </View>
     );
@@ -197,7 +191,7 @@ const WeeklyEventScreen: React.FC = () => {
   // --- Error State ---
   if (errorMessage && !data) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <Animated.View
           entering={FadeInDown.springify()}
           style={styles.errorCard}
@@ -215,7 +209,7 @@ const WeeklyEventScreen: React.FC = () => {
   // --- No Data State ---
   if (!data) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { paddingTop: insets.top }]}>
         <Animated.View
           entering={FadeInDown.springify()}
           style={styles.errorCard}
@@ -236,7 +230,7 @@ const WeeklyEventScreen: React.FC = () => {
   ).length;
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { paddingTop: insets.top + 10 }]}>
       <ArrBack onPress={() => router.replace("/(tabs)/(events)")} />
 
       {/* Header Section */}
@@ -257,7 +251,6 @@ const WeeklyEventScreen: React.FC = () => {
 
       {/* Journey ScrollView */}
       <ScrollView
-        ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
         style={styles.scrollView}
@@ -531,7 +524,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.dark.bg_dark,
     alignItems: "center",
-    paddingTop: 10,
   },
   centered: {
     flex: 1,

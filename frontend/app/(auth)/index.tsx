@@ -25,22 +25,13 @@ import {
   codeToLanguageName,
   languageMap,
 } from "@/utils/i18n";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
-import { useSafeAreaBg } from "@/context/safeAreaContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Index() {
   const { setUserData, loading, isAuthenticated } = useUser();
   const [errorMsg, setErrorMsg] = useState("");
   const [signingIn, setSigningIn] = useState(false);
-  const { setSafeEdges } = useSafeAreaBg();
-
-  useFocusEffect(
-    useCallback(() => {
-      // When active
-      setSafeEdges([]);
-    }, [])
-  );
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     configureGoogleSignIn();
@@ -151,7 +142,7 @@ export default function Index() {
 
   return (
     <BackgroundGradient style={[defaultStyles.page, { gap: Auth.gap.screen }]}>
-      <View style={{ gap: Auth.gap.txt, paddingTop: 40 }}>
+      <View style={{ gap: Auth.gap.txt, paddingTop: insets.top + 20 }}>
         <Text
           style={[defaultStyles.title, { textAlign: "center", fontSize: 25 }]}
         >

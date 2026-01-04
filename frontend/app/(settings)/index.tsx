@@ -11,6 +11,7 @@ import {
   Linking,
 } from "react-native";
 import { useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { REGULAR_FONT } from "@/constants/Styles";
 import { Colors } from "@/constants/Colors";
 import { layout } from "@/constants/Dimensions";
@@ -32,6 +33,7 @@ const Settings = () => {
   const { user, logout, deleteAccount } = useUser();
   const [state, setState] = useState(false);
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   if (!user) {
     return (
@@ -91,22 +93,27 @@ const Settings = () => {
       style={{
         gap: 20,
         backgroundColor: Colors.dark.bg_dark,
+        flex: 1,
+        paddingTop: insets.top + 10,
       }}
     >
       <ArrBack />
-      <Text
-        style={[
-          styles.txt,
-          {
-            fontSize: 25,
-            fontWeight: 700,
-            alignSelf: "center",
-            textAlign: "center",
-          },
-        ]}
+      <View
+        style={{ height: 45, justifyContent: "center", alignItems: "center" }}
       >
-        {t("settings")}
-      </Text>
+        <Text
+          style={[
+            styles.txt,
+            {
+              fontSize: 25,
+              fontWeight: "700",
+              textAlign: "center",
+            },
+          ]}
+        >
+          {t("settings")}
+        </Text>
+      </View>
 
       <ScrollView
         contentContainerStyle={{

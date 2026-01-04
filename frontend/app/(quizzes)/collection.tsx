@@ -7,6 +7,7 @@ import {
   Dimensions,
   Platform,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { REGULAR_FONT } from "@/constants/Styles";
 import { Colors } from "@/constants/Colors";
 import { useUser } from "@/context/userContext";
@@ -31,6 +32,7 @@ const CARD_WIDTH =
 const Collection = () => {
   const { user, loading } = useUser();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const { data, isLoading } = useQuery({
     queryKey: ["userProgress"],
     queryFn: fetchUserProgress,
@@ -120,9 +122,11 @@ const Collection = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <ArrBack />
-        <Text style={styles.title}>{t("yourQuizzes")}</Text>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>{t("yourQuizzes")}</Text>
+        </View>
       </View>
 
       <FlatList
@@ -155,20 +159,18 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.dark.bg_dark,
   },
   header: {
-    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingTop: Platform.OS === "ios" ? 10 : 10,
     marginBottom: 20,
+  },
+  titleContainer: {
+    alignItems: "center",
   },
   title: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#fff",
+    color: Colors.dark.text,
     fontFamily: REGULAR_FONT,
-    textAlign: "center",
-    width: "100%",
   },
   listContent: {
     paddingHorizontal: 16,

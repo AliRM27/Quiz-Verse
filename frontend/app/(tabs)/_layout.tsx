@@ -21,6 +21,7 @@ import {
   EventsFocused,
 } from "@/assets/svgs/tabBarIcons/index";
 import * as Haptics from "expo-haptics";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { JSX, useState } from "react";
 import { REGULAR_FONT } from "@/constants/Styles";
 
@@ -28,6 +29,7 @@ export default function TabLayout() {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [featureName, setFeatureName] = useState("");
   const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const isSmallPhone = width < 380 || height < 700;
 
   const iconWidth = isSmallPhone ? "80%" : "100%";
@@ -139,9 +141,9 @@ export default function TabLayout() {
             backgroundColor: Colors.dark.bg_dark,
           },
           tabBarStyle: {
-            paddingBottom: 0,
+            paddingBottom: insets.bottom,
             paddingTop: 10,
-            height: 60,
+            height: 60 + insets.bottom,
             backgroundColor: Colors.dark.bg_dark,
             borderTopWidth: 1,
             borderColor: Colors.dark.bg_light,

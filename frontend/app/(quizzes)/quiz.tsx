@@ -6,6 +6,7 @@ import {
   ScrollView,
   Platform,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Colors } from "@/constants/Colors";
 import {
@@ -58,6 +59,7 @@ const Quiz = () => {
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedLevelIndex, setSelectedLevelIndex] = useState(0);
+  const insets = useSafeAreaInsets();
 
   const { data, isLoading } = useQuery({
     queryKey: ["quizzes", id],
@@ -91,7 +93,10 @@ const Quiz = () => {
 
   return (
     <View style={styles.container} collapsable={false}>
-      <LinearGradient colors={["#1a1a1a", "#0d0d0d"]} style={styles.header}>
+      <LinearGradient
+        colors={["#1a1a1a", "#0d0d0d"]}
+        style={[styles.header, { paddingTop: 30 }]}
+      >
         <Animated.View
           entering={FadeInDown.springify()}
           style={styles.headerContent}
@@ -277,7 +282,7 @@ const Quiz = () => {
       {isUnlocked && (
         <Animated.View
           entering={FadeInDown.delay(600).springify()}
-          style={styles.footer}
+          style={[styles.footer, { bottom: 30 }]}
           collapsable={false}
         >
           <TouchableOpacity
@@ -416,7 +421,6 @@ const styles = StyleSheet.create({
   },
   // Header
   header: {
-    paddingTop: 30,
     paddingBottom: 40,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 40,

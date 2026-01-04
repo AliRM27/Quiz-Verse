@@ -26,7 +26,7 @@ import { useTranslation } from "react-i18next";
 import SliderComponent from "@/components/ui/SliderComponent";
 import * as Haptics from "expo-haptics";
 import Loader from "@/components/ui/Loader";
-import { useSafeAreaBg } from "@/context/safeAreaContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { QUESTION_TYPES, WeeklyEventNodeType } from "@/types";
 import { Heart } from "lucide-react-native";
 import CircularProgress from "@/components/ui/CircularProgress";
@@ -51,16 +51,7 @@ import { useGameMode } from "@/hooks/useGameMode";
 import ArrBack from "@/components/ui/ArrBack";
 
 export default function WeeklyGameScreen() {
-  const { setSafeBg } = useSafeAreaBg();
-
-  useFocusEffect(
-    useCallback(() => {
-      setSafeBg(Colors.dark.bg_dark);
-      return () => {
-        setSafeBg(Colors.dark.bg_dark);
-      };
-    }, [])
-  );
+  const insets = useSafeAreaInsets();
 
   const { nodeIndex, nodeTitle, nodeType } = useLocalSearchParams<{
     nodeIndex: string;
@@ -137,7 +128,7 @@ export default function WeeklyGameScreen() {
   // Loading state
   if (isLoading || !user) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
         <Loader width={50} height={50} />
       </View>
     );
@@ -146,7 +137,7 @@ export default function WeeklyGameScreen() {
   // Error state
   if (error || (!questionData?.questions && !isVoteMode)) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
         <Animated.View entering={FadeInDown.springify()}>
           <View style={styles.errorCard}>
             <Feather name="alert-circle" size={48} color="#fca5a5" />
@@ -346,7 +337,7 @@ export default function WeeklyGameScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top + 20 }]}>
         <ArrBack />
 
         {/* Mode Header */}
@@ -384,7 +375,12 @@ export default function WeeklyGameScreen() {
               >
                 {/* Question badge */}
                 <View style={styles.questionBadge}>
-                  <Text style={styles.questionBadgeText}>
+                  <Text
+                    style={[
+                      styles.questionBadgeText,
+                      isSmallPhone && { fontSize: 10 },
+                    ]}
+                  >
                     {t("question")} {currQuestionIndex + 1}
                   </Text>
                 </View>
@@ -395,7 +391,12 @@ export default function WeeklyGameScreen() {
                   </Text>
                 )}
 
-                <Text style={styles.questionText}>
+                <Text
+                  style={[
+                    styles.questionText,
+                    isSmallPhone && { fontSize: 17 },
+                  ]}
+                >
                   {nodeType === "emoji_puzzle"
                     ? `${t("whatGame")}\n \n ${currQuestion.question[languageMap["English"]]}`
                     : currQuestion.question[languageMap[user.language]]}
@@ -782,6 +783,7 @@ const WeeklyResult = ({
   nodeType,
   t,
 }: any) => {
+  const insets = useSafeAreaInsets();
   const trophies = (result.rewardsGranted || []).reduce(
     (acc: number, r: any) => acc + (r.reward?.trophies || 0),
     0
@@ -794,7 +796,7 @@ const WeeklyResult = ({
   const isPerfect = result.questionsCorrect === result.totalQuestions;
 
   return (
-    <View style={styles.resultContainer}>
+    <View style={[styles.resultContainer, { paddingTop: insets.top }]}>
       {/* Header */}
       <Animated.View entering={FadeInDown.delay(0).springify()}>
         <Text style={styles.resultTitle}>
@@ -900,7 +902,10 @@ const WeeklyResult = ({
           </ScrollView>
         </View>
       ) : (
-        <Animated.View entering={FadeInDown.delay(300).springify()}>
+        <Animated.View
+          entering={FadeInDown.delay(300).springify()}
+          style={{ flex: 1, width: "100%" }}
+        >
           <View style={styles.allCorrectContainer}>
             <ClipboardCheck
               size={64}
@@ -1020,8 +1025,8 @@ const styles = StyleSheet.create({
   },
   questionBadge: {
     position: "absolute",
-    top: 12,
-    left: 16,
+    top: 8,
+    left: 8,
     backgroundColor: "rgba(245, 87, 108, 0.2)",
     paddingHorizontal: 12,
     paddingVertical: 6,

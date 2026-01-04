@@ -43,9 +43,8 @@ import * as Haptics from "expo-haptics";
 import Loader from "@/components/ui/Loader";
 import { useCallback } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { useSafeAreaBg } from "@/context/safeAreaContext";
-import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   FadeInDown,
   FadeInRight,
@@ -60,19 +59,7 @@ import Animated, {
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function Index() {
-  const { setSafeBg } = useSafeAreaBg();
-
-  useFocusEffect(
-    useCallback(() => {
-      // When screen becomes active
-      setSafeBg("#131313");
-
-      // When screen loses focus → reset to black
-      return () => {
-        setSafeBg(Colors.dark.bg_dark);
-      };
-    }, [])
-  );
+  const insets = useSafeAreaInsets();
   const { id, section } = useLocalSearchParams<{
     id: string;
     section: string;
@@ -147,7 +134,6 @@ export default function Index() {
       }
     };
   }, [currQuestionIndex, startTime]);
-  const insets = useSafeAreaInsets();
 
   if (loading || isLoading || historyLoading || detailLoading || !user) {
     return (
@@ -156,7 +142,7 @@ export default function Index() {
           alignItems: "center",
           justifyContent: "center",
           height: "100%",
-          paddingTop: layout.paddingTop,
+          paddingTop: insets.top,
           backgroundColor: "#131313",
         }}
       >
@@ -459,7 +445,7 @@ export default function Index() {
             {/* Header Section */}
             <LinearGradient
               colors={["#1a1a1a", "#131313"]}
-              style={styles.header}
+              style={[styles.header, { paddingTop: insets.top + 10 }]}
             >
               <View style={styles.headerTop}>
                 <TouchableOpacity
@@ -594,7 +580,7 @@ export default function Index() {
       </KeyboardAvoidingView>
 
       {/* Footer with Circular Progress */}
-      <View style={[styles.footer]}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
         <TouchableOpacity
           activeOpacity={0.8}
           disabled={isNextDisabled}

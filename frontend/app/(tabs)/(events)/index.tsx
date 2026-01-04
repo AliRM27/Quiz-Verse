@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Dimensions,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DailyQuiz from "@/assets/svgs/dailyQuiz.svg";
 import WeeklyChallange from "@/assets/svgs/weeklyEvent.svg";
 import Championship from "@/assets/svgs/championship.svg";
@@ -146,6 +147,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, index }) => {
 
 export default function Events() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const events = [
     {
@@ -182,7 +184,7 @@ export default function Events() {
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Header Section */}
       <View style={styles.header}>
         <Animated.Text
@@ -234,7 +236,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    paddingTop: 20,
+    paddingTop: 10,
     paddingBottom: 10,
   },
   headerTitle: {

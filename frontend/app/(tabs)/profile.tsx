@@ -7,6 +7,7 @@ import {
   ScrollView,
   Platform,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUser } from "@/context/userContext";
 import { Colors } from "@/constants/Colors";
 import SettingsIcon from "@/assets/svgs/settings.svg";
@@ -41,6 +42,7 @@ import Gem from "@/assets/svgs/gem.svg";
 export default function Profile() {
   const { user, loading } = useUser();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const { data: progressData, isLoading: progressLoading } = useQuery({
     queryKey: ["userProgress"],
@@ -139,7 +141,7 @@ export default function Profile() {
           colors={["#1A1A1A", "#131313"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.headerGradient}
+          style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
         >
           <View style={styles.headerTop}>
             <TouchableOpacity
@@ -491,7 +493,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   headerGradient: {
-    paddingTop: Platform.OS === "ios" ? 20 : 10,
     paddingBottom: 30,
     paddingHorizontal: 20,
     borderBottomLeftRadius: 40,

@@ -24,7 +24,6 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-
 // Icon mapping for node types
 const getIconName = (type?: string): keyof typeof Feather.glyphMap => {
   switch (type) {
@@ -250,7 +249,7 @@ const WeeklyEventNodeScreen: React.FC = () => {
                 color={Colors.dark.secondary}
                 progress={Number(trophiesCollected) || 0}
                 total={nodeDataResponse.reward?.trophies || 0}
-                height={6}
+                height={4}
               />
             </View>
             <View style={styles.rewardRow}>

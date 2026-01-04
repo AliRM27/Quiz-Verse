@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import Search from "@/assets/svgs/search.svg";
 import { REGULAR_FONT, ITALIC_FONT } from "@/constants/Styles";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { searchQuizzes, fetchUserProgress } from "@/services/api";
@@ -44,6 +45,7 @@ export default function Explore() {
   const [input, setInput] = useState("");
   const { user, loading } = useUser();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const { data: progressData, isLoading: progressLoading } = useQuery({
     queryKey: ["userProgress"],
@@ -84,7 +86,7 @@ export default function Explore() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Search Header */}
       <Animated.View
         entering={FadeInDown.delay(0).springify()}
@@ -330,7 +332,7 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 16,
-    paddingTop: 10,
+    paddingTop: 15,
     gap: 16,
     marginBottom: 10,
   },

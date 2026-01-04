@@ -9,6 +9,7 @@ import {
   Platform,
   KeyboardAvoidingView,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import { Colors } from "@/constants/Colors";
 import { isSmallPhone } from "@/constants/Dimensions";
@@ -32,6 +33,7 @@ const ChangeUsername = () => {
   const [success, setSuccess] = useState<boolean>(false);
 
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   if (!user) {
     return (
@@ -83,16 +85,18 @@ const ChangeUsername = () => {
       }}
       accessible={false}
     >
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
         <ArrBack />
 
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           style={styles.content}
         >
-          <Animated.View entering={FadeInDown.duration(600).springify()}>
+          <Animated.View
+            entering={FadeInDown.duration(600).springify()}
+            style={{ height: 45, justifyContent: "center", marginBottom: 40 }}
+          >
             <Text style={styles.title}>{t("changeUsername")}</Text>
-            <Text style={styles.subtitle}>{t("enterYourNewUsername")}</Text>
           </Animated.View>
 
           <Animated.View
@@ -158,7 +162,10 @@ const ChangeUsername = () => {
 
           <Animated.View
             entering={FadeInDown.delay(400).duration(600).springify()}
-            style={styles.footer}
+            style={[
+              styles.footer,
+              { paddingBottom: insets.bottom > 0 ? insets.bottom + 10 : 24 },
+            ]}
           >
             <TouchableOpacity
               disabled={
@@ -221,14 +228,14 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingTop: 40,
+    paddingTop: 0,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "800",
     color: "#fff",
     fontFamily: REGULAR_FONT,
-    marginBottom: 8,
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
@@ -281,7 +288,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     marginTop: "auto",
-    paddingBottom: Platform.OS === "ios" ? 40 : 24,
     gap: 16,
   },
   buttonWrapper: {

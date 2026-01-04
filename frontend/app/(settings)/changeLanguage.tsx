@@ -12,6 +12,7 @@ import {
 import { router } from "expo-router";
 import { useUser } from "@/context/userContext";
 import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { updateUser } from "@/services/api";
 import { useState } from "react";
 import ArrBack from "@/components/ui/ArrBack";
@@ -31,6 +32,7 @@ const ChangeLanguage = () => {
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const { user, refreshUser } = useUser();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   if (!user) return null;
 
@@ -51,16 +53,18 @@ const ChangeLanguage = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 10 }]}>
       <ArrBack />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View entering={FadeInDown.duration(600).springify()}>
+        <Animated.View
+          entering={FadeInDown.duration(600).springify()}
+          style={{ height: 45, justifyContent: "center", marginBottom: 40 }}
+        >
           <Text style={styles.title}>{t("changeLanguage")}</Text>
-          <Text style={styles.subtitle}>{t("changeLanguage")}</Text>
         </Animated.View>
 
         <View style={styles.listContainer}>
@@ -138,15 +142,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   scrollContent: {
-    paddingTop: 40,
+    paddingTop: 0,
     paddingBottom: 40,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "800",
     color: "#fff",
     fontFamily: REGULAR_FONT,
-    marginBottom: 8,
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,

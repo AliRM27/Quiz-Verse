@@ -20,7 +20,7 @@ import * as Haptics from "expo-haptics";
 import { QuizType } from "@/types";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSafeAreaBg } from "@/context/safeAreaContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function PickQuiz() {
   const { user, loading, refreshUser } = useUser();
@@ -39,14 +39,7 @@ export default function PickQuiz() {
     () => (data || []).slice(0, 7),
     [data]
   );
-  const { setSafeEdges } = useSafeAreaBg();
-
-  useFocusEffect(
-    useCallback(() => {
-      // When active
-      return () => setSafeEdges(["top", "bottom"]);
-    }, [])
-  );
+  const insets = useSafeAreaInsets();
 
   const handleSelect = (quizId: string) => {
     Haptics.selectionAsync();
@@ -81,7 +74,12 @@ export default function PickQuiz() {
   }
 
   return (
-    <BackgroundGradient style={styles.container}>
+    <BackgroundGradient
+      style={[
+        styles.container,
+        { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 },
+      ]}
+    >
       <View style={{ gap: 10 }}>
         <Text style={styles.title}>{t("pickQuizTitle")}</Text>
         <Text style={styles.subtitle}>{t("pickQuizSubtitle")}</Text>
@@ -151,8 +149,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "space-between",
-    paddingTop: 80,
-    paddingBottom: 40,
     paddingHorizontal: 24,
     gap: 24,
   },

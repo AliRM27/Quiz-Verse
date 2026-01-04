@@ -12,6 +12,7 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Colors } from "@/constants/Colors";
 import { layout } from "@/constants/Dimensions";
 import ArrBack from "@/components/ui/ArrBack";
@@ -29,6 +30,7 @@ const EditProfile = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [usernameValue, setUsernameValue] = useState<string>(user?.name || "");
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const [error, setError] = useState<string>("");
   const [isFocused, setIsFocused] = useState<boolean>(false);
   const [scrollEnabled, setScrollEnabled] = useState(false);
@@ -84,90 +86,106 @@ const EditProfile = () => {
       }}
       accessible={false}
     >
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-        enabled={Platform.OS === "ios"}
-      >
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            backgroundColor: Colors.dark.bg_dark,
-            alignItems: "center",
-            gap: 20,
-          }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          scrollEnabled={scrollEnabled}
+      <View style={{ flex: 1, backgroundColor: Colors.dark.bg_dark }}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+          enabled={Platform.OS === "ios"}
         >
           <ArrBack />
-
-          <Text style={[styles.text, { fontSize: 25, fontWeight: 700 }]}>
-            {t("editProfile")}
-          </Text>
-
-          <ProfileCard
-            usernameValue={usernameValue}
-            user={user}
-            isEditable={true}
-          />
-
-          <View
-            style={{
-              width: "90%",
-              gap: 10,
+          <ScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+              alignItems: "center",
+              gap: 20,
+              paddingTop: insets.top + 10,
+              paddingBottom: insets.bottom + 20,
             }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            scrollEnabled={scrollEnabled}
           >
-            <Text style={[styles.text_muted, { marginLeft: 10 }]}>
-              {t("username")}
-            </Text>
+            <View
+              style={{
+                height: 45,
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+              }}
+            >
+              <Text style={[styles.text, { fontSize: 25, fontWeight: "700" }]}>
+                {t("editProfile")}
+              </Text>
+            </View>
 
-            <TextInput
-              onFocus={() => {
-                setIsFocused(true);
-                setScrollEnabled(true);
-              }}
-              onBlur={() => {
-                setIsFocused(false);
-                setScrollEnabled(false);
-              }}
-              style={[
-                styles.input,
-                isFocused && { borderWidth: 1, borderColor: Colors.dark.text },
-              ]}
-              cursorColor={Colors.dark.text}
-              selectionColor={Colors.dark.text}
-              value={usernameValue}
-              onChangeText={(c) => {
-                setUsernameValue(c);
-              }}
-              autoCorrect={false}
-              maxLength={12}
+            <ProfileCard
+              usernameValue={usernameValue}
+              user={user}
+              isEditable={true}
             />
 
-            <Text style={[styles.text, { textAlign: "center" }]}>{error}</Text>
-          </View>
-
-          <TouchableOpacity
-            disabled={user.name === usernameValue.trim()}
-            onPress={handleUsernameChange}
-            activeOpacity={0.7}
-            style={[
-              styles.button,
-              user.name === usernameValue.trim() && { opacity: 0.5 },
-            ]}
-          >
-            {loading ? (
-              <Loader black={true} />
-            ) : (
-              <Text style={{ color: Colors.dark.bg_dark, fontSize: 20 }}>
-                {t("change")}
+            <View
+              style={{
+                width: "90%",
+                gap: 10,
+              }}
+            >
+              <Text style={[styles.text_muted, { marginLeft: 10 }]}>
+                {t("username")}
               </Text>
-            )}
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
+
+              <TextInput
+                onFocus={() => {
+                  setIsFocused(true);
+                  setScrollEnabled(true);
+                }}
+                onBlur={() => {
+                  setIsFocused(false);
+                  setScrollEnabled(false);
+                }}
+                style={[
+                  styles.input,
+                  isFocused && {
+                    borderWidth: 1,
+                    borderColor: Colors.dark.text,
+                  },
+                ]}
+                cursorColor={Colors.dark.text}
+                selectionColor={Colors.dark.text}
+                value={usernameValue}
+                onChangeText={(c) => {
+                  setUsernameValue(c);
+                }}
+                autoCorrect={false}
+                maxLength={12}
+              />
+
+              <Text style={[styles.text, { textAlign: "center" }]}>
+                {error}
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              disabled={user.name === usernameValue.trim()}
+              onPress={handleUsernameChange}
+              activeOpacity={0.7}
+              style={[
+                styles.button,
+                user.name === usernameValue.trim() && { opacity: 0.5 },
+              ]}
+            >
+              {loading ? (
+                <Loader black={true} />
+              ) : (
+                <Text style={{ color: Colors.dark.bg_dark, fontSize: 20 }}>
+                  {t("change")}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
     </TouchableWithoutFeedback>
   );
 };
@@ -198,9 +216,9 @@ const styles = StyleSheet.create({
     width: "90%",
     height: 55,
     paddingVertical: 15,
-    marginTop: "auto",
     borderRadius: 35,
     alignItems: "center",
     justifyContent: "center",
+    marginTop: "auto",
   },
 });
