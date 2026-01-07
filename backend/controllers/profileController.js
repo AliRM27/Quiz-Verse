@@ -326,3 +326,41 @@ export const deleteProfile = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+export const rewardShare = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const now = new Date();
+    const lastShared = user.lastSharedAt ? new Date(user.lastSharedAt) : null;
+    let eligible = true;
+
+    if (lastShared) {
+      // Check if it's been at least 20 hours to allow "daily" feel
+      const diffHours = (now - lastShared) / (1000 * 60 * 60);
+      if (diffHours < 20) {
+        eligible = false;
+      }
+    }
+
+    if (!eligible) {
+      return res.json({
+        success: false,
+        message: "Come back tomorrow for more rewards!",
+      });
+    }
+
+    const REWARD_GEMS = 10;
+    user.gems += REWARD_GEMS;
+    user.lastSharedAt = now;
+    await user.save();
+
+    res.json({ success: true, reward: REWARD_GEMS, totalGems: user.gems });
+  } catch (error) {
+    console.error("Error rewarding share:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

@@ -580,7 +580,7 @@ export default function Index() {
       </KeyboardAvoidingView>
 
       {/* Footer with Circular Progress */}
-      <View style={[styles.footer, { paddingBottom: insets.bottom + 10 }]}>
+      <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
         <TouchableOpacity
           activeOpacity={0.8}
           disabled={isNextDisabled}
@@ -588,7 +588,7 @@ export default function Index() {
         >
           <CircularProgress
             size={80}
-            strokeWidth={4}
+            strokeWidth={3}
             progress={currQuestionIndex + 1}
             total={currSection.questions.length}
             fontSize={18}

@@ -680,7 +680,11 @@ const Result: React.FC<ResultProps> = ({
         entering={FadeInDown.delay(400).springify()}
         style={{ width: "100%" }}
       >
-        <TouchableOpacity style={styles.backButton} onPress={onClose}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={styles.backButton}
+          onPress={onClose}
+        >
           <Text style={styles.backButtonText}>{t("backToEvents")}</Text>
         </TouchableOpacity>
       </Animated.View>

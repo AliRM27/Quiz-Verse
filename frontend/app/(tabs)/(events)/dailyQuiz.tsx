@@ -37,6 +37,7 @@ import Animated, {
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Trophy from "@/assets/svgs/trophy.svg";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -49,6 +50,8 @@ const DailyQuizScreen = () => {
   );
   const fireRef = useRef<LottieView | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
+
+  const insets = useSafeAreaInsets();
 
   // Scroll to top on focus
   useFocusEffect(
@@ -189,7 +192,7 @@ const DailyQuizScreen = () => {
   const isCompleted = dailyQuizUserProgressData.completed;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top + 20 }]}>
       <ArrBack onPress={() => router.replace("/(tabs)/(events)")} />
 
       {/* Header */}

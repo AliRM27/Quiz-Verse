@@ -92,10 +92,14 @@ const Quiz = () => {
     : 0;
 
   return (
-    <View style={styles.container} collapsable={false}>
+    <View style={[styles.container, {}]} collapsable={false}>
       <LinearGradient
         colors={["#1a1a1a", "#0d0d0d"]}
-        style={[styles.header, { paddingTop: 30 }]}
+        style={[
+          styles.header,
+          Platform.OS === "android" && { paddingTop: 30 + insets.top },
+          Platform.OS === "ios" && { paddingTop: 30 },
+        ]}
       >
         <Animated.View
           entering={FadeInDown.springify()}

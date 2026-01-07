@@ -142,5 +142,7 @@
   "runEarnings": "Laufeinnahmen",
   "unlocked": "Freigeschaltet",
   "level": "Level",
-  "streak": "Serie"
+  "streak": "Serie",
+  "congrats": "Glückwunsch!",
+  "youEarned": "Du hast verdient"
 }

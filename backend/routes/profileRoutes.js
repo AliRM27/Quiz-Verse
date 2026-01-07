@@ -7,6 +7,7 @@ import {
   getUserProgressData,
   getUserHistory,
   getUserProgressDetail,
+  rewardShare,
 } from "../controllers/profileController.js";
 import { checkActiveSession } from "../middleware/isActive.js";
 
@@ -17,6 +18,7 @@ router.get("/me/progress", getUserProgressData);
 router.get("/me/history", getUserHistory);
 router.get("/me/progress/:quizId", getUserProgressDetail);
 router.patch("/me", updateProfile);
+router.post("/reward-share", checkActiveSession, rewardShare);
 router.patch("/updateProgress", checkActiveSession, updateProgress);
 router.delete("/", checkActiveSession, deleteProfile);
 

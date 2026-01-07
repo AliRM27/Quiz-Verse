@@ -12,6 +12,7 @@ import {
   staticRoutes,
   uploadLogoRoute,
   eventRoutes,
+  legalRoutes,
 } from "./routes/imports.js";
 import { protect } from "./middleware/protect.js";
 import { isAdmin } from "./middleware/isAdmin.js";
@@ -27,8 +28,10 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cors());
 //entry point
+app.use(express.static("public"));
+
 app.get("/", (req, res) => {
-  res.send("Welcome to Quiz Verse");
+  res.sendFile("index.html", { root: "./public" });
 });
 
 app.use("/api/auth", authRoutes);
@@ -40,6 +43,7 @@ app.use("/api/users", protect, profileRoutes);
 app.use("/api/admin", adminRoutes); // add protect, isAdmin later
 app.use("/api/upload-logo", uploadLogoRoute);
 app.use("/logos", staticRoutes);
+app.use("/legal", legalRoutes);
 
 // 404 handler
 app.use((req, res, next) => {

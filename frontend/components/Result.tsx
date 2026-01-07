@@ -186,32 +186,15 @@ const Result = ({
   });
 
   const statusBarAnimatedStyle = useAnimatedStyle(() => {
-    const backgroundColor = interpolateColor(
-      scrollY.value,
-      [0, 100],
-      ["#4A00E0", "#131313"]
-    );
-    return {
-      backgroundColor,
-    };
-  });
-
-  const stickyHeaderStyle = useAnimatedStyle(() => {
     const opacity = interpolate(
       scrollY.value,
-      [100, 150],
+      [0, 50],
       [0, 1],
-      Extrapolate.CLAMP
-    );
-    const translateY = interpolate(
-      scrollY.value,
-      [100, 150],
-      [-20, 0],
       Extrapolate.CLAMP
     );
     return {
       opacity,
-      transform: [{ translateY }],
+      backgroundColor: "#131313",
     };
   });
 
@@ -285,30 +268,7 @@ const Result = ({
         ]}
       />
 
-      {/* Sticky Top Bar (fades in) */}
-      <Animated.View
-        style={[
-          styles.stickyHeader,
-          { paddingTop: insets.top },
-          stickyHeaderStyle,
-        ]}
-      >
-        <LinearGradient
-          colors={["#4A00E0", "#8E2DE2"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={styles.stickyHeaderContent}>
-          <QuizLogo
-            name={quiz.logoFile}
-            style={{ width: 30, height: 30, borderRadius: 15 }}
-          />
-          <Text style={styles.stickyHeaderTitle} numberOfLines={1}>
-            {quiz.title}
-          </Text>
-        </View>
-      </Animated.View>
+      {/* Sticky Header Removed */}
 
       <Animated.ScrollView
         ref={scrollViewRef as any}
@@ -564,6 +524,7 @@ const Result = ({
             await refreshUser();
             router.back();
           }}
+          activeOpacity={0.7}
           style={styles.homeButton}
         >
           <Text style={styles.homeButtonText}>{t("home")}</Text>
@@ -579,6 +540,7 @@ const Result = ({
             });
           }}
           style={styles.replayButton}
+          activeOpacity={0.7}
         >
           <LinearGradient
             colors={["#4A00E0", "#8E2DE2"]}

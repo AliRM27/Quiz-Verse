@@ -9,6 +9,7 @@ import {
   Alert,
   ScrollView,
   Linking,
+  Share as RNShare,
 } from "react-native";
 import { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -28,6 +29,8 @@ import Bell from "@/assets/svgs/bell.svg";
 import ArrBack from "@/components/ui/ArrBack";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { API_URL } from "@/services/config";
+import { claimShareReward } from "@/services/api";
 
 const Settings = () => {
   const { user, logout, deleteAccount } = useUser();
@@ -86,6 +89,37 @@ const Settings = () => {
       ],
       { cancelable: true }
     );
+  };
+
+  // ... inside Settings component
+
+  const handleShare = async () => {
+    try {
+      // Use API_URL as base, but clean it up for the landing page if needed
+      // Assuming https://quizvers.onrender.com/ is the landing page
+      const landingPage = `${API_URL}`;
+      const result = await RNShare.share({
+        message: `Check out QuizVerse! Challenge your friends and test your knowledge. Download here: `,
+        url: landingPage, // iOS often uses this field for the link preview
+      });
+
+      // Check if share was completed (iOS only gives distinct action, Android often always returns 'dismissed' or 'shared' depending on implementation, but standard RN Share often returns success as long as the dialog opened)
+      if (result.action === RNShare.sharedAction) {
+        const data = await claimShareReward();
+        if (data?.success) {
+          Alert.alert(
+            t("congrats") || "Congrats!",
+            `${t("youEarned") || "You earned"} ${data.reward} ${t("gems") || "Gems"}!`
+          );
+          // Ideally refresh user context here to show new gems, but simple alert is fine for now
+        } else if (data?.message) {
+          // Already rewarded today, silent or toast? Let's just do silent or maybe a small info
+          // Alert.alert("Note", data.message);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -205,6 +239,7 @@ const Settings = () => {
           }}
         >
           <TouchableOpacity
+            onPress={handleShare}
             activeOpacity={0.7}
             style={{
               flexDirection: "row",
@@ -357,11 +392,7 @@ const Settings = () => {
             </View>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() =>
-              Linking.openURL(
-                "https://docs.google.com/document/d/1v4swN4KlLyEM49lXd7YH0IjUCKYyA1ULJg9JNJotK2M/edit?usp=sharing"
-              )
-            }
+            onPress={() => Linking.openURL(`${API_URL}legal/privacy`)}
             activeOpacity={0.7}
             style={{
               flexDirection: "row",
@@ -388,11 +419,7 @@ const Settings = () => {
             </View>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() =>
-              Linking.openURL(
-                "https://docs.google.com/document/d/1v62qmMl_fQtOHQry8fc0vtPh27lhO9YPm6MMZcq6E5Y/edit?usp=sharing"
-              )
-            }
+            onPress={() => Linking.openURL(`${API_URL}legal/terms`)}
             activeOpacity={0.7}
             style={{
               flexDirection: "row",

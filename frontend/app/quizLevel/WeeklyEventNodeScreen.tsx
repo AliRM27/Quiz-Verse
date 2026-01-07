@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
+  Platform,
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { Colors } from "@/constants/Colors";
@@ -24,6 +25,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 // Icon mapping for node types
 const getIconName = (type?: string): keyof typeof Feather.glyphMap => {
   switch (type) {
@@ -106,6 +108,8 @@ const WeeklyEventNodeScreen: React.FC = () => {
     }
   }, [nodeReward, nodeConfig]);
 
+  const insets = useSafeAreaInsets();
+
   const resolvedNodeIndex = Number(nodeIndex ?? 0);
   const resolvedNodeTitle = nodeTitle ?? "Weekly Event Node";
 
@@ -159,7 +163,7 @@ const WeeklyEventNodeScreen: React.FC = () => {
         ? nodeDataResponse.config?.emojiPuzzles?.length || 1
         : nodeType === "quote_guess"
           ? nodeDataResponse.config?.quotes?.length || 1
-          : nodeDataResponse.config?.quizConfig?.totalQuestions || 10;
+          : nodeDataResponse.config?.questions?.length || 10;
 
   const progressPercent = Math.floor(
     ((Number(questionsCorrect) || 0) / totalQuestions) * 100
@@ -168,7 +172,10 @@ const WeeklyEventNodeScreen: React.FC = () => {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[
+        styles.content,
+        Platform.OS === "android" && { paddingTop: insets.top + 40 },
+      ]}
       showsVerticalScrollIndicator={false}
     >
       {/* Icon with Gradient Background */}

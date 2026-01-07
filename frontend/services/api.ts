@@ -278,3 +278,13 @@ export const deleteUser = async (userId: string) => {
     console.log(err);
   }
 };
+
+export const claimShareReward = async () => {
+  try {
+    const res = await api.post("api/users/reward-share");
+    return res.data;
+  } catch (err) {
+    console.log(err);
+    return { success: false };
+  }
+};

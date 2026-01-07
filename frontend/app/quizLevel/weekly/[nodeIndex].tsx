@@ -337,7 +337,12 @@ export default function WeeklyGameScreen() {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={[styles.container, { paddingTop: insets.top + 20 }]}>
+      <View
+        style={[
+          styles.container,
+          { paddingTop: insets.top + 20, paddingBottom: 10 },
+        ]}
+      >
         <ArrBack />
 
         {/* Mode Header */}
@@ -548,6 +553,22 @@ const OptionButton = ({
     scale.value = withSpring(1, { damping: 15, stiffness: 300 });
   };
 
+  // Safe text extraction
+  const getOptionText = () => {
+    if (!option) return "";
+    // Handle specific node types that default to English or specific keys
+    if (nodeType === "quote_guess" || nodeType === "emoji_puzzle") {
+      return option.text?.["en"] || option.text?.["English"] || "";
+    }
+    // Handle standard questions
+    if (option.text) {
+      return option.text[languageMap[userLanguage]] || option.text["en"] || "";
+    }
+    // Fallback for legacy string options (if any)
+    if (typeof option === "string") return option;
+    return "";
+  };
+
   return (
     <Animated.View entering={FadeInDown.delay(150 + index * 50).springify()}>
       <Animated.View style={animatedStyle}>
@@ -578,9 +599,7 @@ const OptionButton = ({
           <Text
             style={[styles.optionText, isSelected && styles.optionTextSelected]}
           >
-            {nodeType === "quote_guess" || nodeType === "emoji_puzzle"
-              ? option.text[languageMap["English"]]
-              : option.text[languageMap[userLanguage]]}
+            {getOptionText()}
           </Text>
         </Pressable>
       </Animated.View>
@@ -796,7 +815,12 @@ const WeeklyResult = ({
   const isPerfect = result.questionsCorrect === result.totalQuestions;
 
   return (
-    <View style={[styles.resultContainer, { paddingTop: insets.top }]}>
+    <View
+      style={[
+        styles.resultContainer,
+        { paddingTop: insets.top, paddingBottom: insets.bottom },
+      ]}
+    >
       {/* Header */}
       <Animated.View entering={FadeInDown.delay(0).springify()}>
         <Text style={styles.resultTitle}>

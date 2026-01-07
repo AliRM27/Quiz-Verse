@@ -70,6 +70,10 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  lastSharedAt: {
+    type: Date,
+    default: null,
+  },
   theme: {
     cardColor: {
       type: String,

@@ -77,11 +77,39 @@ const WeeklyEventNodeConfigSchema = new Schema(
       allowedDifficulties: [
         {
           type: String,
-          enum: ["easy", "normal", "hard", "extreme"],
+          enum: ["easy", "medium", "hard", "extreme"],
         },
       ],
       totalQuestions: { type: Number }, // how many questions to use
       randomOrder: { type: Boolean, default: true },
+    },
+
+    questions: {
+      type: [
+        {
+          question: {
+            en: { type: String, required: true },
+            de: { type: String, required: true },
+            ru: { type: String, required: true },
+          },
+          type: { type: String, enum: ["Multiple Choice", "True/False"] },
+          options: [
+            {
+              text: {
+                en: { type: String, required: true },
+                de: { type: String, required: true },
+                ru: { type: String, required: true },
+              },
+              isCorrect: { type: Boolean, default: false },
+            },
+          ],
+          difficulty: {
+            type: String,
+            enum: ["easy", "medium", "hard", "extreme"],
+          },
+        },
+      ],
+      default: undefined,
     },
 
     // Mode-specific options shared by several modes

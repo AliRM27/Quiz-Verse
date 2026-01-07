@@ -33,6 +33,8 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
+  useAnimatedScrollHandler,
+  interpolate,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { Feather } from "@expo/vector-icons";
@@ -43,6 +45,15 @@ export default function Profile() {
   const { user, loading } = useUser();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+
+  // Shared Value for scroll position
+  const scrollY = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
 
   const { data: progressData, isLoading: progressLoading } = useQuery({
     queryKey: ["userProgress"],
@@ -75,6 +86,34 @@ export default function Profile() {
     });
     return map;
   }, [progressList]);
+
+  // Animated Styles
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    const translateY = scrollY.value * 0.5; // Parallax effect
+    const scale = interpolate(
+      scrollY.value,
+      [-100, 0],
+      [1.2, 1],
+      "clamp" // Scale up on pull-down
+    );
+
+    return {
+      transform: [{ translateY }, { scale }],
+    };
+  });
+
+  const safeAreaAnimatedStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      scrollY.value,
+      [0, 50], // Fade in as user scrolls 50px
+      [0, 1],
+      "clamp"
+    );
+
+    return {
+      opacity,
+    };
+  });
 
   if (!user || loading || progressLoading || historyLoading)
     return (
@@ -127,273 +166,313 @@ export default function Profile() {
   };
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-    >
-      {/* Header Section */}
+    <View style={styles.container}>
+      {/* Safe Area Cover - Fades in on scroll */}
       <Animated.View
-        entering={FadeInDown.delay(0).springify()}
-        style={styles.header}
+        style={[
+          styles.safeAreaCover,
+          { height: insets.top },
+          safeAreaAnimatedStyle,
+        ]}
+      />
+
+      <Animated.ScrollView
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
       >
-        <LinearGradient
-          colors={["#1A1A1A", "#131313"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
-        >
-          <View style={styles.headerTop}>
-            <TouchableOpacity
-              onPress={() => setIsVisible(true)}
-              activeOpacity={0.8}
-              style={styles.profileImageWrapper}
+        {/* Header Section */}
+        <Animated.View entering={FadeInDown.delay(0).springify()}>
+          <Animated.View style={[styles.header, headerAnimatedStyle]}>
+            <LinearGradient
+              colors={["#1A1A1A", "#131313"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}
             >
-              <View
-                style={[
-                  styles.profileBorder,
-                  { borderColor: user.theme.cardColor },
-                ]}
-              >
-                <View style={styles.profileInner}>
-                  <Image src={user?.profileImage} style={styles.profileImage} />
-                </View>
-              </View>
-            </TouchableOpacity>
-
-            <View style={styles.headerInfo}>
-              <Text style={styles.userName} numberOfLines={1}>
-                {user.name}
-              </Text>
-              <Text style={styles.userTitle}>
-                Level {user.level || 1} Explorer
-              </Text>
-            </View>
-
-            <View style={styles.headerActions}>
-              <TouchableOpacity
-                onPress={() => router.push("/(settings)/editProfile")}
-                style={styles.actionButton}
-              >
-                <EditIcon width={22} height={22} color="#fff" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => router.push("/(settings)")}
-                style={styles.actionButton}
-              >
-                <SettingsIcon width={22} height={22} />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Stats Bar */}
-          <View style={styles.statsBar}>
-            <StatItem
-              icon={
-                <Trophy width={20} height={20} color={Colors.dark.secondary} />
-              }
-              label={user.stars}
-              name={t("rewards")}
-            />
-            <View style={styles.statDivider} />
-            <StatItem
-              icon={<Gem width={20} height={20} color={Colors.dark.primary} />}
-              label={user.gems}
-              name={t("gems")}
-            />
-            <View style={styles.statDivider} />
-            <StatItem
-              icon={<Feather name="award" size={20} color="#fff" />}
-              label={progressList.length}
-              name={t("quizzes")}
-            />
-          </View>
-        </LinearGradient>
-      </Animated.View>
-
-      {/* Last Played Section */}
-      {lastPlayed.length > 0 && (
-        <Animated.View
-          entering={FadeInDown.delay(200).springify()}
-          style={styles.section}
-        >
-          <Text style={styles.sectionTitle}>{t("lastPlayed")}</Text>
-          <View style={styles.lastPlayedContainer}>
-            {lastPlayed.slice(0, 2).map((quiz: QuizType, index: number) => (
-              <LastPlayedCard
-                key={index}
-                quiz={quiz}
-                progressMap={progressMap}
-                index={index}
-                t={t}
-              />
-            ))}
-          </View>
-        </Animated.View>
-      )}
-
-      {/* Collection Section */}
-      <Animated.View
-        entering={FadeInDown.delay(300).springify()}
-        style={styles.section}
-      >
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t("yourQuizzes")}</Text>
-          <TouchableOpacity
-            onPress={() => router.push("/(quizzes)/collection")}
-          >
-            <Text style={styles.viewAllText}>{t("viewAll")} →</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.collectionContainer}>
-          {/* Category Tabs */}
-          <View style={styles.tabsContainer}>
-            {[t("uncompleted"), t("completed"), t("perfect")].map(
-              (category) => (
+              <View style={styles.headerTop}>
                 <TouchableOpacity
-                  key={category}
-                  onPress={() => {
-                    Haptics.selectionAsync();
-                    setCategoryPressed(category);
-                    setCurrIndex(0);
-                  }}
-                  style={[
-                    styles.tabButton,
-                    categroyPressed === category && styles.tabButtonActive,
-                  ]}
+                  onPress={() => setIsVisible(true)}
+                  activeOpacity={0.8}
+                  style={styles.profileImageWrapper}
                 >
-                  <Text
+                  <View
                     style={[
-                      styles.tabText,
-                      categroyPressed === category && styles.tabTextActive,
+                      styles.profileBorder,
+                      { borderColor: user.theme.cardColor },
                     ]}
                   >
-                    {category}
-                  </Text>
-                </TouchableOpacity>
-              )
-            )}
-          </View>
-
-          {/* Collection Showcase */}
-          <View style={styles.showcaseContainer}>
-            {filteredQuizzes.length > 0 ? (
-              <View style={styles.showcaseContent}>
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onPress={() => {
-                    router.push({
-                      pathname: "/(quizzes)/quiz",
-                      params: { id: currentQuizData.quizId._id },
-                    });
-                  }}
-                  style={styles.showcaseLogoWrapper}
-                >
-                  <QuizLogo name={currentQuizData.quizId.logoFile} />
-                </TouchableOpacity>
-
-                <View style={styles.showcaseInfo}>
-                  <Text style={styles.showcaseTitle} numberOfLines={1}>
-                    {currentQuizData.quizId.title}
-                  </Text>
-
-                  <View style={styles.progressRow}>
-                    <View style={styles.statMini}>
-                      <Text style={styles.statLabelMini}>{t("progress")}</Text>
-                      <View style={styles.miniBar}>
-                        <ProgressBar
-                          color={Colors.dark.text}
-                          total={currentQuizData.quizId.questionsTotal}
-                          progress={currentProgressInfo.questionsCompleted}
-                          height={4}
-                        />
-                      </View>
+                    <View style={styles.profileInner}>
+                      <Image
+                        src={user?.profileImage}
+                        style={styles.profileImage}
+                      />
                     </View>
-
-                    <View style={styles.statMini}>
-                      <Text style={styles.statLabelMini}>{t("rewards")}</Text>
-                      <View style={styles.miniBar}>
-                        <ProgressBar
-                          color={Colors.dark.secondary}
-                          total={currentQuizData.quizId.rewardsTotal}
-                          progress={currentProgressInfo.rewardsTotal}
-                          height={4}
-                        />
-                      </View>
-                    </View>
-
-                    {categroyPressed === t("completed") && (
-                      <View
-                        style={[
-                          styles.rankBadge,
-                          { borderColor: Colors.dark.success },
-                        ]}
-                      >
-                        <Text style={styles.rankText}>A</Text>
-                      </View>
-                    )}
-                    {categroyPressed === t("perfect") && (
-                      <View
-                        style={[styles.rankBadge, { borderColor: "#ef4444" }]}
-                      >
-                        <Text style={styles.rankText}>S</Text>
-                      </View>
-                    )}
                   </View>
+                </TouchableOpacity>
+
+                <View style={styles.headerInfo}>
+                  <Text style={styles.userName} numberOfLines={1}>
+                    {user.name}
+                  </Text>
+                  <Text style={styles.userTitle}>
+                    Level {user.level || 1} Explorer
+                  </Text>
+                </View>
+
+                <View style={styles.headerActions}>
+                  <TouchableOpacity
+                    onPress={() => router.push("/(settings)/editProfile")}
+                    style={styles.actionButton}
+                  >
+                    <EditIcon width={22} height={22} color="#fff" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => router.push("/(settings)")}
+                    style={styles.actionButton}
+                  >
+                    <SettingsIcon width={22} height={22} />
+                  </TouchableOpacity>
                 </View>
               </View>
-            ) : (
-              <View style={styles.emptyState}>
-                <BookDashed width={40} height={40} color={Colors.dark.border} />
-                <Text style={styles.emptyText}>{t("noQuizzes")}</Text>
-              </View>
-            )}
 
-            {/* Pagination */}
-            <View style={styles.pagination}>
-              <TouchableOpacity onPress={goPrev} disabled={currIndex === 0}>
-                <PrevArr
-                  width={20}
-                  height={20}
-                  color={
-                    currIndex === 0 ? Colors.dark.border : Colors.dark.text
+              {/* Stats Bar */}
+              <View style={styles.statsBar}>
+                <StatItem
+                  icon={
+                    <Trophy
+                      width={20}
+                      height={20}
+                      color={Colors.dark.secondary}
+                    />
                   }
+                  label={user.stars}
+                  name={t("rewards")}
                 />
-              </TouchableOpacity>
-
-              <View style={styles.pageIndicator}>
-                <Text style={styles.pageText}>
-                  {filteredQuizzes.length === 0 ? 0 : currIndex + 1} /{" "}
-                  {filteredQuizzes.length}
-                </Text>
+                <View style={styles.statDivider} />
+                <StatItem
+                  icon={
+                    <Gem width={20} height={20} color={Colors.dark.primary} />
+                  }
+                  label={user.gems}
+                  name={t("gems")}
+                />
+                <View style={styles.statDivider} />
+                <StatItem
+                  icon={<Feather name="award" size={20} color="#fff" />}
+                  label={progressList.length}
+                  name={t("quizzes")}
+                />
               </View>
+            </LinearGradient>
+          </Animated.View>
+        </Animated.View>
 
+        {/* Content Container with background to cover parallax gap if any */}
+        <View
+          style={{
+            backgroundColor: Colors.dark.bg_dark,
+            zIndex: 1,
+            paddingTop: 10,
+          }}
+        >
+          {/* Last Played Section */}
+          {lastPlayed.length > 0 && (
+            <Animated.View
+              entering={FadeInDown.delay(200).springify()}
+              style={styles.section}
+            >
+              <Text style={styles.sectionTitle}>{t("lastPlayed")}</Text>
+              <View style={styles.lastPlayedContainer}>
+                {lastPlayed.slice(0, 2).map((quiz: QuizType, index: number) => (
+                  <LastPlayedCard
+                    key={index}
+                    quiz={quiz}
+                    progressMap={progressMap}
+                    index={index}
+                    t={t}
+                  />
+                ))}
+              </View>
+            </Animated.View>
+          )}
+
+          {/* Collection Section */}
+          <Animated.View
+            entering={FadeInDown.delay(300).springify()}
+            style={styles.section}
+          >
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t("yourQuizzes")}</Text>
               <TouchableOpacity
-                onPress={goNext}
-                disabled={
-                  currIndex === filteredQuizzes.length - 1 ||
-                  filteredQuizzes.length === 0
-                }
+                onPress={() => router.push("/(quizzes)/collection")}
               >
-                <NextArr
-                  width={20}
-                  height={20}
-                  color={
-                    currIndex === filteredQuizzes.length - 1 ||
-                    filteredQuizzes.length === 0
-                      ? Colors.dark.border
-                      : Colors.dark.text
-                  }
-                />
+                <Text style={styles.viewAllText}>{t("viewAll")} →</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
-      </Animated.View>
 
-      <ProfileCardModal isVisible={isVisible} setIsVisible={setIsVisible} />
-    </ScrollView>
+            <View style={styles.collectionContainer}>
+              {/* Category Tabs */}
+              <View style={styles.tabsContainer}>
+                {[t("uncompleted"), t("completed"), t("perfect")].map(
+                  (category) => (
+                    <TouchableOpacity
+                      key={category}
+                      onPress={() => {
+                        Haptics.selectionAsync();
+                        setCategoryPressed(category);
+                        setCurrIndex(0);
+                      }}
+                      style={[
+                        styles.tabButton,
+                        categroyPressed === category && styles.tabButtonActive,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.tabText,
+                          categroyPressed === category && styles.tabTextActive,
+                        ]}
+                      >
+                        {category}
+                      </Text>
+                    </TouchableOpacity>
+                  )
+                )}
+              </View>
+
+              {/* Collection Showcase */}
+              <View style={styles.showcaseContainer}>
+                {filteredQuizzes.length > 0 ? (
+                  <View style={styles.showcaseContent}>
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        router.push({
+                          pathname: "/(quizzes)/quiz",
+                          params: { id: currentQuizData.quizId._id },
+                        });
+                      }}
+                      style={styles.showcaseLogoWrapper}
+                    >
+                      <QuizLogo name={currentQuizData.quizId.logoFile} />
+                    </TouchableOpacity>
+
+                    <View style={styles.showcaseInfo}>
+                      <Text style={styles.showcaseTitle} numberOfLines={1}>
+                        {currentQuizData.quizId.title}
+                      </Text>
+
+                      <View style={styles.progressRow}>
+                        <View style={styles.statMini}>
+                          <Text style={styles.statLabelMini}>
+                            {t("progress")}
+                          </Text>
+                          <View style={styles.miniBar}>
+                            <ProgressBar
+                              color={Colors.dark.text}
+                              total={currentQuizData.quizId.questionsTotal}
+                              progress={currentProgressInfo.questionsCompleted}
+                              height={4}
+                            />
+                          </View>
+                        </View>
+
+                        <View style={styles.statMini}>
+                          <Text style={styles.statLabelMini}>
+                            {t("rewards")}
+                          </Text>
+                          <View style={styles.miniBar}>
+                            <ProgressBar
+                              color={Colors.dark.secondary}
+                              total={currentQuizData.quizId.rewardsTotal}
+                              progress={currentProgressInfo.rewardsTotal}
+                              height={4}
+                            />
+                          </View>
+                        </View>
+
+                        {categroyPressed === t("completed") && (
+                          <View
+                            style={[
+                              styles.rankBadge,
+                              { borderColor: Colors.dark.success },
+                            ]}
+                          >
+                            <Text style={styles.rankText}>A</Text>
+                          </View>
+                        )}
+                        {categroyPressed === t("perfect") && (
+                          <View
+                            style={[
+                              styles.rankBadge,
+                              { borderColor: "#ef4444" },
+                            ]}
+                          >
+                            <Text style={styles.rankText}>S</Text>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={styles.emptyState}>
+                    <BookDashed
+                      width={40}
+                      height={40}
+                      color={Colors.dark.border}
+                    />
+                    <Text style={styles.emptyText}>{t("noQuizzes")}</Text>
+                  </View>
+                )}
+
+                {/* Pagination */}
+                <View style={styles.pagination}>
+                  <TouchableOpacity onPress={goPrev} disabled={currIndex === 0}>
+                    <PrevArr
+                      width={20}
+                      height={20}
+                      color={
+                        currIndex === 0 ? Colors.dark.border : Colors.dark.text
+                      }
+                    />
+                  </TouchableOpacity>
+
+                  <View style={styles.pageIndicator}>
+                    <Text style={styles.pageText}>
+                      {filteredQuizzes.length === 0 ? 0 : currIndex + 1} /{" "}
+                      {filteredQuizzes.length}
+                    </Text>
+                  </View>
+
+                  <TouchableOpacity
+                    onPress={goNext}
+                    disabled={
+                      currIndex === filteredQuizzes.length - 1 ||
+                      filteredQuizzes.length === 0
+                    }
+                  >
+                    <NextArr
+                      width={20}
+                      height={20}
+                      color={
+                        currIndex === filteredQuizzes.length - 1 ||
+                        filteredQuizzes.length === 0
+                          ? Colors.dark.border
+                          : Colors.dark.text
+                      }
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Animated.View>
+        </View>
+
+        <ProfileCardModal isVisible={isVisible} setIsVisible={setIsVisible} />
+      </Animated.ScrollView>
+    </View>
   );
 }
 
@@ -790,5 +869,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.dark.text_muted,
     fontFamily: REGULAR_FONT,
+  },
+  safeAreaCover: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.dark.bg_dark,
+    zIndex: 100, // Ensure it sits on top of scrolling content
   },
 });

@@ -7,6 +7,7 @@ import adminRoutes from "./adminRoutes.js";
 import staticRoutes from "./staticRoutes.js";
 import uploadLogoRoute from "./uploadLogo.js";
 import eventRoutes from "./eventRoutes.js";
+import legalRoutes from "./legalRoutes.js";
 
 export {
   authRoutes,
@@ -18,4 +19,5 @@ export {
   staticRoutes,
   uploadLogoRoute,
   eventRoutes,
+  legalRoutes,
 };
