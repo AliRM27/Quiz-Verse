@@ -1,12 +1,6 @@
-import {
-  TouchableOpacity,
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ScrollView,
-  Platform,
-} from "react-native";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { getThemeHex } from "@/constants/ThemeColors";
+// allow me to verify user structure first
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUser } from "@/context/userContext";
 import { Colors } from "@/constants/Colors";
@@ -200,7 +194,7 @@ export default function Profile() {
                   <View
                     style={[
                       styles.profileBorder,
-                      { borderColor: user.theme.cardColor },
+                      { borderColor: getThemeHex(user.theme.cardColor) },
                     ]}
                   >
                     <View style={styles.profileInner}>

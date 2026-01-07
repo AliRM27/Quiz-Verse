@@ -64,7 +64,7 @@ export const googleSignIn = async (req, res) => {
 
     const leanUser = await User.findById(user._id)
       .select(
-        "title googleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey"
+        "title googleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles unlockedQuizzes"
       )
       .lean();
 

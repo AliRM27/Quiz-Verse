@@ -37,8 +37,8 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/quizzes", protect, quizRoutes);
 app.use("/api/events", protect, eventRoutes);
-app.use("/api/categories", protect, checkActiveSession, categoryRoutes);
-app.use("/api/shop", protect, checkActiveSession, shopRoutes);
+app.use("/api/categories", protect, categoryRoutes);
+app.use("/api/shop", protect, shopRoutes);
 app.use("/api/users", protect, profileRoutes);
 app.use("/api/admin", adminRoutes); // add protect, isAdmin later
 app.use("/api/upload-logo", uploadLogoRoute);

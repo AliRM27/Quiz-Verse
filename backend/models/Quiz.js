@@ -36,6 +36,14 @@ const quizSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  isPremium: {
+    type: Boolean,
+    default: false,
+  },
+  price: {
+    gems: { type: Number, default: 0 },
+    stars: { type: Number, default: 0 },
+  },
   sections: [
     {
       title: {

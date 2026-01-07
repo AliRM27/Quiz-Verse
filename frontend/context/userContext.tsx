@@ -33,6 +33,9 @@ export type User = {
   gems: number;
   dailyQuizStreak: number;
   lastDailyQuizDateKey: string;
+  ownedThemes: string[];
+  ownedTitles: string[];
+  unlockedQuizzes: string[];
 };
 
 type UserContextType = {

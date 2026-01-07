@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Modal,
   Platform,
+  ScrollView,
 } from "react-native";
 import ColorPicker from "./ColorPicker";
 import Pencil from "@/assets/svgs/pencil.svg";
@@ -23,7 +24,12 @@ import {
   MaterialCommunityIcons,
   FontAwesome6,
 } from "@expo/vector-icons";
-import { HEIGHT, isSmallPhone } from "@/constants/Dimensions";
+import { HEIGHT } from "@/constants/Dimensions";
+import {
+  getThemeHex,
+  getThemeName,
+  THEME_COLORS,
+} from "@/constants/ThemeColors";
 
 // ✅ Reanimated imports
 import Animated, {
@@ -43,17 +49,22 @@ const ProfileCard = ({
   user: User;
   isEditable: boolean;
 }) => {
-  const colors = [
-    "#FF6B6B",
-    "#4ECDC4",
-    "#FFD93D",
-    "#4A00E0",
-    "#FF9F1A",
-    "#00C853",
-  ];
+  // Use user's owned themes, mapped to hex
+  const colors = user.ownedThemes
+    ? user.ownedThemes.map((t) => getThemeHex(t))
+    : [getThemeHex("green")];
+
+  const colorsTitle = user.ownedTitles || ["newbie"];
 
   const [isVisible, setIsVisible] = useState<boolean>(false);
-  const [selectedColor, setSelectedColor] = useState(user.theme.cardColor);
+  const [isTitleModalVisible, setIsTitleModalVisible] =
+    useState<boolean>(false);
+
+  // Initialize selected color from user's current theme (HEX)
+  const initialHex = getThemeHex(user.theme?.cardColor || "green");
+  const [selectedColor, setSelectedColor] = useState(initialHex);
+  const [selectedTitle, setSelectedTitle] = useState(user.title || "newbie");
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { t } = useTranslation();
 
@@ -72,12 +83,20 @@ const ProfileCard = ({
     "Nov",
     "Dec",
   ];
-  const formattedDate = `${dateParts[2]} ${monthNames[parseInt(dateParts[1]) - 1]} ${dateParts[0]}`;
+  const formattedDate = `${dateParts[2]} ${
+    monthNames[parseInt(dateParts[1]) - 1]
+  } ${dateParts[0]}`;
 
   // UI-thread color state
-  const fromColor = useSharedValue(selectedColor);
-  const toColor = useSharedValue(selectedColor);
+  const fromColor = useSharedValue(initialHex);
+  const toColor = useSharedValue(initialHex);
   const progress = useSharedValue(1);
+
+  // Update selectedColor when user prop changes (e.g. initial load or external update)
+  useEffect(() => {
+    setSelectedColor(getThemeHex(user.theme?.cardColor || "green"));
+    setSelectedTitle(user.title || "newbie");
+  }, [user]);
 
   useEffect(() => {
     cancelAnimation(progress);
@@ -131,12 +150,14 @@ const ProfileCard = ({
       <Text style={styles.statLabel}>{t(label)}</Text>
     </View>
   );
+
   return (
     <View style={styles.cardWrapper}>
       <LinearGradient
         colors={[selectedColor + "20", selectedColor + "05"]}
         style={styles.card}
       >
+        {/* THEME EDITOR MODAL */}
         {isEditable && (
           <Modal
             transparent
@@ -158,7 +179,8 @@ const ProfileCard = ({
                     style={styles.modalCancel}
                     onPress={() => {
                       setIsVisible(false);
-                      setSelectedColor(user.theme.cardColor);
+                      // Revert to user's actual theme
+                      setSelectedColor(getThemeHex(user.theme.cardColor));
                     }}
                   >
                     <Text style={styles.modalCancelText}>{t("close")}</Text>
@@ -168,12 +190,14 @@ const ProfileCard = ({
                     activeOpacity={0.7}
                     style={[styles.modalSave, isLoading && { opacity: 0.5 }]}
                     disabled={
-                      user.theme.cardColor === selectedColor || isLoading
+                      getThemeHex(user.theme.cardColor) === selectedColor ||
+                      isLoading
                     }
                     onPress={async () => {
                       setIsLoading(true);
                       try {
-                        user.theme.cardColor = selectedColor;
+                        const themeName = getThemeName(selectedColor);
+                        user.theme.cardColor = themeName;
                         await updateUser(user);
                         Haptics.notificationAsync(
                           Haptics.NotificationFeedbackType.Success
@@ -182,6 +206,94 @@ const ProfileCard = ({
                         console.log(err);
                       } finally {
                         setIsVisible(false);
+                      }
+                      setIsLoading(false);
+                    }}
+                  >
+                    {isLoading ? (
+                      <Loader black />
+                    ) : (
+                      <Text style={styles.modalSaveText}>{t("save")}</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        )}
+
+        {/* TITLE EDITOR MODAL */}
+        {isEditable && (
+          <Modal
+            transparent
+            animationType="slide"
+            visible={isTitleModalVisible}
+            onRequestClose={() => setIsTitleModalVisible(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>{t("chooseTitle")}</Text>
+
+                {/* Titles List */}
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 10, paddingVertical: 10 }}
+                >
+                  {colorsTitle.map((titleStr) => (
+                    <TouchableOpacity
+                      key={titleStr}
+                      onPress={() => {
+                        setSelectedTitle(titleStr);
+                        Haptics.selectionAsync();
+                      }}
+                      style={[
+                        styles.titleChip,
+                        selectedTitle === titleStr && styles.titleChipSelected,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.titleChipText,
+                          selectedTitle === titleStr &&
+                            styles.titleChipTextSelected,
+                        ]}
+                      >
+                        {t(titleStr)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={styles.modalCancel}
+                    onPress={() => {
+                      setIsTitleModalVisible(false);
+                      setSelectedTitle(user.title || "newbie");
+                    }}
+                  >
+                    <Text style={styles.modalCancelText}>{t("close")}</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={[styles.modalSave, isLoading && { opacity: 0.5 }]}
+                    disabled={user.title === selectedTitle || isLoading}
+                    onPress={async () => {
+                      setIsLoading(true);
+                      try {
+                        user.title = selectedTitle;
+                        // update only title to be safe, but our API takes partial updates
+                        await updateUser({ title: selectedTitle });
+                        Haptics.notificationAsync(
+                          Haptics.NotificationFeedbackType.Success
+                        );
+                      } catch (err) {
+                        console.log(err);
+                      } finally {
+                        setIsTitleModalVisible(false);
                       }
                       setIsLoading(false);
                     }}
@@ -210,10 +322,28 @@ const ProfileCard = ({
             >
               {usernameValue}
             </Animated.Text>
-            <Animated.Text style={[styles.userTitle, animatedText]}>
-              {t(user.title).toUpperCase()}
-            </Animated.Text>
+
+            <View style={styles.titleRow}>
+              <Animated.Text style={[styles.userTitle, animatedText]}>
+                {t(user.title).toUpperCase()}
+              </Animated.Text>
+              {isEditable && (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  onPress={() => setIsTitleModalVisible(true)}
+                  style={styles.titleEditBtn}
+                >
+                  <Pencil
+                    color="rgba(255,255,255,0.5)"
+                    width={12}
+                    height={12}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
+
           {isEditable && (
             <TouchableOpacity
               activeOpacity={0.7}
@@ -309,13 +439,21 @@ const styles = StyleSheet.create({
     fontFamily: REGULAR_FONT,
     color: "#fff",
   },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 2,
+  },
   userTitle: {
     fontSize: 12,
     fontWeight: "600",
     fontFamily: REGULAR_FONT,
     color: "rgba(255,255,255,0.5)",
-    marginTop: 2,
     letterSpacing: 1,
+  },
+  titleEditBtn: {
+    padding: 2,
   },
   editButton: {
     width: 36,
@@ -446,5 +584,26 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#000",
     fontFamily: REGULAR_FONT,
+  },
+  // Title Chips
+  titleChip: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  titleChipSelected: {
+    backgroundColor: "#fff",
+    borderColor: "#fff",
+  },
+  titleChipText: {
+    color: "rgba(255,255,255,0.5)",
+    fontWeight: "600",
+  },
+  titleChipTextSelected: {
+    color: "#000",
+    fontWeight: "bold",
   },
 });

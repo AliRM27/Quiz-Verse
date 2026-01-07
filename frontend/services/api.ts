@@ -288,3 +288,34 @@ export const claimShareReward = async () => {
     return { success: false };
   }
 };
+
+export const fetchShopItems = async () => {
+  try {
+    const res = await api.get("api/shop");
+    return res.data;
+  } catch (err) {
+    console.log(err);
+    return { themes: [], titles: [], quizzes: [] };
+  }
+};
+
+export const buyShopItem = async (
+  itemId: string,
+  type: string,
+  currency: "gems" | "stars"
+) => {
+  try {
+    const res = await api.post("api/shop/buy", {
+      itemId,
+      type,
+      currency,
+    });
+    return res.data;
+  } catch (err: any) {
+    console.log(err);
+    return {
+      success: false,
+      message: err.response?.data?.message || "Purchase failed",
+    };
+  }
+};

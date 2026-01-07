@@ -182,7 +182,7 @@ export default function TabLayout() {
                 <Shop width={iconWidth} />
               );
             },
-            tabBarButton: ComingSoonButton("Shop"),
+            // tabBarButton: ComingSoonButton("Shop"),
           }}
         />
         <Tabs.Screen

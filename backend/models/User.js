@@ -80,6 +80,14 @@ const userSchema = new mongoose.Schema({
       default: "green",
     },
   },
+  ownedThemes: {
+    type: [String],
+    default: ["green"],
+  },
+  ownedTitles: {
+    type: [String],
+    default: ["newbie"],
+  },
 });
 
 const User = mongoose.model("User", userSchema);

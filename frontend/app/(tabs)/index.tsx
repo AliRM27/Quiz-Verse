@@ -22,6 +22,7 @@ import { useFocusEffect } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import { getThemeHex } from "@/constants/ThemeColors";
 
 export default function HomeScreen() {
   const { user, loading } = useUser();
@@ -62,7 +63,7 @@ export default function HomeScreen() {
           <View
             style={[
               styles.profileImageWrapper,
-              { borderColor: user.theme.cardColor },
+              { borderColor: getThemeHex(user.theme.cardColor) },
             ]}
           >
             <View style={styles.profileImageContainer}>

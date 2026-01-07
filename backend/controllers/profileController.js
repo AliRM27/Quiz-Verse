@@ -6,7 +6,7 @@ export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.userId)
       .select(
-        "title googleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey"
+        "title googleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles unlockedQuizzes"
       )
       .lean();
 
@@ -138,12 +138,38 @@ export const getUserProgressDetail = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(req.userId, req.body, {
-      new: true,
-    });
+    const { name, profileImage, language, theme, title } = req.body;
+    const userId = req.userId;
+
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
+
+    // Validation
+    if (title && !user.ownedTitles.includes(title)) {
+      return res.status(400).json({ message: "You do not own this title" });
+    }
+
+    if (
+      theme &&
+      theme.cardColor &&
+      !user.ownedThemes.includes(theme.cardColor)
+    ) {
+      return res.status(400).json({ message: "You do not own this theme" });
+    }
+
+    // Explicitly update allowed fields
+    if (name) user.name = name;
+    if (profileImage) user.profileImage = profileImage;
+    if (language) user.language = language;
+    if (title) user.title = title;
+    if (theme && theme.cardColor) {
+      if (!user.theme) user.theme = {};
+      user.theme.cardColor = theme.cardColor;
+    }
+
+    await user.save();
     res.json(user);
   } catch (error) {
     console.error("Error updating profile:", error);
