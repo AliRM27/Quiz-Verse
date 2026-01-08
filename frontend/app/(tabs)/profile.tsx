@@ -20,6 +20,7 @@ import Loader from "@/components/ui/Loader";
 import { useQuery } from "@tanstack/react-query";
 import { fetchUserProgress, fetchUserHistory } from "@/services/api";
 import { QuizType } from "@/types";
+import { API_URL } from "@/services/config";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   FadeInDown,
@@ -199,7 +200,15 @@ export default function Profile() {
                   >
                     <View style={styles.profileInner}>
                       <Image
-                        src={user?.profileImage}
+                        source={{
+                          uri: user.avatar
+                            ? `${API_URL}${
+                                user.avatar.startsWith("/")
+                                  ? user.avatar.slice(1)
+                                  : user.avatar
+                              }`
+                            : user.profileImage,
+                        }}
                         style={styles.profileImage}
                       />
                     </View>
@@ -210,9 +219,7 @@ export default function Profile() {
                   <Text style={styles.userName} numberOfLines={1}>
                     {user.name}
                   </Text>
-                  <Text style={styles.userTitle}>
-                    Level {user.level || 1} Explorer
-                  </Text>
+                  <Text style={styles.userTitle}>{t(user.title)}</Text>
                 </View>
 
                 <View style={styles.headerActions}>

@@ -1,7 +1,6 @@
 import {
   View,
   Text,
-  Pressable,
   StyleSheet,
   ActivityIndicator,
   TextInput,
@@ -14,7 +13,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Colors } from "@/constants/Colors";
-import { layout } from "@/constants/Dimensions";
 import ArrBack from "@/components/ui/ArrBack";
 import { REGULAR_FONT } from "@/constants/Styles";
 import { useUser } from "@/context/userContext";
@@ -33,7 +31,6 @@ const EditProfile = () => {
   const insets = useSafeAreaInsets();
   const [error, setError] = useState<string>("");
   const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [scrollEnabled, setScrollEnabled] = useState(false);
 
   if (!user) {
     return (
@@ -66,9 +63,14 @@ const EditProfile = () => {
     }
     setLoading(true);
     try {
-      await updateUser({ name: usernameValue });
+      const updates: any = {};
+      if (usernameValue !== user.name) updates.name = usernameValue;
+
+      await updateUser(updates);
+
       user.name = usernameValue;
-      setError("Username changed successfully");
+
+      setError("Profile updated successfully");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
       console.error("Failed to update username:", err);
@@ -100,11 +102,10 @@ const EditProfile = () => {
               alignItems: "center",
               gap: 20,
               paddingTop: insets.top + 10,
-              paddingBottom: insets.bottom + 20,
+              paddingBottom: insets.bottom + 40,
             }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
-            scrollEnabled={scrollEnabled}
           >
             <View
               style={{
@@ -138,11 +139,9 @@ const EditProfile = () => {
               <TextInput
                 onFocus={() => {
                   setIsFocused(true);
-                  setScrollEnabled(true);
                 }}
                 onBlur={() => {
                   setIsFocused(false);
-                  setScrollEnabled(false);
                 }}
                 style={[
                   styles.input,

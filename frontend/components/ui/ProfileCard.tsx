@@ -25,11 +25,8 @@ import {
   FontAwesome6,
 } from "@expo/vector-icons";
 import { HEIGHT } from "@/constants/Dimensions";
-import {
-  getThemeHex,
-  getThemeName,
-  THEME_COLORS,
-} from "@/constants/ThemeColors";
+import { getThemeHex, getThemeName } from "@/constants/ThemeColors";
+import { API_URL } from "@/services/config";
 
 // ✅ Reanimated imports
 import Animated, {
@@ -59,6 +56,9 @@ const ProfileCard = ({
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [isTitleModalVisible, setIsTitleModalVisible] =
     useState<boolean>(false);
+  const [isAvatarModalVisible, setIsAvatarModalVisible] =
+    useState<boolean>(false);
+  const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
 
   // Initialize selected color from user's current theme (HEX)
   const initialHex = getThemeHex(user.theme?.cardColor || "green");
@@ -96,6 +96,7 @@ const ProfileCard = ({
   useEffect(() => {
     setSelectedColor(getThemeHex(user.theme?.cardColor || "green"));
     setSelectedTitle(user.title || "newbie");
+    setSelectedAvatar(user.avatar || null);
   }, [user]);
 
   useEffect(() => {
@@ -310,10 +311,141 @@ const ProfileCard = ({
           </Modal>
         )}
 
+        {/* AVATAR EDITOR MODAL */}
+        {isEditable && (
+          <Modal
+            transparent
+            animationType="slide"
+            visible={isAvatarModalVisible}
+            onRequestClose={() => setIsAvatarModalVisible(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>{t("chooseAvatar")}</Text>
+
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: 12, paddingHorizontal: 5 }}
+                >
+                  {/* Default Option */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSelectedAvatar(null);
+                      Haptics.selectionAsync();
+                    }}
+                    style={[
+                      styles.avatarOption,
+                      selectedAvatar === null && styles.avatarOptionSelected,
+                    ]}
+                  >
+                    <Image
+                      source={{ uri: user.profileImage }}
+                      style={styles.avatarOptionImage}
+                    />
+                    {selectedAvatar === null && (
+                      <View style={styles.selectedOverlay} />
+                    )}
+                  </TouchableOpacity>
+
+                  {/* Owned Avatars */}
+                  {user.ownedAvatars?.map((avatarPath) => (
+                    <TouchableOpacity
+                      key={avatarPath}
+                      onPress={() => {
+                        setSelectedAvatar(avatarPath);
+                        Haptics.selectionAsync();
+                      }}
+                      style={[
+                        styles.avatarOption,
+                        selectedAvatar === avatarPath &&
+                          styles.avatarOptionSelected,
+                      ]}
+                    >
+                      <Image
+                        source={{
+                          uri: `${API_URL}${
+                            avatarPath.startsWith("/")
+                              ? avatarPath.slice(1)
+                              : avatarPath
+                          }`,
+                        }}
+                        style={styles.avatarOptionImage}
+                      />
+                      {selectedAvatar === avatarPath && (
+                        <View style={styles.selectedOverlay} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={styles.modalCancel}
+                    onPress={() => {
+                      setIsAvatarModalVisible(false);
+                      setSelectedAvatar(user.avatar || null);
+                    }}
+                  >
+                    <Text style={styles.modalCancelText}>{t("close")}</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={[styles.modalSave, isLoading && { opacity: 0.5 }]}
+                    disabled={user.avatar === selectedAvatar || isLoading}
+                    onPress={async () => {
+                      setIsLoading(true);
+                      try {
+                        user.avatar = selectedAvatar;
+                        await updateUser({ avatar: selectedAvatar });
+                        Haptics.notificationAsync(
+                          Haptics.NotificationFeedbackType.Success
+                        );
+                      } catch (err) {
+                        console.log(err);
+                      } finally {
+                        setIsAvatarModalVisible(false);
+                      }
+                      setIsLoading(false);
+                    }}
+                  >
+                    {isLoading ? (
+                      <Loader black />
+                    ) : (
+                      <Text style={styles.modalSaveText}>{t("save")}</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        )}
+
         {/* Top Section: Avatar & Info */}
         <View style={styles.header}>
           <Animated.View style={[styles.avatarContainer, animatedBorder]}>
-            <Image source={{ uri: user?.profileImage }} style={styles.avatar} />
+            <Image
+              source={{
+                uri: user.avatar
+                  ? `${API_URL}${
+                      user.avatar.startsWith("/")
+                        ? user.avatar.slice(1)
+                        : user.avatar
+                    }`
+                  : user.profileImage,
+              }}
+              style={styles.avatar}
+            />
+            {isEditable && (
+              <TouchableOpacity
+                style={styles.avatarEditOverlay}
+                onPress={() => setIsAvatarModalVisible(true)}
+              >
+                <Pencil color="#fff" width={12} height={12} />
+              </TouchableOpacity>
+            )}
           </Animated.View>
           <View style={styles.userInfo}>
             <Animated.Text
@@ -605,5 +737,40 @@ const styles = StyleSheet.create({
   titleChipTextSelected: {
     color: "#000",
     fontWeight: "bold",
+  },
+  avatarEditOverlay: {
+    position: "absolute",
+    bottom: -2,
+    right: -2,
+    backgroundColor: Colors.dark.secondary,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#1A1A1A",
+  },
+  avatarOption: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.1)",
+    padding: 2,
+    overflow: "hidden",
+  },
+  avatarOptionSelected: {
+    borderColor: "#fff",
+  },
+  avatarOptionImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 35,
+  },
+  selectedOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: 35,
   },
 });

@@ -16,7 +16,6 @@ import {
 } from "./routes/imports.js";
 import { protect } from "./middleware/protect.js";
 import { isAdmin } from "./middleware/isAdmin.js";
-import { checkActiveSession } from "./middleware/isActive.js";
 
 dotenv.config();
 connectDB();

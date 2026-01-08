@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   name: { type: String },
   profileImage: { type: String },
+  avatar: { type: String, default: null }, // Selected shop avatar (overrides profileImage if set)
   stars: { type: Number, default: 0 }, // In-game currency
   gems: { type: Number, default: 0 },
   level: { type: Number, default: 0 },
@@ -87,6 +88,10 @@ const userSchema = new mongoose.Schema({
   ownedTitles: {
     type: [String],
     default: ["newbie"],
+  },
+  ownedAvatars: {
+    type: [String],
+    default: [],
   },
 });
 

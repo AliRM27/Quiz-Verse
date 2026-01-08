@@ -6,7 +6,7 @@ export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.userId)
       .select(
-        "title googleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles unlockedQuizzes"
+        "title googleId email name profileImage avatar stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles ownedAvatars unlockedQuizzes"
       )
       .lean();
 
@@ -138,7 +138,7 @@ export const getUserProgressDetail = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { name, profileImage, language, theme, title } = req.body;
+    const { name, profileImage, avatar, language, theme, title } = req.body;
     const userId = req.userId;
 
     const user = await User.findById(userId);
@@ -149,6 +149,10 @@ export const updateProfile = async (req, res) => {
     // Validation
     if (title && !user.ownedTitles.includes(title)) {
       return res.status(400).json({ message: "You do not own this title" });
+    }
+
+    if (avatar && !user.ownedAvatars.includes(avatar)) {
+      return res.status(400).json({ message: "You do not own this avatar" });
     }
 
     if (
@@ -164,6 +168,7 @@ export const updateProfile = async (req, res) => {
     if (profileImage) user.profileImage = profileImage;
     if (language) user.language = language;
     if (title) user.title = title;
+    if (avatar !== undefined) user.avatar = avatar; // Allow null to unequip
     if (theme && theme.cardColor) {
       if (!user.theme) user.theme = {};
       user.theme.cardColor = theme.cardColor;
@@ -279,7 +284,12 @@ export const updateProgress = async (req, res) => {
 
     // Increment questions and rewards
     if (updates.questions !== undefined) section.questions += updates.questions;
-    if (updates.rewards !== undefined) section.rewards += updates.rewards;
+    if (updates.rewards !== undefined) {
+      const newRewards = updates.rewards;
+      section.rewards += newRewards;
+      // FIX: Update global stars
+      user.stars = (user.stars || 0) + newRewards;
+    }
     if (updates.timeRewards !== undefined)
       section.timeRewards += updates.timeRewards;
     if (updates.streaksRewards !== undefined)

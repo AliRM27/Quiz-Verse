@@ -20,14 +20,9 @@ export const api = axios.create({
 api.interceptors.request.use(
   async (config) => {
     const token = await SecureStore.getItemAsync("token");
-    const sessionToken = await SecureStore.getItemAsync("sessionToken"); // NEW
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    if (sessionToken) {
-      config.headers["x-session-token"] = sessionToken; // NEW
     }
 
     return config;
@@ -53,20 +48,7 @@ api.interceptors.response.use(
       );
     } else if (error.response?.status === 401) {
       await SecureStore.deleteItemAsync("token");
-      await SecureStore.deleteItemAsync("sessionToken");
       router.replace("/(auth)");
-    } else if (error.response?.status === 403) {
-      Alert.alert(
-        "Session Ended",
-        "Your account has been logged in on another device.",
-        [
-          {
-            text: "OK",
-            onPress: () => DevSettings.reload(),
-          },
-        ],
-        { cancelable: false }
-      );
     }
 
     return Promise.reject(error);

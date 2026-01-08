@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, Image } from "react-native";
 import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
 import { REGULAR_FONT } from "@/constants/Styles";
@@ -17,6 +17,7 @@ import Gem from "@/assets/svgs/gem.svg";
 import Trophy from "@/assets/svgs/trophy.svg";
 import HeartQuiz from "@/assets/svgs/heartQuiz.svg";
 import { Colors } from "@/constants/Colors";
+import { API_URL } from "@/services/config";
 
 interface ShopItemCardProps {
   item: any;
@@ -46,74 +47,94 @@ const ShopItemCard = ({ item, isOwned, onPress, index }: ShopItemCardProps) => {
   };
 
   return (
-    <AnimatedPressable
+    <Animated.View
       entering={FadeInDown.delay(index * 50)
         .springify()
         .damping(12)}
-      onPress={() => onPress(item)}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      disabled={isOwned}
-      style={[styles.cardContainer, isOwned && styles.cardOwned, animatedStyle]}
+      style={styles.cardContainer}
     >
-      <LinearGradient
-        colors={["#2A2A2A", "#1A1A1A"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.cardGradient}
+      <AnimatedPressable
+        onPress={() => onPress(item)}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={isOwned}
+        style={[
+          styles.pressableArea,
+          isOwned && styles.cardOwned,
+          animatedStyle,
+        ]}
       >
-        {/* Icon / Preview Area */}
-        <View style={styles.cardPreview}>
-          {item.type === "theme" && (
-            <View
-              style={[
-                styles.colorPreview,
-                { backgroundColor: getThemeHex(item.value) },
-              ]}
-            />
-          )}
-          {item.type === "title" && (
-            <Badge size={50} color={Colors.dark.primary} strokeWidth={1.5} />
-          )}
-          {item.type === "quiz" && <HeartQuiz width={50} height={50} />}
-        </View>
+        <LinearGradient
+          colors={["#2A2A2A", "#1A1A1A"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.cardGradient}
+        >
+          {/* Icon / Preview Area */}
+          <View style={styles.cardPreview}>
+            {item.type === "theme" && (
+              <View
+                style={[
+                  styles.colorPreview,
+                  { backgroundColor: getThemeHex(item.value) },
+                ]}
+              />
+            )}
+            {item.type === "avatar" && (
+              <Image
+                source={{
+                  uri: `${API_URL}${
+                    item.value.startsWith("/")
+                      ? item.value.slice(1)
+                      : item.value
+                  }`,
+                }}
+                style={styles.avatarPreview}
+              />
+            )}
+            {item.type === "title" && (
+              <Badge size={50} color={Colors.dark.primary} strokeWidth={1.5} />
+            )}
+            {item.type === "quiz" && <HeartQuiz width={50} height={50} />}
+          </View>
 
-        {/* Info Area */}
-        <View style={styles.cardInfo}>
-          <Text style={styles.cardTitle} numberOfLines={1}>
-            {t(item.name) || item.name}
-          </Text>
+          {/* Info Area */}
+          <View style={styles.cardInfo}>
+            <Text style={styles.cardTitle} numberOfLines={1}>
+              {t(item.name) || item.name}
+            </Text>
 
-          {isOwned ? (
-            <View style={styles.ownedBadge}>
-              <Text style={styles.ownedText}>{t("owned")}</Text>
-            </View>
-          ) : (
-            <View style={styles.priceRow}>
-              {item.price.gems > 0 && (
-                <View style={styles.priceTag}>
-                  <Gem width={14} height={14} color={Colors.dark.primary} />
-                  <Text style={styles.priceText}>{item.price.gems}</Text>
-                </View>
-              )}
-              {item.price.stars > 0 && item.price.gems > 0 && (
-                <View style={styles.priceDivider} />
-              )}
-              {item.price.stars > 0 && (
-                <View style={styles.priceTag}>
-                  <Trophy
-                    width={14}
-                    height={14}
-                    color={Colors.dark.secondary}
-                  />
-                  <Text style={styles.priceText}>{item.price.stars}</Text>
-                </View>
-              )}
-            </View>
-          )}
-        </View>
-      </LinearGradient>
-    </AnimatedPressable>
+            {isOwned ? (
+              <View style={styles.ownedBadge}>
+                <Text style={styles.ownedText}>{t("owned")}</Text>
+              </View>
+            ) : (
+              <View style={styles.priceRow}>
+                {item.price.gems > 0 && (
+                  <View style={styles.priceTag}>
+                    <Gem width={14} height={14} color={Colors.dark.primary} />
+                    <Text style={styles.priceText}>{item.price.gems}</Text>
+                  </View>
+                )}
+                {item.price.stars > 0 && item.price.gems > 0 && (
+                  <View style={styles.priceDivider} />
+                )}
+                {item.price.stars > 0 && (
+                  <View style={styles.priceTag}>
+                    <Trophy
+                      width={14}
+                      height={14}
+                      color={Colors.dark.secondary}
+                    />
+                    <Text style={styles.priceText}>{item.price.stars}</Text>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+        </LinearGradient>
+      </AnimatedPressable>
+    </Animated.View>
   );
 };
 
@@ -129,6 +150,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
+  },
+  pressableArea: {
+    flex: 1,
+    borderRadius: 20,
   },
   cardGradient: {
     borderRadius: 20,
@@ -152,6 +177,13 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.2)",
+  },
+  avatarPreview: {
+    width: 65,
+    height: 65,
+    borderRadius: 32.5,
     borderWidth: 2,
     borderColor: "rgba(255,255,255,0.2)",
   },

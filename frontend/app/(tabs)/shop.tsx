@@ -4,6 +4,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  ScrollView,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Colors } from "@/constants/Colors";
@@ -24,7 +25,7 @@ import Trophy from "@/assets/svgs/trophy.svg";
 
 const Shop = () => {
   const insets = useSafeAreaInsets();
-  const { user, refreshUser } = useUser();
+  const { user, refreshUser, loading: userLoading } = useUser();
   const { t } = useTranslation();
 
   const [items, setItems] = useState<any[]>([]);
@@ -43,8 +44,8 @@ const Shop = () => {
 
   const categories = [
     { id: "theme", label: t("themes") || "Themes" },
+    { id: "avatar", label: t("avatars") || "Avatars" }, // New Category
     { id: "title", label: t("titles") || "Titles" },
-    { id: "quiz", label: t("quizzes") || "Quizzes" },
   ];
 
   useEffect(() => {
@@ -56,8 +57,8 @@ const Shop = () => {
       const data = await fetchShopItems();
       const flatItems = [
         ...(data.themes || []),
+        ...(data.avatars || []), // New Items
         ...(data.titles || []),
-        ...(data.quizzes || []),
       ];
       setItems(flatItems);
     } catch (err) {
@@ -71,6 +72,9 @@ const Shop = () => {
     if (!user) return false;
     if (item.type === "theme") {
       return user.ownedThemes?.includes(item.value);
+    }
+    if (item.type === "avatar") {
+      return user.ownedAvatars?.includes(item.value);
     }
     if (item.type === "title") {
       return user.ownedTitles?.includes(item.value);
@@ -131,18 +135,22 @@ const Shop = () => {
         <Text style={styles.headerTitle}>{t("shop")}</Text>
         <View style={styles.balanceContainer}>
           <View style={styles.balanceItem}>
-            <Trophy width={24} height={24} color={Colors.dark.secondary} />
+            <Trophy width={16} height={16} color={Colors.dark.secondary} />
             <Text style={styles.balanceText}>{user?.stars || 0}</Text>
           </View>
           <View style={styles.balanceItem}>
-            <Gem width={24} height={24} color={Colors.dark.primary} />
+            <Gem width={16} height={16} color={Colors.dark.primary} />
             <Text style={styles.balanceText}>{user?.gems || 0}</Text>
           </View>
         </View>
       </View>
 
       {/* Categories */}
-      <View style={styles.tabs}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.tabs}
+      >
         {categories.map((cat) => (
           <TouchableOpacity
             key={cat.id}
@@ -165,7 +173,7 @@ const Shop = () => {
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
     </View>
   );
 
@@ -193,7 +201,7 @@ const Shop = () => {
         />
       )}
 
-      {loading ? (
+      {loading || userLoading ? (
         <View style={{ flex: 1 }}>
           {renderHeader()}
           <View style={styles.grid}>
@@ -215,7 +223,7 @@ const Shop = () => {
               onPress={handleItemPress}
             />
           )}
-          ListHeaderComponent={renderHeader}
+          ListHeaderComponent={renderHeader()}
           contentContainerStyle={styles.listContent}
           columnWrapperStyle={styles.columnWrapper}
           showsVerticalScrollIndicator={false}
@@ -262,11 +270,13 @@ const styles = StyleSheet.create({
   balanceItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.1)",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
     gap: 6,
+    backgroundColor: Colors.dark.bg_light,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.dark.border_muted,
   },
   balanceText: {
     color: "#fff",

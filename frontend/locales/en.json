@@ -11,6 +11,18 @@
   "lastPlayed": "Last Played",
   "yourQuizzes": "Your Quizzes",
   "viewAll": "View All",
+  "shop": "Shop",
+  "themes": "Themes",
+  "avatars": "Avatars",
+  "titles": "Titles",
+  "confirmPurchase": "Confirm Purchase",
+  "choosePaymentMethod": "Choose payment method",
+  "lowBalance": "Low balance",
+  "trophies": "Trophies",
+  "chooseTitle": "Choose Title",
+  "itemPurchased": "Item purchased successfully!",
+  "purchaseFailed": "Purchase failed. Try again.",
+  "chooseAvatar": "Choose Avatar",
   "settings": "Settings",
   "username": "Username",
   "language": "Language",
@@ -144,5 +156,6 @@
   "level": "Level",
   "streak": "Streak",
   "congrats": "Congrats!",
-  "youEarned": "You earned"
+  "youEarned": "You earned",
+  "owned": "Owned"
 }

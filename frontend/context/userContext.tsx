@@ -19,6 +19,7 @@ export type User = {
   name: string;
   email: string;
   profileImage: string;
+  avatar: string | null;
   completedQuizzesCount?: number;
   unlockedQuizzesCount?: number;
   role: string;
@@ -35,17 +36,14 @@ export type User = {
   lastDailyQuizDateKey: string;
   ownedThemes: string[];
   ownedTitles: string[];
+  ownedAvatars: string[];
   unlockedQuizzes: string[];
 };
 
 type UserContextType = {
   user: User | null;
   token: string | null;
-  setUserData: (
-    user: User,
-    token: string,
-    sessionToken: string
-  ) => Promise<void>;
+  setUserData: (user: User, token: string) => Promise<void>;
   logout: () => Promise<void>;
   loading: boolean;
   deleteAccount: () => Promise<void>;
@@ -106,15 +104,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   // Set user and token after login
-  const setUserData = useCallback(
-    async (user: User, token: string, sessionToken: string) => {
-      setUser(user);
-      setToken(token);
-      await SecureStore.setItemAsync("token", token);
-      await SecureStore.setItemAsync("sessionToken", sessionToken);
-    },
-    []
-  );
+  const setUserData = useCallback(async (user: User, token: string) => {
+    setUser(user);
+    setToken(token);
+    await SecureStore.setItemAsync("token", token);
+  }, []);
 
   // Logout logic
   const logout = useCallback(
@@ -127,7 +121,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         await updateUser({ activeSession: null, lastActiveAt: null });
       }
       await SecureStore.deleteItemAsync("token");
-      await SecureStore.deleteItemAsync("sessionToken");
       router.replace("/(auth)");
     },
     [queryClient]

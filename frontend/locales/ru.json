@@ -11,6 +11,18 @@
   "lastPlayed": "Последняя игра",
   "yourQuizzes": "Ваши квизы",
   "viewAll": "Показать все",
+  "shop": "Магазин",
+  "themes": "Темы",
+  "avatars": "Аватары",
+  "titles": "Титулы",
+  "confirmPurchase": "Подтвердить покупку",
+  "choosePaymentMethod": "Выберите способ оплаты",
+  "lowBalance": "Недостаточно средств",
+  "trophies": "Трофеи",
+  "chooseTitle": "Выбрать титул",
+  "itemPurchased": "Предмет успешно куплен!",
+  "purchaseFailed": "Ошибка покупки. Попробуйте снова.",
+  "chooseAvatar": "Выбрать аватар",
   "settings": "Настройки",
   "username": "Имя пользователя",
   "language": "Язык",
@@ -144,5 +156,6 @@
   "level": "Уровень",
   "streak": "Серия",
   "congrats": "Поздравляем!",
-  "youEarned": "Вы заработали"
+  "youEarned": "Вы заработали",
+  "owned": "Приобретено"
 }

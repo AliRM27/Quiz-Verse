@@ -1,67 +1,6 @@
 import User from "../models/User.js";
 import Quiz from "../models/Quiz.js";
-
-// Hardcoded shop items for themes and titles
-//Ideally these would be in a DB collection, but for MVP hardcoding is fine.
-const SHOP_ITEMS = {
-  themes: [
-    {
-      id: "blue",
-      name: "Ocean Blue",
-      type: "theme",
-      price: { gems: 50, stars: 500 },
-      description: "A calming deep sea blue theme.",
-      value: "blue", // The actual value stored in user.theme.cardColor (or handled by frontend mapping)
-    },
-    {
-      id: "red",
-      name: "Fire Red",
-      type: "theme",
-      price: { gems: 50, stars: 500 },
-      description: "A passionate fiery red theme.",
-      value: "red",
-    },
-    {
-      id: "purple",
-      name: "Royal Purple",
-      type: "theme",
-      price: { gems: 100, stars: 1000 },
-      description: "A luxurious purple theme.",
-      value: "purple",
-    },
-    {
-      id: "gold",
-      name: "Midas Gold",
-      type: "theme",
-      price: { gems: 200, stars: 2000 },
-      description: "The ultimate status symbol.",
-      value: "gold",
-    },
-  ],
-  titles: [
-    {
-      id: "wizard",
-      name: "Quiz Wizard",
-      type: "title",
-      price: { gems: 30, stars: 300 },
-      value: "Quiz Wizard",
-    },
-    {
-      id: "collector",
-      name: "Gem Collector",
-      type: "title",
-      price: { gems: 60, stars: 600 },
-      value: "Gem Collector",
-    },
-    {
-      id: "master",
-      name: "Trivia Master",
-      type: "title",
-      price: { gems: 100, stars: 1000 },
-      value: "Trivia Master",
-    },
-  ],
-};
+import ShopItem from "../models/ShopItem.js";
 
 export const getShopItems = async (req, res) => {
   try {
@@ -80,9 +19,17 @@ export const getShopItems = async (req, res) => {
       image: q.logoFile,
     }));
 
+    // 2. Get Shop Items (Themes, Titles)
+    const shopItems = await ShopItem.find({});
+
+    const themes = shopItems.filter((i) => i.type === "theme");
+    const titles = shopItems.filter((i) => i.type === "title");
+    const avatars = shopItems.filter((i) => i.type === "avatar");
+
     res.json({
-      themes: SHOP_ITEMS.themes,
-      titles: SHOP_ITEMS.titles,
+      themes,
+      titles,
+      avatars,
       quizzes: quizzes,
     });
   } catch (error) {
@@ -114,15 +61,28 @@ export const buyItem = async (req, res) => {
     if (type === "quiz") {
       const quiz = await Quiz.findById(itemId);
       if (!quiz) return res.status(404).json({ message: "Quiz not found" });
+
+      // Enforce the new economy price: 1000 Trophies (Stars)
+      // We override whatever is in the DB to match the client-side constant.
+      const ENFORCED_PRICE = 1000;
+
       item = {
         id: quiz._id.toString(),
-        price: quiz.price,
+        price: {
+          stars: ENFORCED_PRICE,
+          gems: quiz.price?.gems || 100, // fallback gems price if needed
+        },
         name: quiz.title,
       };
-    } else if (type === "theme") {
-      item = SHOP_ITEMS.themes.find((t) => t.id === itemId);
-    } else if (type === "title") {
-      item = SHOP_ITEMS.titles.find((t) => t.id === itemId);
+    } else {
+      // For themes and titles, check ShopItem collection
+      // We look up by 'id' field, not _id, because frontend sends 'blue', 'red' etc.
+      // But wait, the seed script used 'id' as the string identifier (e.g. 'blue').
+      // Let's use findOne with id.
+      const shopItem = await ShopItem.findOne({ id: itemId, type });
+      if (shopItem) {
+        item = shopItem;
+      }
     }
 
     if (!item) {
@@ -159,6 +119,10 @@ export const buyItem = async (req, res) => {
       if (user.ownedTitles.includes(item.value)) {
         return res.status(400).json({ message: "Title already owned" });
       }
+    } else if (type === "avatar") {
+      if (user.ownedAvatars.includes(item.value)) {
+        return res.status(400).json({ message: "Avatar already owned" });
+      }
     }
 
     // 5. Execute Transaction
@@ -175,6 +139,8 @@ export const buyItem = async (req, res) => {
       user.ownedThemes.push(item.value);
     } else if (type === "title") {
       user.ownedTitles.push(item.value);
+    } else if (type === "avatar") {
+      user.ownedAvatars.push(item.value);
     }
 
     await user.save();
@@ -186,6 +152,7 @@ export const buyItem = async (req, res) => {
       inventory: {
         ownedThemes: user.ownedThemes,
         ownedTitles: user.ownedTitles,
+        ownedAvatars: user.ownedAvatars,
         unlockedQuizzesStub: user.unlockedQuizzes.map((u) => u.quizId),
       },
     });

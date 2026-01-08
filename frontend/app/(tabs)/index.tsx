@@ -23,6 +23,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { getThemeHex } from "@/constants/ThemeColors";
+import { API_URL } from "@/services/config";
 
 export default function HomeScreen() {
   const { user, loading } = useUser();
@@ -67,7 +68,18 @@ export default function HomeScreen() {
             ]}
           >
             <View style={styles.profileImageContainer}>
-              <Image src={user?.profileImage} style={styles.profileImage} />
+              <Image
+                source={{
+                  uri: user.avatar
+                    ? `${API_URL}${
+                        user.avatar.startsWith("/")
+                          ? user.avatar.slice(1)
+                          : user.avatar
+                      }`
+                    : user.profileImage,
+                }}
+                style={styles.profileImage}
+              />
             </View>
           </View>
           <View style={styles.userInfo}>

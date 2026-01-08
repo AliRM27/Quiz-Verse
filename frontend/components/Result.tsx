@@ -96,7 +96,7 @@ const RewardItem = ({
           <Text style={styles.rewardLabel}>{t(name)}</Text>
         </View>
         <View style={styles.rewardAmountContainer}>
-          {isMax ? (
+          {isMax && rewards === 0 ? (
             <Text style={styles.rewardAmount}>{t("max")}</Text>
           ) : (
             <>

@@ -35,7 +35,7 @@ export const PRICES = {
     bundle3: {
       quizzes_included: 3,
       price: {
-        trophies: 6000,
+        trophies: 2500,
         coins: 270,
       },
       description: "Fixed bundle of 3 quizzes with slight discount",
@@ -43,7 +43,7 @@ export const PRICES = {
     bundle5: {
       quizzes_included: 5,
       price: {
-        trophies: 10000,
+        trophies: 4000,
         coins: 450,
       },
       description: "Fixed bundle of 5 quizzes with bigger discount",
@@ -60,14 +60,14 @@ export const PRICES = {
   cosmetics: {
     avatar: {
       price: {
-        trophies: 500,
+        trophies: 2000,
         coins: 30,
       },
       description: "Profile avatar, cosmetic only",
     },
     theme: {
       price: {
-        trophies: 1200,
+        trophies: 5000,
         coins: 70,
       },
       description: "UI skin/theme",

@@ -30,6 +30,7 @@ import {
   updateUser,
   updateUserProgress,
   fetchUserProgress,
+  buyShopItem,
 } from "@/services/api";
 import LockOpen from "@/assets/svgs/lock-open.svg";
 import Lock from "@/assets/svgs/lock.svg";
@@ -83,7 +84,9 @@ const Quiz = () => {
   const quiz: QuizType = data;
   const progressList = progressData?.progress || [];
   const currentProgress = progressList.find((p: any) => p.quizId._id === id);
-  const isUnlocked = Boolean(currentProgress);
+  const isUnlocked =
+    Boolean(currentProgress) ||
+    progressData?.unlockedQuizzes?.some((u: any) => u.quizId?._id === id);
 
   const progressPercent = currentProgress
     ? Math.floor(
@@ -234,20 +237,33 @@ const Quiz = () => {
                     if (!user) return;
                     if (user?.stars >= PRICES.quizzes.single.price.trophies) {
                       try {
-                        await updateUser({
-                          stars:
-                            user.stars - PRICES.quizzes.single.price.trophies,
-                        });
-                        await updateUserProgress({ quizId: quiz._id });
-                        await queryClient.invalidateQueries({
-                          queryKey: ["userProgress"],
-                        });
-                        await refreshUser();
-                        Haptics.notificationAsync(
-                          Haptics.NotificationFeedbackType.Success
+                        const result = await buyShopItem(
+                          quiz._id,
+                          "quiz",
+                          "stars"
                         );
+
+                        if (result.success) {
+                          // The backend handles the payment and unlocking
+                          await queryClient.invalidateQueries({
+                            queryKey: ["userProgress"],
+                          });
+                          await refreshUser();
+                          Haptics.notificationAsync(
+                            Haptics.NotificationFeedbackType.Success
+                          );
+                        } else {
+                          // Handle failure (e.g., balance mismatch, already owned)
+                          alert(result.message || t("purchaseFailed"));
+                          Haptics.notificationAsync(
+                            Haptics.NotificationFeedbackType.Error
+                          );
+                        }
                       } catch (err) {
                         console.log(err);
+                        Haptics.notificationAsync(
+                          Haptics.NotificationFeedbackType.Error
+                        );
                       }
                     } else {
                       Haptics.notificationAsync(
