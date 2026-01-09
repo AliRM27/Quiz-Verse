@@ -170,13 +170,6 @@ export const completeWeeklyEvent = async (req, res) => {
         } else if (!nextNodeProg.unlockedAt) {
           nextNodeProg.unlockedAt = now;
         }
-
-        /* 
-           Removed unlockReward logic.
-           Previously checked nextNode.unlockReward and granted it.
-        */
-        // const nextNode = event.nodes[nextIndex];
-        // if (nextNode && nextNode.unlockReward) { ... }
       }
     }
     // Check full completion

@@ -172,11 +172,11 @@ export const submitDailyQuiz = async (req, res) => {
 
       trophiesToGive = Math.round(maxTrophies * ratio);
       if (ratio >= 0.6) {
-        gemsToGive = maxGems;
+        gemsToGive = 1;
       }
 
       if (perfect) {
-        trophiesToGive += 10; // optional perfect bonus
+        gemsToGive = maxGems; // maxGems = 2
       }
     }
 

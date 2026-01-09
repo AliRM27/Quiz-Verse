@@ -135,6 +135,16 @@ export const buyItem = async (req, res) => {
     // 6. Grant Item
     if (type === "quiz") {
       user.unlockedQuizzes.push({ quizId: itemId });
+      // Initialize progress for the new quiz
+      user.progress.push({
+        quizId: itemId,
+        sections: [
+          { difficulty: "Easy", answered: [], streaks: [], timeBonuses: [] },
+          { difficulty: "Medium", answered: [], streaks: [], timeBonuses: [] },
+          { difficulty: "Hard", answered: [], streaks: [], timeBonuses: [] },
+          { difficulty: "Extreme", answered: [], streaks: [], timeBonuses: [] },
+        ],
+      });
     } else if (type === "theme") {
       user.ownedThemes.push(item.value);
     } else if (type === "title") {

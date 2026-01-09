@@ -14,11 +14,6 @@ const quizSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
-  titleQuiz: {
-    en: { type: String, required: true, trim: true },
-    de: { type: String, required: true, trim: true },
-    ru: { type: String, required: true, trim: true },
-  },
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
@@ -44,6 +39,10 @@ const quizSchema = new mongoose.Schema({
     gems: { type: Number, default: 0 },
     stars: { type: Number, default: 0 },
   },
+  tags: {
+    type: [{ type: String, trim: true }],
+    default: [],
+  },
   sections: [
     {
       title: {
@@ -65,6 +64,8 @@ const quizSchema = new mongoose.Schema({
             en: { type: String, required: true, trim: true },
             de: { type: String, required: true, trim: true },
             ru: { type: String, required: true, trim: true },
+            fr: { type: String, required: true, trim: true },
+            es: { type: String, required: true, trim: true },
           },
           type: {
             type: String,
@@ -84,6 +85,8 @@ const quizSchema = new mongoose.Schema({
                 en: { type: String, required: true, trim: true },
                 de: { type: String, required: true, trim: true },
                 ru: { type: String, required: true, trim: true },
+                fr: { type: String, required: true, trim: true },
+                es: { type: String, required: true, trim: true },
               },
               isCorrect: { type: Boolean, default: false },
             },

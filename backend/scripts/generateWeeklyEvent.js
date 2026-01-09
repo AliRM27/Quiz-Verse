@@ -181,7 +181,7 @@ async function generateWeeklyEvent() {
                   ...mediumQs.slice(0, 5 - (easyQs.length - 5)),
                 ],
         },
-        completionReward: { trophies: 25, gems: 1 },
+        completionReward: { trophies: 25, gems: 0 },
       },
       {
         index: 2,
@@ -193,7 +193,7 @@ async function generateWeeklyEvent() {
           // If speed run took easy, we take medium 0-5
           questions: mediumQs.slice(0, 5),
         },
-        completionReward: { trophies: 30, gems: 2 },
+        completionReward: { trophies: 30, gems: 1 },
       },
       {
         index: 3,
@@ -203,7 +203,7 @@ async function generateWeeklyEvent() {
         config: {
           questions: mediumQs.slice(5, 10),
         },
-        completionReward: { trophies: 40, gems: 3 },
+        completionReward: { trophies: 40, gems: 1 },
       },
       {
         index: 4,
@@ -211,7 +211,7 @@ async function generateWeeklyEvent() {
         title: "Emoji Decode",
         description: "Guess the game.",
         config: { emojiPuzzles: content.emojiPuzzles },
-        completionReward: { trophies: 40, gems: 3 },
+        completionReward: { trophies: 40, gems: 1 },
       },
       {
         index: 5,
@@ -219,7 +219,7 @@ async function generateWeeklyEvent() {
         title: "Who Said It?",
         description: "Famous lines.",
         config: { quotes: content.quotes },
-        completionReward: { trophies: 40, gems: 3 },
+        completionReward: { trophies: 40, gems: 1 },
       },
       {
         index: 6,
@@ -229,7 +229,7 @@ async function generateWeeklyEvent() {
         config: {
           questions: hardQs.slice(0, 5),
         },
-        completionReward: { trophies: 50, gems: 5 },
+        completionReward: { trophies: 50, gems: 1 },
       },
       {
         index: 7,
@@ -240,7 +240,7 @@ async function generateWeeklyEvent() {
           questions: mediumQs.slice(10, 15),
           modeConfig: { timeLimitSeconds: 60 },
         },
-        completionReward: { trophies: 55, gems: 5 },
+        completionReward: { trophies: 55, gems: 2 },
       },
       {
         index: 8,
@@ -265,7 +265,7 @@ async function generateWeeklyEvent() {
           questions: hardQs.slice(5, 10),
           modeConfig: { timeLimitSeconds: 90 },
         },
-        completionReward: { trophies: 100, gems: 10 },
+        completionReward: { trophies: 100, gems: 3 },
       },
     ];
 
@@ -282,7 +282,7 @@ async function generateWeeklyEvent() {
         primaryColor: content.theme.primaryColor,
         bannerImageUrl: "",
       },
-      fullCompletionReward: { trophies: 200, gems: 20 },
+      fullCompletionReward: { trophies: 300, gems: 3 },
     });
 
     console.log(`🎉 Weekly Event Created: ${event._id} (Week: ${weekKey})`);

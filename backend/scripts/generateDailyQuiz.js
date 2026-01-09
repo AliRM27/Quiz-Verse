@@ -334,8 +334,8 @@ async function generateDailyQuiz() {
       description: quizData.description,
       questions: quizData.questions,
       rewards: {
-        trophies: 50,
-        gems: 10,
+        trophies: 150,
+        gems: 1,
       },
       isPublished: true,
     });
