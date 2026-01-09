@@ -35,11 +35,27 @@ export default function PickQuiz() {
     enabled: Boolean(user && !loading),
   });
 
+  const [quizOffset, setQuizOffset] = useState(0);
+  const PAGE_SIZE = 5;
+
   const starterQuizzes: QuizType[] = useMemo(
-    () => (data || []).slice(0, 7),
-    [data]
+    () => (data || []).slice(quizOffset, quizOffset + PAGE_SIZE),
+    [data, quizOffset]
   );
+
   const insets = useSafeAreaInsets();
+
+  const handleShuffle = () => {
+    Haptics.selectionAsync();
+    const nextOffset = quizOffset + PAGE_SIZE;
+    if (nextOffset >= (data?.length || 0)) {
+      setQuizOffset(0);
+    } else {
+      setQuizOffset(nextOffset);
+    }
+    // Optionally clear selection or keep it if visible
+    setSelected(null);
+  };
 
   const handleSelect = (quizId: string) => {
     Haptics.selectionAsync();
@@ -121,14 +137,36 @@ export default function PickQuiz() {
                 <Text style={styles.quizCompany}>{quiz.company}</Text>
                 <Text style={styles.quizMeta}>
                   {t("pickQuizMeta", {
-                    sections: quiz.sections.length,
-                    questions: quiz.questionsTotal,
-                    rewards: quiz.rewardsTotal,
+                    sections: quiz.sections?.length || 4,
+                    questions: quiz.questionsTotal || 50,
+                    rewards: quiz.rewardsTotal || 1600,
                   })}
                 </Text>
               </View>
             </TouchableOpacity>
           ))}
+          {starterQuizzes.length > 0 && (data?.length || 0) > PAGE_SIZE && (
+            <TouchableOpacity
+              onPress={handleShuffle}
+              style={{
+                paddingVertical: 15,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  color: Colors.dark.text,
+                  fontFamily: REGULAR_FONT,
+                  fontSize: 14,
+                  opacity: 0.8,
+                }}
+              >
+                {t("showOtherQuizzes") || "Show other quizzes 🔄"}
+              </Text>
+            </TouchableOpacity>
+          )}
+
           {starterQuizzes.length === 0 && (
             <Text style={styles.emptyState}>{t("pickQuizEmpty")}</Text>
           )}
@@ -179,23 +217,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     padding: 20,
     borderWidth: 1,
-    borderColor: Colors.dark.bg_light,
-    borderRadius: 10,
+    borderColor: "rgba(255,255,255,0.1)",
+    borderRadius: 20,
     gap: 16,
-    backgroundColor: Colors.dark.bg,
+    backgroundColor: "rgba(255,255,255,0.05)",
     width: "100%",
     height: 150,
     alignItems: "center",
   },
   quizCardActive: {
-    borderColor: Colors.dark.text,
-    backgroundColor: Colors.dark.bg_dark,
+    borderColor: Colors.dark.text, // White glow
+    backgroundColor: "rgba(255,255,255,0.1)",
   },
   logoWrapper: {
     width: 90,
     height: 90,
-    borderRadius: 12,
-    borderColor: Colors.dark.border_muted,
+    borderRadius: 16,
+    borderColor: "rgba(255,255,255,0.1)",
     borderWidth: 1,
     overflow: "hidden",
   },

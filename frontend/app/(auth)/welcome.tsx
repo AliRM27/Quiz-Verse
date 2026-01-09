@@ -367,7 +367,12 @@ const styles = StyleSheet.create({
   },
   inputCard: {
     marginTop: 24,
-    gap: 25,
+    gap: 20,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    borderRadius: 24,
+    padding: 24,
   },
   labelRow: {
     flexDirection: "row",
@@ -379,22 +384,24 @@ const styles = StyleSheet.create({
     color: Colors.dark.text_muted,
     letterSpacing: 0.8,
     textTransform: "uppercase",
+    fontWeight: "700",
   },
   counter: {
     fontSize: 12,
     color: Colors.dark.text_muted,
   },
   input: {
-    backgroundColor: Colors.dark.bg_light,
-    padding: 20,
-    fontSize: 15,
+    backgroundColor: "rgba(0,0,0,0.2)",
+    padding: 18,
+    fontSize: 18,
     color: Colors.dark.text,
     borderWidth: 1,
-    borderColor: Colors.dark.border_muted,
-    borderRadius: 35,
+    borderColor: "rgba(255,255,255,0.05)",
+    borderRadius: 16,
   },
   error: {
     color: Colors.dark.danger,
     fontSize: 14,
+    marginTop: 8,
   },
 });

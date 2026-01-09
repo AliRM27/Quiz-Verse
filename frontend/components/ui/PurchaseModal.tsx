@@ -97,36 +97,6 @@ const PurchaseModal = ({
                 )}
               </TouchableOpacity>
             )}
-
-            {/* Pay with Stars/Trophies */}
-            {item.price.stars > 0 && (
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={[
-                  styles.optionButton,
-                  !canAffordStars && styles.disabledOption,
-                ]}
-                disabled={!canAffordStars || isLoading}
-                onPress={() => onBuy("stars")}
-              >
-                <View style={styles.currencyIcon}>
-                  <Trophy
-                    width={24}
-                    height={24}
-                    color={Colors.dark.secondary}
-                  />
-                </View>
-                <View>
-                  <Text style={styles.priceText}>{item.price.stars}</Text>
-                  <Text style={styles.currencyName}>{t("trophies")}</Text>
-                </View>
-                {!canAffordStars && (
-                  <View style={styles.missingBadge}>
-                    <Text style={styles.missingText}>{t("lowBalance")}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            )}
           </View>
 
           {isLoading && (

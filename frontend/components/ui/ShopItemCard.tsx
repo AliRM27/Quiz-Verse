@@ -116,19 +116,6 @@ const ShopItemCard = ({ item, isOwned, onPress, index }: ShopItemCardProps) => {
                     <Text style={styles.priceText}>{item.price.gems}</Text>
                   </View>
                 )}
-                {item.price.stars > 0 && item.price.gems > 0 && (
-                  <View style={styles.priceDivider} />
-                )}
-                {item.price.stars > 0 && (
-                  <View style={styles.priceTag}>
-                    <Trophy
-                      width={14}
-                      height={14}
-                      color={Colors.dark.secondary}
-                    />
-                    <Text style={styles.priceText}>{item.price.stars}</Text>
-                  </View>
-                )}
               </View>
             )}
           </View>

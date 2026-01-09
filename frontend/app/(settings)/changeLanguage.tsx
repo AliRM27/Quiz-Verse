@@ -26,6 +26,8 @@ const ChangeLanguage = () => {
   const languages = [
     { name: "English", code: "en", icon: "🇬🇧" },
     { name: "Deutsch", code: "de", icon: "🇩🇪" },
+    { name: "Español", code: "es", icon: "🇪🇸" },
+    { name: "Français", code: "fr", icon: "🇫🇷" },
     { name: "Русский", code: "ru", icon: "🇷🇺" },
   ];
 

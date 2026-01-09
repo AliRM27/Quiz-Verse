@@ -141,74 +141,138 @@ export default function Index() {
   };
 
   return (
-    <BackgroundGradient style={[defaultStyles.page, { gap: Auth.gap.screen }]}>
-      <View style={{ gap: Auth.gap.txt, paddingTop: insets.top + 20 }}>
-        <Text
-          style={[defaultStyles.title, { textAlign: "center", fontSize: 25 }]}
-        >
-          Welcome to QuizVerse
-        </Text>
-        <Text style={styles.txt}>
-          Choose your favorite way to sign in and you’ll be in before you know
-          it.
-        </Text>
-      </View>
-      <Text
-        style={{ alignSelf: "center", fontSize: 20, color: Colors.dark.text }}
-      >
-        Complete your favorite Quizzes.
-      </Text>
+    <BackgroundGradient
+      style={[defaultStyles.page, { justifyContent: "space-between" }]}
+    >
       <View
         style={{
-          gap: Auth.gap.button,
-          width: "100%",
-          justifyContent: "center",
-
-          marginTop: "auto",
+          paddingTop: insets.top + 60,
+          paddingHorizontal: 20,
+          alignItems: "center",
         }}
       >
-        <TouchableOpacity
-          disabled={signingIn}
-          onPress={() => handleGoogleSignIn()}
-          activeOpacity={0.7}
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: Colors.dark.text,
-            paddingHorizontal: 16,
-            gap: 10,
-            height: 44,
-            borderRadius: 30,
-          }}
-        >
-          <GoogleLogo width={20} height={20} />
-          <Text
-            style={{
-              fontFamily: "Roboto-Medium",
-              color: "black",
-              fontSize: 15,
-            }}
+        <View style={styles.iconContainer}>
+          <Text style={{ fontSize: 40 }}>⚡️</Text>
+        </View>
+        <Text style={styles.heroTitle}>QuizVerse</Text>
+        <Text style={styles.heroSubtitle}>The ultimate trivia showdown.</Text>
+      </View>
+
+      <View style={styles.bottomContainer}>
+        <View style={styles.glassCard}>
+          <Text style={styles.cardTitle}>Get Started</Text>
+          <Text style={styles.cardBody}>
+            Sign in to track your progress, compete in events, and climb the
+            leaderboard.
+          </Text>
+
+          <TouchableOpacity
+            disabled={signingIn}
+            onPress={() => handleGoogleSignIn()}
+            activeOpacity={0.8}
+            style={styles.googleButton}
           >
-            Contniue with Google
-          </Text>
-          {signingIn && <ActivityIndicator />}
-        </TouchableOpacity>
-        {errorMsg ? (
-          <Text style={{ color: "red", marginTop: 10, textAlign: "center" }}>
-            {errorMsg}
-          </Text>
-        ) : null}
+            <GoogleLogo width={24} height={24} />
+            <Text style={styles.googleButtonText}>Continue with Google</Text>
+            {signingIn && (
+              <ActivityIndicator
+                size="small"
+                color="#000"
+                style={{ marginLeft: 10 }}
+              />
+            )}
+          </TouchableOpacity>
+
+          {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
+        </View>
       </View>
     </BackgroundGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  txt: {
-    color: Colors.dark.text_muted,
-    fontSize: 15,
+  iconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.2)",
+  },
+  heroTitle: {
+    fontSize: 42,
+    color: "#fff",
+    fontFamily: REGULAR_FONT,
+    fontWeight: "800",
+    textAlign: "center",
+    marginBottom: 10,
+    textShadowColor: "rgba(0,0,0,0.5)",
+    textShadowOffset: { width: 0, height: 4 },
+    textShadowRadius: 10,
+  },
+  heroSubtitle: {
+    fontSize: 18,
+    color: "rgba(255,255,255,0.7)",
     fontFamily: REGULAR_FONT,
     textAlign: "center",
+    maxWidth: "80%",
+  },
+  bottomContainer: {
+    padding: 20,
+    paddingBottom: 50,
+  },
+  glassCard: {
+    backgroundColor: "rgba(255,255,255,0.07)",
+    padding: 24,
+    borderRadius: 30,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    gap: 16,
+  },
+  cardTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#fff",
+    fontFamily: REGULAR_FONT,
+    textAlign: "center",
+  },
+  cardBody: {
+    fontSize: 15,
+    color: "rgba(255,255,255,0.6)",
+    fontFamily: REGULAR_FONT,
+    textAlign: "center",
+    marginBottom: 10,
+    lineHeight: 22,
+  },
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+    paddingHorizontal: 20,
+    height: 56,
+    borderRadius: 28,
+    gap: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  googleButtonText: {
+    fontFamily: "Roboto-Medium",
+    color: "#000",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  errorText: {
+    color: "#FF6B6B",
+    marginTop: 10,
+    textAlign: "center",
+    fontSize: 14,
+    fontFamily: REGULAR_FONT,
   },
 });
