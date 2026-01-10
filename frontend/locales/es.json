@@ -158,5 +158,14 @@
   "congrats": "¡Felicidades!",
   "youEarned": "Ganaste",
   "owned": "Propiedad",
-  "showOtherQuizzes": "Mostrar otros cuestionarios"
+  "showOtherQuizzes": "Mostrar otros cuestionarios",
+  "authTitle": "QuizVerse",
+  "authSubtitle": "El enfrentamiento definitivo de preguntas.",
+  "continueWithGoogle": "Continuar con Google",
+  "appleSignIn": "Iniciar sesión con Apple",
+  "authFooter": "Al continuar, aceptas nuestros Términos y Política de Privacidad",
+  "authError": "Error de autenticación. Inténtalo de nuevo.",
+  "guestLogin": "Continuar como invitado",
+  "logOutConfirmation": "¿Seguro que quieres cerrar sesión?",
+  "deleteAccountConfirmation": "Esta acción es permanente. ¿Estás seguro?"
 }

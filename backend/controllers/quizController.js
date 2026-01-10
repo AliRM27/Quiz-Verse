@@ -409,7 +409,10 @@ export const searchQuizzes = async (req, res) => {
       quizzes = await Quiz.find().select("-sections").limit(10);
     } else {
       quizzes = await Quiz.find({
-        $or: [{ title: { $regex: query, $options: "i" } }],
+        $or: [
+          { title: { $regex: query, $options: "i" } },
+          { tags: { $regex: query, $options: "i" } },
+        ],
       })
         .select("-sections")
         .limit(20);

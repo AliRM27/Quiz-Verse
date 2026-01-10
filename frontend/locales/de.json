@@ -158,5 +158,14 @@
   "congrats": "Glückwunsch!",
   "youEarned": "Du hast verdient",
   "owned": "Gekauft",
-  "showOtherQuizzes": "Andere Quizze anzeigen"
+  "showOtherQuizzes": "Andere Quizze anzeigen",
+  "authTitle": "QuizVerse",
+  "authSubtitle": "Der ultimative Trivia-Showdown.",
+  "continueWithGoogle": "Mit Google fortfahren",
+  "appleSignIn": "Mit Apple anmelden",
+  "authFooter": "Wenn du fortfährst, stimmst du unseren Nutzungsbedingungen und Datenschutzrichtlinien zu",
+  "authError": "Authentifizierung fehlgeschlagen. Bitte versuche es erneut.",
+  "guestLogin": "Als Gast fortfahren",
+  "logOutConfirmation": "Möchtest du dich wirklich abmelden?",
+  "deleteAccountConfirmation": "Diese Aktion ist dauerhaft. Bist du sicher?"
 }

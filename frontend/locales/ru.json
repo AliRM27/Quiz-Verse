@@ -157,6 +157,15 @@
   "streak": "Серия",
   "congrats": "Поздравляем!",
   "youEarned": "Вы заработали",
-  "owned": "Приобретено",
-  "showOtherQuizzes": "Показать другие квизы"
+  "owned": "Куплено",
+  "showOtherQuizzes": "Показать другие викторины",
+  "authTitle": "QuizVerse",
+  "authSubtitle": "Ультимативная битва знаний.",
+  "continueWithGoogle": "Продолжить с Google",
+  "appleSignIn": "Войти с Apple",
+  "authFooter": "Продолжая, вы соглашаетесь с Условиями и Политикой конфиденциальности",
+  "authError": "Ошибка аутентификации. Попробуйте снова.",
+  "guestLogin": "Продолжить как гость",
+  "logOutConfirmation": "Вы уверены, что хотите выйти?",
+  "deleteAccountConfirmation": "Это действие необратимо. Вы уверены?"
 }

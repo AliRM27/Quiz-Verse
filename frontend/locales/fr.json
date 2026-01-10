@@ -158,5 +158,14 @@
   "congrats": "Félicitations !",
   "youEarned": "Vous avez gagné",
   "owned": "Possédé",
-  "showOtherQuizzes": "Afficher d'autres quiz"
+  "showOtherQuizzes": "Afficher d'autres quiz",
+  "authTitle": "QuizVerse",
+  "authSubtitle": "L'ultime défi de culture générale.",
+  "continueWithGoogle": "Continuer avec Google",
+  "appleSignIn": "Se connecter avec Apple",
+  "authFooter": "En continuant, vous acceptez nos conditions et notre politique de confidentialité",
+  "authError": "Échec de l'authentification. Veuillez réessayer.",
+  "guestLogin": "Continuer en tant qu'invité",
+  "logOutConfirmation": "Voulez-vous vraiment vous déconnecter ?",
+  "deleteAccountConfirmation": "Cette action est irréversible. Êtes-vous sûr ?"
 }

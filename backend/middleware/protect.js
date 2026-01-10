@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
 export const protect = async (req, res, next) => {
   let token;
@@ -13,6 +14,21 @@ export const protect = async (req, res, next) => {
 
       // Verify token
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+      const user = await User.findById(decoded.id).select("activeSession");
+
+      if (!user) {
+        return res
+          .status(401)
+          .json({ message: "Not authorized, user not found" });
+      }
+
+      // Strict session check: The token's session must match the DB's active session
+      if (user.activeSession && decoded.sessionToken !== user.activeSession) {
+        return res
+          .status(401)
+          .json({ message: "Session expired. Logged in on another device." });
+      }
 
       req.userId = decoded.id;
 

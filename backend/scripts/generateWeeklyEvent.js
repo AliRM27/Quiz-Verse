@@ -5,10 +5,6 @@ import { WeeklyEvent } from "../models/WeeklyEvent.js";
 
 dotenv.config();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 // Helper: Get Week Key
 function getWeekKey(date) {
   const d = new Date(date);
@@ -81,7 +77,7 @@ async function generateWeeklyEvent() {
 
     console.log("🧠 Requesting content from OpenAI...");
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4.1-mini",
       messages: [
         { role: "system", content: "You are a creative game master." },
         { role: "user", content: prompt },

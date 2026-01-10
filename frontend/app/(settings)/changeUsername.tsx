@@ -94,9 +94,11 @@ const ChangeUsername = () => {
         >
           <Animated.View
             entering={FadeInDown.duration(600).springify()}
-            style={{ height: 45, justifyContent: "center", marginBottom: 40 }}
+            style={{ justifyContent: "center", marginBottom: 40 }}
           >
-            <Text style={styles.title}>{t("changeUsername")}</Text>
+            <Text style={[styles.title]} numberOfLines={2}>
+              {t("changeUsername")}
+            </Text>
           </Animated.View>
 
           <Animated.View
@@ -236,6 +238,8 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontFamily: REGULAR_FONT,
     textAlign: "center",
+    width: "75%",
+    alignSelf: "center",
   },
   subtitle: {
     fontSize: 16,

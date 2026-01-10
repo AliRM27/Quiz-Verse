@@ -56,7 +56,7 @@ const Settings = () => {
   const handleLogOut = () => {
     Alert.alert(
       t("logOut"),
-      t("logOutQuestion"),
+      t("logOutConfirmation"),
       [
         {
           text: t("no"),
@@ -74,8 +74,8 @@ const Settings = () => {
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      t("logOut"),
-      t("logOutQuestion"),
+      t("deleteAccount"),
+      t("deleteAccountConfirmation"),
       [
         {
           text: t("no"),

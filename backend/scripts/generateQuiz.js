@@ -38,7 +38,9 @@ Schema:
   "description": "String (English)",
   "company": "Developer Name",
   "tags": ["Tag1", "Tag2", "Tag3"], // 3-5 tags
-  "isPremium": false
+  "isPremium": false,
+  "rewardsTotal": 1600,
+  "description": "",
 }
 `;
 }
@@ -58,6 +60,11 @@ Requirements:
 2. **Question Types**: Mix of "Multiple Choice", "True/False", "Short Answer", "Numeric".
 3. **Accuracy**: Must be factually correct.
 4. **Question answers**: The correct answer shouldnt be always the first option. Randomize the options.
+5. **True/False balance rule**:
+- Exactly 50% of True/False questions MUST have "True" as correct.
+- Exactly 50% MUST have "False" as correct.
+- False statements must be believable but clearly incorrect.
+- Do NOT mark all statements as True.
 
 Schema:
 {
@@ -91,7 +98,7 @@ Schema:
 /*                            OpenAI Interaction                              */
 /* -------------------------------------------------------------------------- */
 
-async function callOpenAI(prompt, model = "gpt-4o") {
+async function callOpenAI(prompt, model = "gpt-4.1-mini") {
   try {
     const completion = await openai.chat.completions.create({
       model,
@@ -106,6 +113,23 @@ async function callOpenAI(prompt, model = "gpt-4o") {
     console.error("OpenAI Call Failed:", err);
     throw err;
   }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                            Helper Functions                                */
+/* -------------------------------------------------------------------------- */
+
+function normalizeQuestions(questions) {
+  return questions.map((q) => {
+    if (q.type === "Multiple Choice" && q.options && Array.isArray(q.options)) {
+      // Shuffle options using Fisher-Yates algorithm
+      for (let i = q.options.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [q.options[i], q.options[j]] = [q.options[j], q.options[i]];
+      }
+    }
+    return q;
+  });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -172,16 +196,12 @@ async function main() {
         title: config.title,
         difficulty: config.difficulty,
         rewards: config.reward,
-        questions: sectionQuestions,
+        questions: normalizeQuestions(sectionQuestions),
       });
       console.log(`   ✅ Validated ${sectionQuestions.length} questions.`);
     }
 
     // 4. Construct Final Quiz
-    const totalRewards = sections.reduce(
-      (sum, sec) => sum + sec.rewards * sec.questions.length,
-      0
-    );
     const totalQuestions = sections.reduce(
       (sum, sec) => sum + sec.questions.length,
       0
@@ -193,7 +213,7 @@ async function main() {
       description: metaData.description,
       company: metaData.company || "Unknown",
       category: category._id,
-      rewardsTotal: totalRewards,
+      rewardsTotal: 1600,
       questionsTotal: totalQuestions,
       isPremium: metaData.isPremium || false,
       price: { gems: 0, stars: 0 },
@@ -204,7 +224,7 @@ async function main() {
     await newQuiz.save();
     console.log(`🎉 Quiz Saved! ID: ${newQuiz._id}`);
     console.log(`   Total Questions: ${totalQuestions}`);
-    console.log(`   Total Rewards: ${totalRewards}`);
+    console.log(`   Total Rewards: ${1600}`);
 
     process.exit(0);
   } catch (error) {

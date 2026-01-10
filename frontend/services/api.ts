@@ -259,6 +259,23 @@ export const googleAuth = async (idToken: string) => {
   }
 };
 
+export const appleAuth = async (
+  identityToken: string,
+  user?: any,
+  email?: string | null
+) => {
+  try {
+    const res = await api.post("api/auth/apple", {
+      identityToken,
+      user,
+      email,
+    });
+    return res;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 export const fetchLogo = async ({ name }: any) => {
   try {
     const res = await api.get("logos/" + name);

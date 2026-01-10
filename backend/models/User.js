@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
-  googleId: { type: String, required: true, unique: true },
+  googleId: { type: String, unique: true, sparse: true }, // Not required anymore because of Apple Sign In
+  appleId: { type: String, unique: true, sparse: true },
   email: { type: String, required: true, unique: true },
   name: { type: String },
   profileImage: { type: String },

@@ -158,5 +158,14 @@
   "congrats": "Congrats!",
   "youEarned": "You earned",
   "owned": "Owned",
-  "showOtherQuizzes": "Show other quizzes"
+  "showOtherQuizzes": "Show other quizzes",
+  "authTitle": "QuizVerse",
+  "authSubtitle": "The ultimate trivia showdown.",
+  "continueWithGoogle": "Continue with Google",
+  "appleSignIn": "Sign in with Apple",
+  "authFooter": "By continuing, you agree to our Terms & Privacy Policy",
+  "authError": "Authentication failed. Please try again.",
+  "guestLogin": "Continue as Guest",
+  "logOutConfirmation": "Are you sure you want to log out?",
+  "deleteAccountConfirmation": "This action is permanent. Are you sure?"
 }

@@ -12,13 +12,14 @@ import { useEffect, useState } from "react";
 import { BackgroundGradient } from "@/components/ui/gradients/background";
 import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
 import { router } from "expo-router";
+import { useTranslation } from "react-i18next";
 import {
   GoogleSignin,
   statusCodes,
 } from "@react-native-google-signin/google-signin";
 import { configureGoogleSignIn } from "@/utils/auth";
 import { useUser } from "../../context/userContext";
-import { googleAuth, updateUser } from "@/services/api";
+import { googleAuth, appleAuth, updateUser } from "@/services/api";
 import GoogleLogo from "@/assets/svgs/GoogleLogo.svg";
 import {
   initI18n,
@@ -35,7 +36,6 @@ import Animated, {
   withSpring,
   withDelay,
   withTiming,
-  Easing,
 } from "react-native-reanimated";
 import * as AppleAuthentication from "expo-apple-authentication";
 
@@ -50,9 +50,11 @@ const ghostImage = require("@/assets/images/ghost-of-tsushima.jpg");
 const minecraftImage = require("@/assets/images/minecraft.jpg");
 
 export default function Index() {
+  const { t } = useTranslation();
   const { setUserData, loading, isAuthenticated } = useUser();
   const [errorMsg, setErrorMsg] = useState("");
   const [signingIn, setSigningIn] = useState(false);
+  const [siginInApple, setSignInApple] = useState(false);
   const insets = useSafeAreaInsets();
 
   // Shared values for the fan animation
@@ -145,7 +147,7 @@ export default function Index() {
 
   const handleAppleSignIn = async () => {
     try {
-      setSigningIn(true);
+      setSignInApple(true);
       setErrorMsg("");
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
@@ -153,17 +155,70 @@ export default function Index() {
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
-      console.log("Apple Sign In Credential:", credential);
-      setErrorMsg("Apple Sign-In verified (Backend integration pending)");
+
+      if (!credential.identityToken) {
+        throw new Error("No identity token provided by Apple.");
+      }
+
+      const res = await appleAuth(
+        credential.identityToken,
+        credential.fullName, // Sent on first login
+        credential.email // Sent on first login
+      );
+
+      if (res?.data?.token) {
+        const storedLanguage = res?.data.user?.language;
+        const storedLanguageCode = storedLanguage
+          ? languageMap[storedLanguage]
+          : undefined;
+        const deviceLangCode = detectDeviceLanguageCode();
+        const deviceLanguageName =
+          codeToLanguageName[deviceLangCode] ?? "English";
+        const shouldPersistDeviceLanguage =
+          !storedLanguage ||
+          !storedLanguageCode ||
+          (storedLanguage === "English" && deviceLanguageName !== "English");
+        const effectiveLanguage = shouldPersistDeviceLanguage
+          ? deviceLanguageName
+          : storedLanguage || "English";
+
+        const userPayload = {
+          ...res?.data.user,
+          language: effectiveLanguage,
+        };
+
+        await setUserData(userPayload, res?.data.token, res?.data.sessionToken);
+        initI18n(effectiveLanguage);
+
+        if (shouldPersistDeviceLanguage) {
+          try {
+            await updateUser({ language: deviceLanguageName });
+          } catch (e) {
+            console.log("Failed to persist device language", e);
+          }
+        }
+
+        const loggedInUser = res?.data.user;
+        const hasUsername =
+          loggedInUser?.name && loggedInUser.name.trim().length > 0;
+
+        if (!hasUsername) {
+          router.replace("/(auth)/welcome");
+        } else {
+          router.replace("/(tabs)");
+        }
+      } else {
+        setErrorMsg("Failed to authenticate with server.");
+      }
     } catch (e: any) {
       if (e.code === "ERR_REQUEST_CANCELED") {
         // handle that the user canceled the sign-in flow
       } else {
-        setErrorMsg("Apple Sign-In failed.");
+        setErrorMsg(t("authError"));
         console.log("Apple Sign-In Error:", e);
       }
     } finally {
-      setSigningIn(false);
+      setSignInApple(false);
     }
   };
 
@@ -231,7 +286,7 @@ export default function Index() {
         router.replace("/(tabs)");
       }
     } catch (error: any) {
-      let msg = "Login error. Please try again.";
+      let msg = t("authError");
       if (error?.code === statusCodes.SIGN_IN_CANCELLED) {
         msg = "Sign in cancelled.";
       } else if (error?.code === statusCodes.IN_PROGRESS) {
@@ -248,23 +303,21 @@ export default function Index() {
   };
 
   return (
-    <BackgroundGradient
-      style={[defaultStyles.page, { justifyContent: "space-between" }]}
-    >
+    <BackgroundGradient style={[{ justifyContent: "space-between" }]}>
       {/* Top Section: Title */}
       <View style={[styles.topContainer, { paddingTop: insets.top + 40 }]}>
         <Animated.Text
           entering={FadeInUp.delay(200).springify()}
           style={styles.heroTitle}
         >
-          QuizVerse
+          {t("authTitle")}
         </Animated.Text>
 
         <Animated.Text
           entering={FadeInUp.delay(400).springify()}
           style={styles.heroSubtitle}
         >
-          The ultimate trivia showdown.
+          {t("authSubtitle")}
         </Animated.Text>
       </View>
 
@@ -330,7 +383,9 @@ export default function Index() {
             style={styles.googleButton}
           >
             <GoogleLogo width={24} height={24} />
-            <Text style={styles.googleButtonText}>Continue with Google</Text>
+            <Text style={styles.googleButtonText}>
+              {t("continueWithGoogle")}
+            </Text>
             {signingIn && (
               <ActivityIndicator
                 size="small"
@@ -341,9 +396,7 @@ export default function Index() {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.footerText}>
-          By continuing, you agree to our Terms & Privacy Policy
-        </Text>
+        <Text style={styles.footerText}>{t("authFooter")}</Text>
       </Animated.View>
     </BackgroundGradient>
   );
