@@ -47,8 +47,26 @@ api.interceptors.response.use(
         "The server took too long to respond. Please try again."
       );
     } else if (error.response?.status === 401) {
-      await SecureStore.deleteItemAsync("token");
-      router.replace("/(auth)");
+      const errorMessage = error.response?.data?.message;
+
+      if (errorMessage === "Session expired. Logged in on another device.") {
+        Alert.alert(
+          "Session Expired",
+          "You have been logged in on another device.",
+          [
+            {
+              text: "OK",
+              onPress: async () => {
+                await SecureStore.deleteItemAsync("token");
+                router.replace("/(auth)");
+              },
+            },
+          ]
+        );
+      } else {
+        await SecureStore.deleteItemAsync("token");
+        router.replace("/(auth)");
+      }
     }
 
     return Promise.reject(error);
