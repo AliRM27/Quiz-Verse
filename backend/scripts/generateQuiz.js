@@ -86,8 +86,6 @@ Schema:
       // "numericAnswer": 123,
       // "numericTolerance": 5,
       // "range": { "min": 0, "max": 200, "step": 1 },
-      
-      "explanation": "Optional explanation"
     }
   ]
 }

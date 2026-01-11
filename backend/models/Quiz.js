@@ -91,7 +91,7 @@ const quizSchema = new mongoose.Schema({
               isCorrect: { type: Boolean, default: false },
             },
           ],
-          explanation: { type: String, trim: true },
+          explanation: { type: String, trim: true, default: "" },
         },
       ],
     },

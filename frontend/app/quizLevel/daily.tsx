@@ -357,7 +357,9 @@ const DailyQuiz = () => {
               percent={false}
               total={currSection.length}
               arrow={
-                (selectedAnswer !== null ? true : false) || sliderValue !== -1
+                (selectedAnswer !== null ? true : false) ||
+                sliderValue !== -1 ||
+                shortAnswer.trim() !== ""
               }
             />
           </TouchableOpacity>

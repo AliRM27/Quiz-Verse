@@ -167,5 +167,10 @@
   "authError": "Ошибка аутентификации. Попробуйте снова.",
   "guestLogin": "Продолжить как гость",
   "logOutConfirmation": "Вы уверены, что хотите выйти?",
-  "deleteAccountConfirmation": "Это действие необратимо. Вы уверены?"
+  "deleteAccountConfirmation": "Это действие необратимо. Вы уверены?",
+  "moreQuizzesComing": "Больше квизов появятся скоро!",
+  "featureComingSoon": "Эта возможность скоро появится",
+  "continuePlaying": "Продолжить игру",
+  "newUnlocks": "Начните свое путешествие",
+  "completedQuizzes": "Завершено"
 }

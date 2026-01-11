@@ -167,5 +167,10 @@
   "authError": "Authentifizierung fehlgeschlagen. Bitte versuche es erneut.",
   "guestLogin": "Als Gast fortfahren",
   "logOutConfirmation": "Möchtest du dich wirklich abmelden?",
-  "deleteAccountConfirmation": "Diese Aktion ist dauerhaft. Bist du sicher?"
+  "deleteAccountConfirmation": "Diese Aktion ist dauerhaft. Bist du sicher?",
+  "moreQuizzesComing": "Mehr Quizze werden bald verfügbar sein!",
+  "featureComingSoon": "Diese Funktion wird bald verfügbar sein",
+  "continuePlaying": "Weiter spielen",
+  "newUnlocks": "Starte deine Reise",
+  "completedQuizzes": "Abgeschlossen"
 }

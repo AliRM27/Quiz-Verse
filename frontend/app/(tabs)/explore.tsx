@@ -150,6 +150,9 @@ export default function Explore() {
             <Text style={styles.emptyText}>
               {t("noQuizzesFound") || "No quizzes found"}
             </Text>
+            <Text style={styles.emptySubText}>
+              {t("moreQuizzesComing") || "More quizzes are going to come"}
+            </Text>
             <TouchableOpacity
               onPress={() => {
                 setInput("");
@@ -504,6 +507,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontFamily: REGULAR_FONT,
     lineHeight: 22,
+  },
+  emptySubText: {
+    fontSize: 14,
+    color: Colors.dark.text_muted,
+    textAlign: "center",
+    fontFamily: ITALIC_FONT,
+    marginTop: -8,
+    opacity: 0.8,
   },
   resetButton: {
     paddingHorizontal: 20,

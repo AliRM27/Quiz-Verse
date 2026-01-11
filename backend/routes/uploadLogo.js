@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
     quizName =
       req.body.quizName?.toLowerCase().replace(/\s+/g, "-") || "default";
     const ext = file.originalname.split(".").pop();
-    cb(null, `${quizName}.${ext}`);
+    cb(null, `${quizName}.${"jpg"}`);
   },
 });
 const upload = multer({ storage });

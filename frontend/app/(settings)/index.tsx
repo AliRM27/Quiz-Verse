@@ -94,32 +94,10 @@ const Settings = () => {
   // ... inside Settings component
 
   const handleShare = async () => {
-    try {
-      // Use API_URL as base, but clean it up for the landing page if needed
-      // Assuming https://quizvers.onrender.com/ is the landing page
-      const landingPage = `${API_URL}`;
-      const result = await RNShare.share({
-        message: `Check out QuizVerse! Challenge your friends and test your knowledge. Download here: `,
-        url: landingPage, // iOS often uses this field for the link preview
-      });
-
-      // Check if share was completed (iOS only gives distinct action, Android often always returns 'dismissed' or 'shared' depending on implementation, but standard RN Share often returns success as long as the dialog opened)
-      if (result.action === RNShare.sharedAction) {
-        const data = await claimShareReward();
-        if (data?.success) {
-          Alert.alert(
-            t("congrats") || "Congrats!",
-            `${t("youEarned") || "You earned"} ${data.reward} ${t("gems") || "Gems"}!`
-          );
-          // Ideally refresh user context here to show new gems, but simple alert is fine for now
-        } else if (data?.message) {
-          // Already rewarded today, silent or toast? Let's just do silent or maybe a small info
-          // Alert.alert("Note", data.message);
-        }
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    Alert.alert(
+      t("authTitle"),
+      t("featureComingSoon") || "This opportunity will be made available soon"
+    );
   };
 
   return (
@@ -323,7 +301,7 @@ const Settings = () => {
             </View>
           </TouchableOpacity>
         </View>
-        <Text style={[styles.txt_muted, { fontSize: 10, marginTop: 10 }]}>
+        {/* <Text style={[styles.txt_muted, { fontSize: 10, marginTop: 10 }]}>
           {t("other")}
         </Text>
         <View
@@ -355,7 +333,7 @@ const Settings = () => {
               <Switch value={state} onChange={() => setState((p) => !p)} />
             </View>
           </View>
-        </View>
+        </View> */}
         <Text style={[styles.txt_muted, { fontSize: 10, marginTop: 10 }]}>
           QUIZVERSE
         </Text>

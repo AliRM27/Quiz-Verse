@@ -32,50 +32,5 @@
 
     <p id="status"></p>
     <p id="uploadedInfo"></p>
-
-    <h2>Create Quiz</h2>
-    <form
-      action="https://quizvers.onrender.com/api/admin/quizzes/create"
-      method="POST"
-      enctype="application/json"
-    >
-      <input type="text" name="title" placeholder="Quiz title" required /><br />
-      <input
-        type="text"
-        name="logoFile"
-        placeholder="minecraft"
-        required
-      /><br />
-      <input
-        type="text"
-        name="description"
-        placeholder="Short description"
-      /><br />
-      <input
-        type="text"
-        name="category"
-        placeholder="Category ID"
-        required
-      /><br />
-      <input
-        type="number"
-        name="rewardsTotal"
-        placeholder="500"
-        required
-      /><br />
-      <input
-        type="number"
-        name="questionsTotal"
-        placeholder="20"
-        required
-      /><br />
-      <input
-        type="text"
-        name="company"
-        placeholder="QuizVerse"
-        required
-      /><br />
-      <button type="submit">Create</button>
-    </form>
   </body>
 </html>

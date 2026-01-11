@@ -167,5 +167,10 @@
   "authError": "Error de autenticación. Inténtalo de nuevo.",
   "guestLogin": "Continuar como invitado",
   "logOutConfirmation": "¿Seguro que quieres cerrar sesión?",
-  "deleteAccountConfirmation": "Esta acción es permanente. ¿Estás seguro?"
+  "deleteAccountConfirmation": "Esta acción es permanente. ¿Estás seguro?",
+  "moreQuizzesComing": "Más cuestionarios en camino!",
+  "featureComingSoon": "Esta oportunidad estará disponible pronto",
+  "continuePlaying": "Seguir jugando",
+  "newUnlocks": "Comienza tu viaje",
+  "completedQuizzes": "Completado"
 }

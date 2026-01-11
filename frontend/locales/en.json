@@ -167,5 +167,10 @@
   "authError": "Authentication failed. Please try again.",
   "guestLogin": "Continue as Guest",
   "logOutConfirmation": "Are you sure you want to log out?",
-  "deleteAccountConfirmation": "This action is permanent. Are you sure?"
+  "deleteAccountConfirmation": "This action is permanent. Are you sure?",
+  "moreQuizzesComing": "More quizzes are going to come!",
+  "featureComingSoon": "This opportunity will be made available soon",
+  "continuePlaying": "Continue Playing",
+  "newUnlocks": "Start Your Journey",
+  "completedQuizzes": "Completed"
 }

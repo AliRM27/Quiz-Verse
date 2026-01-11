@@ -167,5 +167,10 @@
   "authError": "Échec de l'authentification. Veuillez réessayer.",
   "guestLogin": "Continuer en tant qu'invité",
   "logOutConfirmation": "Voulez-vous vraiment vous déconnecter ?",
-  "deleteAccountConfirmation": "Cette action est irréversible. Êtes-vous sûr ?"
+  "deleteAccountConfirmation": "Cette action est irréversible. Êtes-vous sûr ?",
+  "moreQuizzesComing": "Plus de quiz en route !",
+  "featureComingSoon": "Cette fonctionnalité sera bientôt disponible",
+  "continuePlaying": "Continuer à jouer",
+  "newUnlocks": "Commencez votre voyage",
+  "completedQuizzes": "Terminé"
 }

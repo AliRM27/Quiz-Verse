@@ -402,9 +402,11 @@ export default function WeeklyGameScreen() {
                     isSmallPhone && { fontSize: 17 },
                   ]}
                 >
-                  {nodeType === "emoji_puzzle"
-                    ? `${t("whatGame")}\n \n ${currQuestion.question[languageMap["English"]]}`
-                    : currQuestion.question[languageMap[user.language]]}
+                  {nodeType === "emoji_puzzle" &&
+                    `${t("whatGame")}\n \n ${currQuestion.question[languageMap["English"]]}`}
+                  {nodeType !== "emoji_puzzle" &&
+                    !currQuestion.question[languageMap[user.language]] &&
+                    currQuestion.question[languageMap["English"]]}
                 </Text>
 
                 {/* Decorative elements */}

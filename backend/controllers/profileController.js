@@ -6,7 +6,7 @@ export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.userId)
       .select(
-        "title googleId email name profileImage avatar stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles ownedAvatars unlockedQuizzes"
+        "title googleId appleId email name profileImage avatar stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles ownedAvatars unlockedQuizzes"
       )
       .lean();
 

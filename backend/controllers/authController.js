@@ -84,7 +84,7 @@ export const googleSignIn = async (req, res) => {
 
     const leanUser = await User.findById(user._id)
       .select(
-        "title googleId appleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles unlockedQuizzes"
+        "title googleId appleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles ownedAvatars unlockedQuizzes"
       )
       .lean();
 
@@ -159,12 +159,10 @@ export const appleSignIn = async (req, res) => {
         // But usually VerifyIdToken returns email.
 
         if (!userEmail) {
-          return res
-            .status(400)
-            .json({
-              message:
-                "Email not found in Apple token. Please try again or authorize email sharing.",
-            });
+          return res.status(400).json({
+            message:
+              "Email not found in Apple token. Please try again or authorize email sharing.",
+          });
         }
 
         user = new User({
@@ -201,7 +199,7 @@ export const appleSignIn = async (req, res) => {
 
     const leanUser = await User.findById(user._id)
       .select(
-        "title googleId appleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles unlockedQuizzes"
+        "title googleId appleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles ownedAvatars unlockedQuizzes"
       )
       .lean();
 

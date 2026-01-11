@@ -46,6 +46,8 @@ Question Type Rules:
   - "True"
   - "False"
 - Exactly ONE must be correct
+- False statements must be believable but clearly incorrect.
+- Do NOT mark all statements as True.
 
 3) Short Answer
 - MUST include an "options" array.
@@ -62,11 +64,11 @@ Question Type Rules:
 - Must include:
   - numericAnswer (number)
   - numericTolerance (number)
-- May include an optional "range" object:
+- Must include "range" object:
   {
-    "min": number,
-    "max": number,
-    "step": number
+    "min": number, // minimum value
+    "max": number, // maximum value
+    "step": number // step value
   }
 - No options array
 
@@ -75,10 +77,12 @@ Translations:
   - English (en)
   - German (de)
   - Russian (ru)
+  - French (fr)
+  - Spanish (es)
 
   ⚠️ Important:
 - Every question must have an "options" array.
-- Each option must include a "text" object with keys "en", "de", "ru".
+- Each option must include a "text" object with keys "en", "de", "ru", "fr", "es".
 - None of the "text" fields may be empty or missing.
 - If a translation is difficult, copy the English text.
 - Example:
@@ -86,7 +90,9 @@ Translations:
   "text": {
     "en": "Mario",
     "de": "Mario",
-    "ru": "Марио"
+    "ru": "Марио",
+    "fr": "Mario",
+    "es": "Mario"
   },
   "isCorrect": true
 }
@@ -105,13 +111,15 @@ JSON Schema (STRICT):
       "question": {
         "en": "",
         "de": "",
-        "ru": ""
+        "ru": "",
+        "fr": "",
+        "es": ""
       },
 
       // ONLY for Multiple Choice and True/False
       "options": [
         {
-          "text": { "en": "", "de": "", "ru": "" },
+          "text": { "en": "", "de": "", "ru": "", "fr": "", "es": "" },
           "isCorrect": false
         }
       ],
@@ -151,7 +159,7 @@ async function generateQuizWithRetry(prompt, retries = 3) {
         model: "gpt-4.1-mini",
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
-        max_tokens: 2500,
+        max_tokens: 10000,
         temperature: 0.7,
       });
     } catch (error) {
@@ -170,6 +178,23 @@ async function generateQuizWithRetry(prompt, retries = 3) {
 /* -------------------------------------------------------------------------- */
 /*                            Validation Helpers                                */
 /* -------------------------------------------------------------------------- */
+
+function normalizeQuestions(questions) {
+  return questions.map((q) => {
+    if (
+      (q.type === "Multiple Choice" || q.type === "True/False") &&
+      q.options &&
+      Array.isArray(q.options)
+    ) {
+      // Shuffle options using Fisher-Yates algorithm
+      for (let i = q.options.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [q.options[i], q.options[j]] = [q.options[j], q.options[i]];
+      }
+    }
+    return q;
+  });
+}
 
 function validateQuizData(data) {
   if (!data?.title || !data?.description) {
@@ -314,6 +339,9 @@ async function generateDailyQuiz() {
     }
 
     const quizData = JSON.parse(rawContent);
+    // Shuffle options
+    quizData.questions = normalizeQuestions(quizData.questions);
+
     validateQuizData(quizData);
 
     console.log(`🧠 Generated ${quizData.questions.length} questions`);
