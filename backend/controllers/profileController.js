@@ -173,6 +173,10 @@ export const updateProfile = async (req, res) => {
       if (!user.theme) user.theme = {};
       user.theme.cardColor = theme.cardColor;
     }
+    // Allow updating lastPlayed directly (for cases like "just visited")
+    if (req.body.lastPlayed && Array.isArray(req.body.lastPlayed)) {
+      user.lastPlayed = req.body.lastPlayed;
+    }
 
     await user.save();
     res.json(user);
@@ -340,6 +344,24 @@ export const updateProgress = async (req, res) => {
     ) {
       quizProgress.perfected = true;
     }
+
+    // Step 4: Update Last Played
+    const lastPlayed = user.lastPlayed || [];
+    const existingIndex = lastPlayed.findIndex(
+      (lp) => lp.quizId.toString() === quizObjectId.toString()
+    );
+
+    if (existingIndex !== -1) {
+      lastPlayed.splice(existingIndex, 1);
+    }
+
+    lastPlayed.unshift({ quizId: quizObjectId });
+
+    if (lastPlayed.length > 10) {
+      lastPlayed.pop();
+    }
+
+    user.lastPlayed = lastPlayed;
 
     await user.save();
 

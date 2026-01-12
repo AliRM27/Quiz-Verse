@@ -7,19 +7,18 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
-  Keyboard,
   TouchableOpacity,
 } from "react-native";
 import Search from "@/assets/svgs/search.svg";
 import { REGULAR_FONT, ITALIC_FONT } from "@/constants/Styles";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import React, { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { searchQuizzes, fetchUserProgress } from "@/services/api";
 import { debounce } from "lodash";
 import QuizLogo from "@/components/ui/QuizLogo";
 import { useUser } from "@/context/userContext";
-import { isSmallPhone, myWidth, WIDTH } from "@/constants/Dimensions";
+import { isSmallPhone } from "@/constants/Dimensions";
 import Close from "@/assets/svgs/close.svg";
 import { useTranslation } from "react-i18next";
 import ProgressBar from "@/components/animatinos/progressBar";
@@ -72,10 +71,18 @@ export default function Explore() {
     debouncedSetSearch(text);
   };
 
-  const { data: quizzes, isLoading } = useQuery({
-    queryKey: ["searchQuizzes", query],
-    queryFn: () => searchQuizzes(query),
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteQuery({
+      queryKey: ["searchQuizzes", query],
+      queryFn: ({ pageParam = 1 }) => searchQuizzes(query, pageParam),
+      initialPageParam: 1,
+      getNextPageParam: (lastPage, allPages) => {
+        // If the last page has fewer items than the limit (10), there are no more pages.
+        return lastPage.length === 10 ? allPages.length + 1 : undefined;
+      },
+    });
+
+  const quizzes = useMemo(() => data?.pages.flat() || [], [data]);
 
   if (!user || progressLoading) {
     return (
@@ -171,6 +178,17 @@ export default function Explore() {
             style={styles.list}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
+            onEndReached={() => {
+              if (hasNextPage) fetchNextPage();
+            }}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              isFetchingNextPage ? (
+                <View style={{ padding: 20 }}>
+                  <ActivityIndicator color={Colors.dark.primary} />
+                </View>
+              ) : null
+            }
             renderItem={({ item, index }) => (
               <QuizResultCard
                 item={item}

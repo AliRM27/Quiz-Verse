@@ -10,7 +10,7 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { Badge } from "lucide-react-native";
+import { Tag } from "lucide-react-native";
 
 // SVGs
 import Gem from "@/assets/svgs/gem.svg";
@@ -93,7 +93,7 @@ const ShopItemCard = ({ item, isOwned, onPress, index }: ShopItemCardProps) => {
               />
             )}
             {item.type === "title" && (
-              <Badge size={50} color={Colors.dark.primary} strokeWidth={1.5} />
+              <Tag size={50} color={Colors.dark.primary} strokeWidth={1.5} />
             )}
             {item.type === "quiz" && <HeartQuiz width={50} height={50} />}
           </View>

@@ -388,7 +388,7 @@ export default function Index() {
     setSliderValue(-1);
   };
 
-  const updateLastPlayedList = async () => {
+  const handleUserLastPlayed = async () => {
     if (!data?._id) return;
     const simplified = lastPlayedHistory.map((entry: any) => ({
       quizId: entry.quizId._id || entry.quizId,
@@ -396,13 +396,10 @@ export default function Index() {
     const filtered = simplified.filter(
       (entry: any) => entry.quizId !== data._id
     );
-    const updated = [{ quizId: data._id }, ...filtered].slice(0, 2);
+    // Limit to 10 items to match backend policy
+    const updated = [{ quizId: data._id }, ...filtered].slice(0, 10);
     await updateUser({ lastPlayed: updated });
     await queryClient.invalidateQueries({ queryKey: ["userHistory"] });
-  };
-
-  const handleUserLastPlayed = async () => {
-    await updateLastPlayedList();
   };
 
   if (showResult) {
@@ -452,7 +449,7 @@ export default function Index() {
                   onPress={async () => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     try {
-                      await updateLastPlayedList();
+                      await handleUserLastPlayed();
                       await refreshUser();
                       router.back();
                     } catch (err) {

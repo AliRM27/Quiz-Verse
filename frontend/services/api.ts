@@ -229,10 +229,10 @@ export const updateUserProgress = async (update: {
   }
 };
 
-export const searchQuizzes = async (query: string) => {
+export const searchQuizzes = async (query: string, page = 1) => {
   try {
     const res = await api.get("api/quizzes/search", {
-      params: { query }, // cleaner than string concatenation
+      params: { query, page, limit: 10 },
     });
     return res.data;
   } catch (err) {

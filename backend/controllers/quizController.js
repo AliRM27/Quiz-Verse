@@ -400,13 +400,20 @@ export const getDailyQuiz = async (req, res) => {
 };
 
 export const searchQuizzes = async (req, res) => {
-  const { query } = req.query;
+  const { query, page = 1, limit = 10 } = req.query;
+
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit);
+  const skip = (pageNum - 1) * limitNum;
 
   let quizzes;
 
   try {
     if (!query) {
-      quizzes = await Quiz.find().select("-sections").limit(10);
+      quizzes = await Quiz.find()
+        .select("-sections")
+        .skip(skip)
+        .limit(limitNum);
     } else {
       quizzes = await Quiz.find({
         $or: [
@@ -415,7 +422,8 @@ export const searchQuizzes = async (req, res) => {
         ],
       })
         .select("-sections")
-        .limit(20);
+        .skip(skip)
+        .limit(limitNum);
     }
     res.status(200).json(quizzes);
   } catch (error) {
