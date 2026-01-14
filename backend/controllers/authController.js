@@ -46,7 +46,7 @@ export const googleSignIn = async (req, res) => {
         user = new User({
           googleId,
           email,
-          name,
+          name: "",
           profileImage,
         });
         await user.save();
@@ -110,73 +110,54 @@ export const googleSignIn = async (req, res) => {
 
 export const appleSignIn = async (req, res) => {
   const { identityToken, user: userInfo, email } = req.body;
-  // userInfo: { name: { firstName, lastName }, email } (only sent on first login)
 
   if (!identityToken) {
     return res.status(400).json({ message: "Identity token is required" });
   }
 
   try {
-    // Verify the Identity Token with Apple
+    // Verify the Apple token
     const { sub: appleId, email: tokenEmail } = await appleSignin.verifyIdToken(
       identityToken,
-      {
-        // Optional: audience: [CLIENT_ID], // client id - can be found in apple developer portal
-        ignoreExpiration: true, // During dev, might need this if checking old tokens, but generally false for prod
-      }
+      { ignoreExpiration: true } // usually false in production
     );
 
-    // Prefer email from token, fallback to request body (frontend might send it if available)
     const userEmail = tokenEmail || email;
-
-    // Check if user exists by Apple ID
-    let user = await User.findOne({ appleId });
-
-    if (!user) {
-      // If not found by Apple ID, check by email (maybe they signed in with Google before)
-      if (userEmail) {
-        user = await User.findOne({ email: userEmail });
-        if (user) {
-          // Link Apple ID
-          user.appleId = appleId;
-          await user.save();
-        }
-      }
-
-      if (!user) {
-        // Create new user
-        // Construct name
-        let name = "Apple User";
-        if (userInfo && userInfo.name) {
-          const { firstName, lastName } = userInfo.name;
-          if (firstName || lastName) {
-            name = [firstName, lastName].filter(Boolean).join(" ");
-          }
-        }
-
-        // Note: Apple only returns name/email on FIRST sign in.
-        // If we don't have it, and user doesn't exist, we might have a problem if email is masked/missing.
-        // But usually VerifyIdToken returns email.
-
-        if (!userEmail) {
-          return res.status(400).json({
-            message:
-              "Email not found in Apple token. Please try again or authorize email sharing.",
-          });
-        }
-
-        user = new User({
-          appleId,
-          email: userEmail,
-          name: name,
-          // No profile image from Apple usually
-        });
-        await user.save();
-      }
+    if (!userEmail) {
+      return res.status(400).json({
+        message:
+          "Email not found in Apple token. Please try again or authorize email sharing.",
+      });
     }
 
-    // --- Session Logic (Same as Google) ---
-    const SESSION_TIMEOUT = 2 * 60 * 1000;
+    // Find existing user by Apple ID OR email
+    let user = await User.findOne({ $or: [{ appleId }, { email: userEmail }] });
+
+    if (user) {
+      // Link Apple ID if missing
+      if (!user.appleId) {
+        user.appleId = appleId;
+        await user.save();
+      }
+    } else {
+      // Build name
+      let name = "Apple User";
+      if (userInfo && userInfo.name) {
+        const { firstName, lastName } = userInfo.name;
+        name = [firstName, lastName].filter(Boolean).join(" ") || "Apple User";
+      }
+
+      // Create new user safely
+      const newUserData = {
+        appleId,
+        email: userEmail,
+        name: "",
+      };
+      user = await User.create(newUserData);
+    }
+
+    // --- Session Logic ---
+    const SESSION_TIMEOUT = 2 * 60 * 1000; // 2 minutes
     if (
       user.activeSession &&
       user.lastActiveAt &&
@@ -199,18 +180,14 @@ export const appleSignIn = async (req, res) => {
 
     const leanUser = await User.findById(user._id)
       .select(
-        "title googleId appleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles ownedAvatars avatar unlockedQuizzes"
+        "title googleId appleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles ownedAvatars avatar"
       )
       .lean();
 
     const responseUser = {
       ...leanUser,
-      unlockedQuizzesCount: leanUser.unlockedQuizzes
-        ? leanUser.unlockedQuizzes.length
-        : 0,
-      completedQuizzesCount: leanUser.completedQuizzes
-        ? leanUser.completedQuizzes.length
-        : 0,
+      unlockedQuizzesCount: leanUser.unlockedQuizzes?.length || 0,
+      completedQuizzesCount: leanUser.completedQuizzes?.length || 0,
     };
 
     delete responseUser.unlockedQuizzes;
