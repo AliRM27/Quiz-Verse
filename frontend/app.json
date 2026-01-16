@@ -48,14 +48,7 @@
         }
       ],
       "expo-web-browser",
-      "expo-apple-authentication",
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/icons/QuizVerseLogo-android.png",
-          "color": "#ffffff"
-        }
-      ]
+      "expo-apple-authentication"
     ],
     "experiments": {
       "typedRoutes": true
@@ -67,9 +60,7 @@
       }
     },
     "owner": "alirm",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/b7841104-11f3-4e21-bdbf-ebba602f1bbd"
     }

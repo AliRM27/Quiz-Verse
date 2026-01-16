@@ -14,16 +14,11 @@ import { UserProvider } from "@/context/userContext";
 import { Colors } from "@/constants/Colors";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { initI18n } from "@/utils/i18n";
-import { useEffect } from "react";
-
-import { useNotifications } from "@/hooks/useNotifications";
 
 // Initialize i18n with device language on app launch
 initI18n();
 
 export default function RootLayout() {
-  // const { scheduleDailyQuizNotification, scheduleWeeklyEventNotification } =
-  //   useNotifications();
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("@/assets/fonts/SpaceMono-Regular.ttf"),
