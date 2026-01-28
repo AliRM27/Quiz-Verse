@@ -163,7 +163,7 @@ export default function Index() {
       const res = await appleAuth(
         credential.identityToken,
         credential.fullName, // Sent on first login
-        credential.email // Sent on first login
+        credential.email, // Sent on first login
       );
 
       if (res?.data?.token) {
@@ -313,12 +313,12 @@ export default function Index() {
           {t("authTitle")}
         </Animated.Text>
 
-        <Animated.Text
+        {/* <Animated.Text
           entering={FadeInUp.delay(400).springify()}
           style={styles.heroSubtitle}
         >
           {t("authSubtitle")}
-        </Animated.Text>
+        </Animated.Text> */}
       </View>
 
       {/* Middle Section: Card Fan Animation */}
