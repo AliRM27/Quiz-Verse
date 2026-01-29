@@ -99,7 +99,7 @@ export default function WeeklyGameScreen() {
     Alert.alert(
       reason === "time" ? "Time's Up!" : "Game Over!",
       reason === "time" ? "You ran out of time." : "You ran out of lives.",
-      [{ text: "Try Again", onPress: () => router.back() }]
+      [{ text: "Try Again", onPress: () => router.back() }],
     );
   }, []);
 
@@ -242,8 +242,8 @@ export default function WeeklyGameScreen() {
           (o: any) =>
             o.isCorrect &&
             (Object.values(o.text) as string[]).some(
-              (txt) => normalize(txt) === normalize(shortAnswer)
-            )
+              (txt) => normalize(txt) === normalize(shortAnswer),
+            ),
         ) !== undefined;
     }
 
@@ -264,7 +264,7 @@ export default function WeeklyGameScreen() {
           },
           correctAnswer: {
             correctOptionIndex: currQuestion.options?.findIndex(
-              (o: any) => o.isCorrect
+              (o: any) => o.isCorrect,
             ),
             numericAnswer: currQuestion.numericAnswer,
             correctTextEn: currQuestion.options?.find((o: any) => o.isCorrect)
@@ -405,8 +405,8 @@ export default function WeeklyGameScreen() {
                   {nodeType === "emoji_puzzle" &&
                     `${t("whatGame")}\n \n ${currQuestion.question[languageMap["English"]]}`}
                   {nodeType !== "emoji_puzzle" &&
-                    !currQuestion.question[languageMap[user.language]] &&
-                    currQuestion.question[languageMap["English"]]}
+                    (currQuestion.question[languageMap[user.language]] ||
+                      currQuestion.question[languageMap["English"]])}
                 </Text>
 
                 {/* Decorative elements */}
@@ -807,11 +807,11 @@ const WeeklyResult = ({
   const insets = useSafeAreaInsets();
   const trophies = (result.rewardsGranted || []).reduce(
     (acc: number, r: any) => acc + (r.reward?.trophies || 0),
-    0
+    0,
   );
   const gems = (result.rewardsGranted || []).reduce(
     (acc: number, r: any) => acc + (r.reward?.gems || 0),
-    0
+    0,
   );
 
   const isPerfect = result.questionsCorrect === result.totalQuestions;

@@ -227,7 +227,7 @@ function validateQuizData(data) {
         const correctCount = q.options.filter((o) => o.isCorrect).length;
         if (correctCount !== 1) {
           throw new Error(
-            "Multiple Choice must have exactly one correct option"
+            "Multiple Choice must have exactly one correct option",
           );
         }
 
