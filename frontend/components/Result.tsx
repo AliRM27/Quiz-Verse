@@ -190,7 +190,7 @@ const Result = ({
       scrollY.value,
       [0, 50],
       [0, 1],
-      Extrapolate.CLAMP
+      Extrapolate.CLAMP,
     );
     return {
       opacity,
@@ -203,7 +203,7 @@ const Result = ({
       scrollY.value,
       [-100, 0],
       [1.2, 1],
-      Extrapolate.CLAMP
+      Extrapolate.CLAMP,
     );
     return {
       transform: [{ scale }],
@@ -226,20 +226,23 @@ const Result = ({
 
     // Initial animation values
     const initialProgress =
-      Math.floor(
-        ((userProgress.questions - newQuestions) /
-          quizProgress.questions.length) *
-          100
+      Math.max(
+        0,
+        Math.floor(
+          ((userProgress.questions - newQuestions) /
+            quizProgress.questions.length) *
+            100,
+        ),
       ) || 0;
     setValue(initialProgress);
-    setRewardsValue(userProgress.rewards - rewards);
+    setRewardsValue(Math.max(0, userProgress.rewards - rewards));
 
     // Staggered cumulative animations
     setTimeout(() => {
       setValue(
         Math.floor(
-          (userProgress.questions / quizProgress.questions.length) * 100
-        )
+          (userProgress.questions / quizProgress.questions.length) * 100,
+        ),
       );
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }, 1000);

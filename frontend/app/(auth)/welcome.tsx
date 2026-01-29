@@ -120,7 +120,7 @@ export default function Welcome() {
       !/^[a-zA-Z0-9_]+$/.test(trimmed)
     ) {
       setUsernameError(
-        "Use 3-12 characters with letters, numbers, or underscores."
+        "Use 3-12 characters with letters, numbers, or underscores.",
       );
       return;
     }
@@ -247,7 +247,7 @@ export default function Welcome() {
                     }}
                     cursorColor={Colors.dark.text}
                     selectionColor={Colors.dark.text}
-                    placeholder="Type your username"
+                    placeholder={t("typeYourUsername")}
                     placeholderTextColor={Colors.dark.text_muted}
                     value={username}
                     onChangeText={(text) => {

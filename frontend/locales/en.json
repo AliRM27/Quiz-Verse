@@ -100,8 +100,9 @@
   "hide": "Hide",
   "show": "Show",
   "newbie": "Newbie",
-  "legend": "Legend",
-  "master": "Master",
+  "quizwizard": "Quiz Wizard",
+  "triviaMaster": "Trivia Master",
+  "gemCollector": "Gem Collector",
   "grandmaster": "Grandmaster",
   "dailyQuiz": "Daily Quiz",
   "dailyQuizDesc": "5 random questions",
@@ -163,7 +164,7 @@
   "authSubtitle": "The ultimate trivia showdown.",
   "continueWithGoogle": "Continue with Google",
   "appleSignIn": "Sign in with Apple",
-  "authFooter": "By continuing, you agree to our Terms & Privacy Policy",
+  "authFooter": "By continuing, you agree to our <0>Terms</0> & <1>Privacy Policy</1>",
   "authError": "Authentication failed. Please try again.",
   "guestLogin": "Continue as Guest",
   "logOutConfirmation": "Are you sure you want to log out?",
@@ -172,5 +173,7 @@
   "featureComingSoon": "This opportunity will be made available soon",
   "continuePlaying": "Continue Playing",
   "newUnlocks": "Start Your Journey",
-  "completedQuizzes": "Completed"
+  "completedQuizzes": "Completed",
+  "typeYourAnswer": "Type your answer...",
+  "typeYourUsername": "Type your username"
 }

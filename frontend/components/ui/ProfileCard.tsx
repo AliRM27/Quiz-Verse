@@ -111,7 +111,7 @@ const ProfileCard = ({
     const c = interpolateColor(
       progress.value,
       [0, 1],
-      [fromColor.value, toColor.value]
+      [fromColor.value, toColor.value],
     );
     return { backgroundColor: c };
   });
@@ -120,7 +120,7 @@ const ProfileCard = ({
     const c = interpolateColor(
       progress.value,
       [0, 1],
-      [fromColor.value, toColor.value]
+      [fromColor.value, toColor.value],
     );
     return { borderColor: c };
   });
@@ -129,7 +129,7 @@ const ProfileCard = ({
     const c = interpolateColor(
       progress.value,
       [0, 1],
-      [fromColor.value, toColor.value]
+      [fromColor.value, toColor.value],
     );
     return { color: c };
   });
@@ -201,7 +201,7 @@ const ProfileCard = ({
                         user.theme.cardColor = themeName;
                         await updateUser(user);
                         Haptics.notificationAsync(
-                          Haptics.NotificationFeedbackType.Success
+                          Haptics.NotificationFeedbackType.Success,
                         );
                       } catch (err) {
                         console.log(err);
@@ -260,7 +260,7 @@ const ProfileCard = ({
                             styles.titleChipTextSelected,
                         ]}
                       >
-                        {t(titleStr)}
+                        {t(titleStr.toLowerCase().replace(" ", ""))}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -289,7 +289,7 @@ const ProfileCard = ({
                         // update only title to be safe, but our API takes partial updates
                         await updateUser({ title: selectedTitle });
                         Haptics.notificationAsync(
-                          Haptics.NotificationFeedbackType.Success
+                          Haptics.NotificationFeedbackType.Success,
                         );
                       } catch (err) {
                         console.log(err);
@@ -401,7 +401,7 @@ const ProfileCard = ({
                         user.avatar = selectedAvatar;
                         await updateUser({ avatar: selectedAvatar });
                         Haptics.notificationAsync(
-                          Haptics.NotificationFeedbackType.Success
+                          Haptics.NotificationFeedbackType.Success,
                         );
                       } catch (err) {
                         console.log(err);
@@ -457,7 +457,7 @@ const ProfileCard = ({
 
             <View style={styles.titleRow}>
               <Animated.Text style={[styles.userTitle, animatedText]}>
-                {t(user.title).toUpperCase()}
+                {t(user.title.toLowerCase().replace(" ", "")).toUpperCase()}
               </Animated.Text>
               {isEditable && (
                 <TouchableOpacity

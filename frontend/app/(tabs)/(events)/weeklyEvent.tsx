@@ -58,7 +58,7 @@ const WeeklyEventScreen: React.FC = () => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
 
-  const { data, isLoading, isError, error, refetch } =
+  const { data, isLoading, isError, error, refetch, isRefetching } =
     useQuery<WeeklyEventResponse>({
       queryKey: ["weeklyEvent"],
       queryFn: fetchWeeklyEvent,
@@ -215,7 +215,37 @@ const WeeklyEventScreen: React.FC = () => {
           style={styles.errorCard}
         >
           <Feather name="calendar" size={48} color={Colors.dark.text_muted} />
-          <Text style={styles.errorText}>No weekly event available.</Text>
+          <Text style={styles.errorText}>Weekly event is not available</Text>
+          <Text
+            style={[
+              styles.errorText,
+              {
+                marginTop: -8,
+                fontSize: 14,
+                color: Colors.dark.text_muted,
+                fontWeight: "400",
+              },
+            ]}
+          >
+            Please check back later!
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.retryButton,
+              {
+                opacity: isLoading || isRefetching ? 0.7 : 1,
+              },
+            ]}
+            disabled={isLoading || isRefetching}
+            onPress={onRefresh}
+            activeOpacity={0.8}
+          >
+            {isLoading || isRefetching ? (
+              <Loader black={true} />
+            ) : (
+              <Text style={styles.retryButtonText}>Reload</Text>
+            )}
+          </TouchableOpacity>
         </Animated.View>
       </View>
     );
@@ -226,7 +256,7 @@ const WeeklyEventScreen: React.FC = () => {
   const endDate = new Date(event.endsAt);
   const totalHeight = TOP_PADDING + data.nodes.length * VERTICAL_SPACING;
   const completedNodes = data.nodes.filter(
-    (n) => n.status === "completed"
+    (n) => n.status === "completed",
   ).length;
 
   return (
@@ -500,10 +530,10 @@ const LoopingPulse = () => {
     scale.value = withRepeat(
       withSequence(
         withTiming(1.2, { duration: 800 }),
-        withTiming(1, { duration: 800 })
+        withTiming(1, { duration: 800 }),
       ),
       -1,
-      true
+      true,
     );
   }, []);
 

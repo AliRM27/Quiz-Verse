@@ -100,8 +100,9 @@
   "hide": "Masquer",
   "show": "Afficher",
   "newbie": "Débutant",
-  "legend": "Légende",
-  "master": "Maître",
+  "quizwizard": "Maître de Trivia",
+  "triviaMaster": "Maître de Trivia",
+  "gemCollector": "Collecteur de gemmes",
   "grandmaster": "Grand Maître",
   "dailyQuiz": "Quiz quotidien",
   "dailyQuizDesc": "5 questions aléatoires",
@@ -163,7 +164,7 @@
   "authSubtitle": "L'ultime défi de culture générale.",
   "continueWithGoogle": "Continuer avec Google",
   "appleSignIn": "Se connecter avec Apple",
-  "authFooter": "En continuant, vous acceptez nos conditions et notre politique de confidentialité",
+  "authFooter": "En continuant, vous acceptez nos <0>conditions</0> et notre <1>politique de confidentialité</1>",
   "authError": "Échec de l'authentification. Veuillez réessayer.",
   "guestLogin": "Continuer en tant qu'invité",
   "logOutConfirmation": "Voulez-vous vraiment vous déconnecter ?",
@@ -172,5 +173,7 @@
   "featureComingSoon": "Cette fonctionnalité sera bientôt disponible",
   "continuePlaying": "Continuer à jouer",
   "newUnlocks": "Commencez votre voyage",
-  "completedQuizzes": "Terminé"
+  "completedQuizzes": "Terminé",
+  "typeYourAnswer": "Tapez votre réponse...",
+  "typeYourUsername": "Tapez votre nom d'utilisateur"
 }

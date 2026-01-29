@@ -100,8 +100,9 @@
   "hide": "Ocultar",
   "show": "Mostrar",
   "newbie": "Novato",
-  "legend": "Leyenda",
-  "master": "Maestro",
+  "quizwizard": "Maestro de Trivia",
+  "triviaMaster": "Maestro de Trivia",
+  "gemCollector": "Recopilador de Gemas",
   "grandmaster": "Gran Maestro",
   "dailyQuiz": "Cuestionario diario",
   "dailyQuizDesc": "5 preguntas aleatorias",
@@ -163,7 +164,7 @@
   "authSubtitle": "El enfrentamiento definitivo de preguntas.",
   "continueWithGoogle": "Continuar con Google",
   "appleSignIn": "Iniciar sesión con Apple",
-  "authFooter": "Al continuar, aceptas nuestros Términos y Política de Privacidad",
+  "authFooter": "Al continuar, aceptas nuestros <0>Términos</0> y <1>Política de Privacidad</1>",
   "authError": "Error de autenticación. Inténtalo de nuevo.",
   "guestLogin": "Continuar como invitado",
   "logOutConfirmation": "¿Seguro que quieres cerrar sesión?",
@@ -172,5 +173,7 @@
   "featureComingSoon": "Esta oportunidad estará disponible pronto",
   "continuePlaying": "Seguir jugando",
   "newUnlocks": "Comienza tu viaje",
-  "completedQuizzes": "Completado"
+  "completedQuizzes": "Completado",
+  "typeYourAnswer": "Escribe tu respuesta...",
+  "typeYourUsername": "Escribe tu nombre de usuario"
 }

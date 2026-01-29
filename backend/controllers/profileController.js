@@ -6,7 +6,7 @@ export const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.userId)
       .select(
-        "title googleId appleId email name profileImage avatar stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles ownedAvatars unlockedQuizzes"
+        "title googleId appleId email name profileImage avatar stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles ownedAvatars unlockedQuizzes",
       )
       .lean();
 
@@ -122,7 +122,7 @@ export const getUserProgressDetail = async (req, res) => {
     }
 
     const progressEntry = (user.progress || []).find(
-      (entry) => entry.quizId._id.toString() === quizId
+      (entry) => entry.quizId._id.toString() === quizId,
     );
 
     if (!progressEntry) {
@@ -264,7 +264,7 @@ export const updateProgress = async (req, res) => {
             unlockedQuizzes: { quizId: quizObjectId },
           },
         },
-        { new: true }
+        { new: true },
       );
       return res.status(200).json({ message: "Progress entry ensured" });
     }
@@ -278,10 +278,10 @@ export const updateProgress = async (req, res) => {
     // Step 2: Update fields for the section
     const quiz = await Quiz.findById(quizId);
     const quizProgress = user.progress.find(
-      (p) => p.quizId.toString() === quizObjectId.toString()
+      (p) => p.quizId.toString() === quizObjectId.toString(),
     );
     const section = quizProgress.sections.find(
-      (s) => s.difficulty === difficulty
+      (s) => s.difficulty === difficulty,
     );
 
     if (!section) return res.status(404).json({ message: "Section not found" });
@@ -327,11 +327,11 @@ export const updateProgress = async (req, res) => {
     // Step 3: Recalculate totals
     quizProgress.questionsCompleted = quizProgress.sections.reduce(
       (sum, s) => sum + (s.questions || 0),
-      0
+      0,
     );
     quizProgress.rewardsTotal = quizProgress.sections.reduce(
       (sum, s) => sum + (s.rewards || 0),
-      0
+      0,
     );
 
     if (quizProgress.questionsCompleted === quiz.questionsTotal) {
@@ -348,7 +348,7 @@ export const updateProgress = async (req, res) => {
     // Step 4: Update Last Played
     const lastPlayed = user.lastPlayed || [];
     const existingIndex = lastPlayed.findIndex(
-      (lp) => lp.quizId.toString() === quizObjectId.toString()
+      (lp) => lp.quizId.toString() === quizObjectId.toString(),
     );
 
     if (existingIndex !== -1) {

@@ -191,8 +191,8 @@ export default function Index() {
           (o: any) =>
             o.isCorrect &&
             (Object.values(o.text) as string[]).some(
-              (txt: string) => normalize(txt) === normalize(shortAnswer)
-            )
+              (txt: string) => normalize(txt) === normalize(shortAnswer),
+            ),
         ) !== undefined;
     }
 
@@ -247,13 +247,11 @@ export default function Index() {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      handleUserLastPlayed();
-
       // --- Calculate streak bonus using "answers-style" system ---
       const { bonus: streakBonus, newlyUnlocked } = calculateNewStreakRewards(
         newMaxStreak,
         currSection.difficulty,
-        unlockedStreaksVar // should still be loaded from DB on quiz start
+        unlockedStreaksVar, // should still be loaded from DB on quiz start
       );
 
       // merged streaks for DB (local)
@@ -308,7 +306,7 @@ export default function Index() {
         calculateNewTimeBonuses(
           currSection.difficulty,
           timeLeft,
-          prevTimeBonuses
+          prevTimeBonuses,
         );
 
       if (timeBonus > 0) {
@@ -326,7 +324,7 @@ export default function Index() {
           const maxPossible = currSectionProgress.maxRewards ?? Infinity; // depends on your schema
           const newTotal = Math.min(
             currSectionProgress.rewards + totalNewRewards,
-            maxPossible
+            maxPossible,
           );
 
           await updateUserProgress({
@@ -338,7 +336,7 @@ export default function Index() {
               answered: Array.from(pending),
               streaks: Array.from(localMergedStreaks),
               timeBonuses: Array.from(
-                new Set([...prevTimeBonuses, ...newTimeBonuses])
+                new Set([...prevTimeBonuses, ...newTimeBonuses]),
               ),
               streaksRewards: streakBonus,
               timeRewards: timeBonus,
@@ -354,6 +352,8 @@ export default function Index() {
             await updateUser({ stars: user.stars + finalRewardGain });
           }
           await refreshUser();
+        } else {
+          await handleUserLastPlayed();
         }
 
         // --- Reset for next quiz ---
@@ -394,7 +394,7 @@ export default function Index() {
       quizId: entry.quizId._id || entry.quizId,
     }));
     const filtered = simplified.filter(
-      (entry: any) => entry.quizId !== data._id
+      (entry: any) => entry.quizId !== data._id,
     );
     // Limit to 10 items to match backend policy
     const updated = [{ quizId: data._id }, ...filtered].slice(0, 10);
@@ -520,7 +520,7 @@ export default function Index() {
                   <Animated.View entering={FadeInDown.delay(200).duration(500)}>
                     <TextInput
                       selectionColor={Colors.dark.text}
-                      placeholder="Type your answer..."
+                      placeholder={t("typeYourAnswer")}
                       placeholderTextColor={Colors.dark.text_muted}
                       value={shortAnswer}
                       onChangeText={(text) => setShortAnswer(text)}
@@ -562,7 +562,7 @@ export default function Index() {
                         onPress={() => {
                           Haptics.selectionAsync();
                           setSelectedAnswer(
-                            selectedAnswer === index ? null : index
+                            selectedAnswer === index ? null : index,
                           );
                         }}
                         index={index}

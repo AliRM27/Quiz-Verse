@@ -100,9 +100,9 @@
   "hide": "Скрыть",
   "show": "Показать",
   "newbie": "Новичок",
-  "legend": "Легенда",
-  "master": "Мастер",
-  "grandmaster": "Грандмастер",
+  "quizwizard": "Маг викторин",
+  "triviaMaster": "Мастер викторин",
+  "gemCollector": "Коллекционер гемов",
   "dailyQuiz": "Ежедневный квиз",
   "dailyQuizDesc": "5 случайных вопросов",
   "difficultyDaily": "Сложность: Смешанная",
@@ -163,7 +163,7 @@
   "authSubtitle": "Ультимативная битва знаний.",
   "continueWithGoogle": "Продолжить с Google",
   "appleSignIn": "Войти с Apple",
-  "authFooter": "Продолжая, вы соглашаетесь с Условиями и Политикой конфиденциальности",
+  "authFooter": "Продолжая, вы соглашаетесь с <0>Условиями</0> и <1>Политикой конфиденциальности</1>",
   "authError": "Ошибка аутентификации. Попробуйте снова.",
   "guestLogin": "Продолжить как гость",
   "logOutConfirmation": "Вы уверены, что хотите выйти?",
@@ -172,5 +172,7 @@
   "featureComingSoon": "Эта возможность скоро появится",
   "continuePlaying": "Продолжить игру",
   "newUnlocks": "Начните свое путешествие",
-  "completedQuizzes": "Завершено"
+  "completedQuizzes": "Завершено",
+  "typeYourAnswer": "Введите ваш ответ...",
+  "typeYourUsername": "Введите ваше имя пользователя"
 }

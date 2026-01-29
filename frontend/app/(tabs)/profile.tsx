@@ -89,7 +89,7 @@ export default function Profile() {
       scrollY.value,
       [-100, 0],
       [1.2, 1],
-      "clamp" // Scale up on pull-down
+      "clamp", // Scale up on pull-down
     );
 
     return {
@@ -102,7 +102,7 @@ export default function Profile() {
       scrollY.value,
       [0, 50], // Fade in as user scrolls 50px
       [0, 1],
-      "clamp"
+      "clamp",
     );
 
     return {
@@ -219,7 +219,9 @@ export default function Profile() {
                   <Text style={styles.userName} numberOfLines={1}>
                     {user.name}
                   </Text>
-                  <Text style={styles.userTitle}>{t(user.title)}</Text>
+                  <Text style={styles.userTitle}>
+                    {t(user.title.toLowerCase().replace(" ", ""))}
+                  </Text>
                 </View>
 
                 <View style={styles.headerActions}>
@@ -339,7 +341,7 @@ export default function Profile() {
                         {category}
                       </Text>
                     </TouchableOpacity>
-                  )
+                  ),
                 )}
               </View>
 
@@ -494,7 +496,7 @@ const LastPlayedCard = ({ quiz, progressMap, index, t }: any) => {
   };
 
   const percent = Math.floor(
-    (progress.questionsCompleted / quizId.questionsTotal) * 100
+    (progress.questionsCompleted / quizId.questionsTotal) * 100,
   );
 
   return (

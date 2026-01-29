@@ -7,12 +7,13 @@ import {
   Dimensions,
   Platform,
   Image,
+  Linking,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { BackgroundGradient } from "@/components/ui/gradients/background";
 import { defaultStyles, REGULAR_FONT } from "@/constants/Styles";
 import { router } from "expo-router";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 import {
   GoogleSignin,
   statusCodes,
@@ -396,13 +397,35 @@ export default function Index() {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.footerText}>{t("authFooter")}</Text>
+        <Text style={styles.footerText}>
+          <Trans
+            i18nKey="authFooter"
+            components={[
+              <Text
+                style={styles.linkText}
+                onPress={() =>
+                  Linking.openURL("https://quizverseplay.netlify.app/terms")
+                }
+              />,
+              <Text
+                style={styles.linkText}
+                onPress={() =>
+                  Linking.openURL("https://quizverseplay.netlify.app/privacy")
+                }
+              />,
+            ]}
+          />
+        </Text>
       </Animated.View>
     </BackgroundGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  linkText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
   topContainer: {
     alignItems: "center",
     width: "100%",

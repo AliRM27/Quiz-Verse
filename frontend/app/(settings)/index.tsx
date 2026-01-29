@@ -68,7 +68,7 @@ const Settings = () => {
           style: "destructive",
         },
       ],
-      { cancelable: true }
+      { cancelable: true },
     );
   };
 
@@ -87,7 +87,7 @@ const Settings = () => {
           style: "destructive",
         },
       ],
-      { cancelable: true }
+      { cancelable: true },
     );
   };
 
@@ -96,7 +96,7 @@ const Settings = () => {
   const handleShare = async () => {
     Alert.alert(
       t("authTitle"),
-      t("featureComingSoon") || "This opportunity will be made available soon"
+      t("featureComingSoon") || "This opportunity will be made available soon",
     );
   };
 
@@ -352,6 +352,7 @@ const Settings = () => {
               borderBottomWidth: 1,
               borderColor: Colors.dark.border_muted,
             }}
+            onPress={() => Linking.openURL("https://quizverseplay.netlify.app")}
           >
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
@@ -370,7 +371,9 @@ const Settings = () => {
             </View>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => Linking.openURL(`${API_URL}legal/privacy`)}
+            onPress={() =>
+              Linking.openURL(`https://quizverseplay.netlify.app/privacy`)
+            }
             activeOpacity={0.7}
             style={{
               flexDirection: "row",
@@ -397,7 +400,9 @@ const Settings = () => {
             </View>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => Linking.openURL(`${API_URL}legal/terms`)}
+            onPress={() =>
+              Linking.openURL(`https://quizverseplay.netlify.app/terms`)
+            }
             activeOpacity={0.7}
             style={{
               flexDirection: "row",
