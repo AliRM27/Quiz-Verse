@@ -147,6 +147,8 @@ export default function Index() {
   }
 
   const handleAppleSignIn = async () => {
+    if (siginInApple) return; // prevents double taps
+
     try {
       setSignInApple(true);
       setErrorMsg("");
@@ -157,67 +159,62 @@ export default function Index() {
         ],
       });
 
-      if (!credential.identityToken) {
-        throw new Error("No identity token provided by Apple.");
+      // Apple sign-in succeeded but token missing (rare but possible)
+      if (!credential?.identityToken) {
+        setErrorMsg("Sign in failed. Please try again.");
+        return;
       }
 
-      const res = await appleAuth(
-        credential.identityToken,
-        credential.fullName, // Sent on first login
-        credential.email, // Sent on first login
-      );
-
-      if (res?.data?.token) {
-        const storedLanguage = res?.data.user?.language;
-        const storedLanguageCode = storedLanguage
-          ? languageMap[storedLanguage]
-          : undefined;
-        const deviceLangCode = detectDeviceLanguageCode();
-        const deviceLanguageName =
-          codeToLanguageName[deviceLangCode] ?? "English";
-        const shouldPersistDeviceLanguage =
-          !storedLanguage ||
-          !storedLanguageCode ||
-          (storedLanguage === "English" && deviceLanguageName !== "English");
-        const effectiveLanguage = shouldPersistDeviceLanguage
-          ? deviceLanguageName
-          : storedLanguage || "English";
-
-        const userPayload = {
-          ...res?.data.user,
-          language: effectiveLanguage,
-        };
-
-        await setUserData(userPayload, res?.data.token, res?.data.sessionToken);
-        initI18n(effectiveLanguage);
-
-        if (shouldPersistDeviceLanguage) {
-          try {
-            await updateUser({ language: deviceLanguageName });
-          } catch (e) {
-            console.log("Failed to persist device language", e);
-          }
-        }
-
-        const loggedInUser = res?.data.user;
-        const hasUsername =
-          loggedInUser?.name && loggedInUser.name.trim().length > 0;
-
-        if (!hasUsername) {
-          router.replace("/(auth)/welcome");
-        } else {
-          router.replace("/(tabs)");
-        }
-      } else {
-        setErrorMsg("Failed to authenticate with server.");
+      let res;
+      try {
+        res = await appleAuth(
+          credential.identityToken,
+          credential.fullName ?? null,
+          credential.email ?? null,
+        );
+      } catch (backendError) {
+        console.log("Backend auth error:", backendError);
+        setErrorMsg("Unable to complete sign in. Please try again.");
+        return;
       }
+
+      if (!res?.data?.token) {
+        setErrorMsg("Sign in unsuccessful. Please try again.");
+        return;
+      }
+
+      // ✅ From here on, user is authenticated
+      const storedLanguage = res.data.user?.language;
+      const deviceLangCode = detectDeviceLanguageCode();
+      const deviceLanguageName =
+        codeToLanguageName[deviceLangCode] ?? "English";
+
+      const effectiveLanguage =
+        storedLanguage && storedLanguage !== "English"
+          ? storedLanguage
+          : deviceLanguageName;
+
+      const userPayload = {
+        ...res.data.user,
+        language: effectiveLanguage,
+      };
+
+      await setUserData(userPayload, res.data.token, res.data.sessionToken);
+
+      initI18n(effectiveLanguage);
+
+      const hasUsername =
+        res.data.user?.name && res.data.user.name.trim().length > 0;
+
+      router.replace(hasUsername ? "/(tabs)" : "/(auth)/welcome");
     } catch (e: any) {
-      if (e.code === "ERR_REQUEST_CANCELED") {
-        // handle that the user canceled the sign-in flow
-      } else {
-        setErrorMsg(t("authError"));
-        console.log("Apple Sign-In Error:", e);
+      if (e?.code === "ERR_REQUEST_CANCELED") {
+        // user canceled → do nothing
+        return;
       }
+
+      console.log("Apple Sign-In Error:", e);
+      setErrorMsg("Sign in with Apple is temporarily unavailable.");
     } finally {
       setSignInApple(false);
     }
@@ -372,7 +369,7 @@ export default function Index() {
                 AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
               }
               cornerRadius={16}
-              style={styles.appleButton}
+              style={[styles.appleButton, siginInApple && { opacity: 0.6 }]}
               onPress={handleAppleSignIn}
             />
           )}
