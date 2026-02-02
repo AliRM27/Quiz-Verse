@@ -5,7 +5,8 @@
     "paths": {
       "@/*": ["./*"]
     },
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "skipLibCheck": true
   },
   "include": [
     "**/*.ts",
@@ -16,5 +17,6 @@
     "**/*.jsx",
     ".expo/types/**/*.js",
     "expo-env.d.js"
-  ]
+  ],
+  "exclude": ["node_modules"]
 }
