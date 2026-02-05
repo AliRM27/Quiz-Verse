@@ -55,7 +55,7 @@ export default function Index() {
   const { setUserData, loading, isAuthenticated } = useUser();
   const [errorMsg, setErrorMsg] = useState("");
   const [signingIn, setSigningIn] = useState(false);
-  const [siginInApple, setSignInApple] = useState(false);
+  const [signInApple, setSignInApple] = useState(false);
   const insets = useSafeAreaInsets();
 
   // Shared values for the fan animation
@@ -147,7 +147,7 @@ export default function Index() {
   }
 
   const handleAppleSignIn = async () => {
-    if (siginInApple) return; // prevents double taps
+    if (signInApple) return; // prevents double taps
 
     try {
       setSignInApple(true);
@@ -179,7 +179,7 @@ export default function Index() {
       }
 
       if (!res?.data?.token) {
-        setErrorMsg("Sign in unsuccessful. Please try again.");
+        setErrorMsg("Sign in with Apple is temporarily unavailable.");
         return;
       }
 
@@ -369,7 +369,7 @@ export default function Index() {
                 AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
               }
               cornerRadius={16}
-              style={[styles.appleButton, siginInApple && { opacity: 0.6 }]}
+              style={[styles.appleButton, signInApple && { opacity: 0.6 }]}
               onPress={handleAppleSignIn}
             />
           )}

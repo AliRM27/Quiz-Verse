@@ -79,12 +79,12 @@ export const googleSignIn = async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "30d",
-      }
+      },
     );
 
     const leanUser = await User.findById(user._id)
       .select(
-        "title googleId appleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles ownedAvatars avatar unlockedQuizzes"
+        "title googleId appleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles ownedAvatars avatar",
       )
       .lean();
 
@@ -119,45 +119,26 @@ export const appleSignIn = async (req, res) => {
     // Verify the Apple token
     const { sub: appleId, email: tokenEmail } = await appleSignin.verifyIdToken(
       identityToken,
-      { ignoreExpiration: true } // usually false in production
+      { ignoreExpiration: true },
     );
 
-    const userEmail = tokenEmail || email;
-    if (!userEmail) {
-      return res.status(400).json({
-        message:
-          "Email not found in Apple token. Please try again or authorize email sharing.",
-      });
-    }
+    // Fallback email if none provided
+    const userEmail = tokenEmail || email || `apple_${appleId}@quizverse.app`;
 
-    // Find existing user by Apple ID OR email
-    let user = await User.findOne({ $or: [{ appleId }, { email: userEmail }] });
+    // Find existing user by Apple ID
+    let user = await User.findOne({ appleId });
 
-    if (user) {
-      // Link Apple ID if missing
-      if (!user.appleId) {
-        user.appleId = appleId;
-        await user.save();
-      }
-    } else {
-      // Build name
-      let name = "Apple User";
-      if (userInfo && userInfo.name) {
-        const { firstName, lastName } = userInfo.name;
-        name = [firstName, lastName].filter(Boolean).join(" ") || "Apple User";
-      }
-
-      // Create new user safely
-      const newUserData = {
+    if (!user) {
+      // Create new user
+      user = await User.create({
         appleId,
         email: userEmail,
         name: "",
-      };
-      user = await User.create(newUserData);
+      });
     }
 
     // --- Session Logic ---
-    const SESSION_TIMEOUT = 2 * 60 * 1000; // 2 minutes
+    const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
     if (
       user.activeSession &&
       user.lastActiveAt &&
@@ -175,12 +156,12 @@ export const appleSignIn = async (req, res) => {
     const jwtToken = jwt.sign(
       { id: user._id, sessionToken },
       process.env.JWT_SECRET,
-      { expiresIn: "30d" }
+      { expiresIn: "30d" },
     );
 
     const leanUser = await User.findById(user._id)
       .select(
-        "title googleId appleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles ownedAvatars avatar"
+        "title googleId appleId email name profileImage stars gems level role language theme activeSession lastActiveAt firstLogIn unlockedQuizzes completedQuizzes dailyQuizStreak lastDailyQuizDateKey ownedThemes ownedTitles ownedAvatars avatar",
       )
       .lean();
 
@@ -193,6 +174,7 @@ export const appleSignIn = async (req, res) => {
     delete responseUser.unlockedQuizzes;
     delete responseUser.completedQuizzes;
 
+    // Always return token and session
     res.status(200).json({ token: jwtToken, sessionToken, user: responseUser });
   } catch (error) {
     console.error("Apple Sign-In Error:", error);
