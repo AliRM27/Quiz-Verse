@@ -15,7 +15,6 @@ import {
   legalRoutes,
 } from "./routes/imports.js";
 import { protect } from "./middleware/protect.js";
-import { isAdmin } from "./middleware/isAdmin.js";
 
 dotenv.config();
 connectDB();
