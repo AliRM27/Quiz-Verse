@@ -39,6 +39,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import * as AppleAuthentication from "expo-apple-authentication";
+import { isSmallPhone } from "@/constants/Dimensions";
 
 const { width } = Dimensions.get("window");
 // Increase card size slightly for better visuals
@@ -306,7 +307,7 @@ export default function Index() {
       <View style={[styles.topContainer, { paddingTop: insets.top + 40 }]}>
         <Animated.Text
           entering={FadeInUp.delay(200).springify()}
-          style={styles.heroTitle}
+          style={[styles.heroTitle, isSmallPhone && { fontSize: 35 }]}
         >
           {t("authTitle")}
         </Animated.Text>
@@ -360,28 +361,22 @@ export default function Index() {
 
         {/* Buttons Container */}
         <View style={styles.buttonsWrapper}>
-          {Platform.OS === "ios" && (
-            <AppleAuthentication.AppleAuthenticationButton
-              buttonType={
-                AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
-              }
-              buttonStyle={
-                AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
-              }
-              cornerRadius={16}
-              style={[styles.appleButton, signInApple && { opacity: 0.6 }]}
-              onPress={handleAppleSignIn}
-            />
-          )}
-
           <TouchableOpacity
             disabled={signingIn}
             onPress={() => handleGoogleSignIn()}
             activeOpacity={0.8}
-            style={styles.googleButton}
+            style={[styles.googleButton, isSmallPhone && { height: 50 }]}
           >
-            <GoogleLogo width={24} height={24} />
-            <Text style={styles.googleButtonText}>
+            <GoogleLogo
+              width={isSmallPhone ? 18 : 20}
+              height={isSmallPhone ? 18 : 20}
+            />
+            <Text
+              style={[
+                styles.googleButtonText,
+                isSmallPhone && { fontSize: 17 },
+              ]}
+            >
               {t("continueWithGoogle")}
             </Text>
             {signingIn && (
@@ -392,6 +387,24 @@ export default function Index() {
               />
             )}
           </TouchableOpacity>
+
+          {Platform.OS === "ios" && (
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={
+                AppleAuthentication.AppleAuthenticationButtonType.CONTINUE
+              }
+              buttonStyle={
+                AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+              }
+              cornerRadius={16}
+              style={[
+                styles.appleButton,
+                signInApple && { opacity: 0.6 },
+                isSmallPhone && { height: 50 },
+              ]}
+              onPress={handleAppleSignIn}
+            />
+          )}
         </View>
 
         <Text style={styles.footerText}>
@@ -497,7 +510,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 56,
     borderRadius: 16,
-    gap: 12,
+    gap: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
@@ -507,7 +520,7 @@ const styles = StyleSheet.create({
   googleButtonText: {
     fontFamily: REGULAR_FONT,
     color: "#000",
-    fontSize: 17,
+    fontSize: 20,
     fontWeight: "600",
   },
   footerText: {

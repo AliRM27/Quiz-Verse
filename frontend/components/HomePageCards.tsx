@@ -112,7 +112,7 @@ export default function HomePageCards() {
     quiz?.questionsTotal > 0
       ? Math.floor(
           ((currentProgress?.questionsCompleted || 0) / quiz.questionsTotal) *
-            100
+            100,
         )
       : 0;
 
@@ -139,11 +139,11 @@ export default function HomePageCards() {
         })}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: true }
+          { useNativeDriver: true },
         )}
         onMomentumScrollEnd={(event: any) => {
           const index = Math.round(
-            event.nativeEvent.contentOffset.x / ITEM_WIDTH
+            event.nativeEvent.contentOffset.x / ITEM_WIDTH,
           );
           setCurrentIndex(index);
         }}
@@ -219,12 +219,15 @@ export default function HomePageCards() {
       {/* Quiz Info */}
       <View style={styles.infoContainer}>
         <Text
-          style={{
-            fontFamily: REGULAR_FONT,
-            color: Colors.dark.text_muted,
-            fontSize: 11,
-            textAlign: "center",
-          }}
+          style={[
+            {
+              fontFamily: REGULAR_FONT,
+              color: Colors.dark.text_muted,
+              fontSize: 11,
+              textAlign: "center",
+            },
+            isSmallPhone && { fontSize: 9 },
+          ]}
         >
           <Info company={quiz?.company} title={quiz?.title} />
         </Text>
