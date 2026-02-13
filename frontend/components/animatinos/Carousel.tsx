@@ -332,8 +332,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   dot: {
-    width: 8,
-    height: 8,
+    width: 10,
+    height: 4,
     borderRadius: 4,
     backgroundColor: Colors.dark.border_muted,
     marginHorizontal: 4,

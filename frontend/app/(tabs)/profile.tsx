@@ -779,10 +779,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.dark.text_muted,
     fontWeight: "600",
+    textAlign: "center",
   },
   tabTextActive: {
     color: Colors.dark.bg,
     fontWeight: "800",
+    textAlign: "center",
   },
   showcaseContainer: {
     minHeight: 180,

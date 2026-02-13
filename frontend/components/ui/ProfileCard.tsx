@@ -602,9 +602,9 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.05)",
-    justifyContent: "space-around",
   },
   statItem: {
+    flex: 1,
     alignItems: "center",
     gap: 4,
   },
@@ -629,6 +629,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     fontFamily: REGULAR_FONT,
     letterSpacing: 0.5,
+    textAlign: "center",
   },
   footer: {
     alignItems: "center",
