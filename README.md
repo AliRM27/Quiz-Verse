@@ -2,6 +2,8 @@
 
 **Quiz Verse** is a mobile application that combines quiz gameplay with gamification elements to create an engaging and interactive learning experience. Users can play quizzes, track their progress, earn rewards, and enjoy replayable challenges.
 
+Download the app -> [Download](https://apps.apple.com/de/app/quiz-verse-trivia-games/id6755493236)
+
 ---
 
 ## Features
